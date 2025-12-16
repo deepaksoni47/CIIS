@@ -45,7 +45,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 });
 
 // Health check endpoint
-app.get("/health", (req: Request, res: Response) => {
+app.get("/health", (_req: Request, res: Response) => {
   res.status(200).json({
     status: "healthy",
     timestamp: new Date().toISOString(),
@@ -55,7 +55,7 @@ app.get("/health", (req: Request, res: Response) => {
 });
 
 // API routes
-app.get("/api", (req: Request, res: Response) => {
+app.get("/api", (_req: Request, res: Response) => {
   res.json({
     message: "Campus Infrastructure Intelligence System API",
     version: "1.0.0",
@@ -88,7 +88,7 @@ app.use((req: Request, res: Response) => {
 });
 
 // Error handler
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
   console.error("Unhandled error:", err);
   res.status(500).json({
     error: "Internal Server Error",

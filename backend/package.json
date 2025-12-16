@@ -4,9 +4,10 @@
   "description": "Campus Infrastructure Intelligence System - Backend API",
   "main": "dist/server.js",
   "scripts": {
-    "dev": "tsx watch src/server.ts",
+    "dev": "tsx watch src/index.ts",
     "build": "tsc",
-    "start": "node dist/server.js",
+    "start": "node dist/index.js",
+    "seed": "tsx src/scripts/seed-data.ts",
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",
     "format": "prettier --write \"src/**/*.ts\"",
@@ -25,11 +26,11 @@
   "dependencies": {
     "compression": "^1.7.4",
     "cors": "^2.8.5",
-    "dotenv": "^16.3.1",
+    "dotenv": "^16.6.1",
     "express": "^4.18.2",
     "express-rate-limit": "^7.1.5",
     "express-validator": "^7.0.1",
-    "firebase-admin": "^12.0.0",
+    "firebase-admin": "^12.7.0",
     "helmet": "^7.1.0",
     "morgan": "^1.10.0",
     "winston": "^3.11.0"

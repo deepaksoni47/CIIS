@@ -1,4 +1,5 @@
 import admin from "firebase-admin";
+import process from "process";
 
 /**
  * Initialize Firebase Admin SDK
@@ -22,27 +23,43 @@ export function initializeFirebase(): admin.app.App {
     // Check if running on Cloud Run (uses ADC)
     if (process.env.K_SERVICE) {
       firebaseApp = admin.initializeApp({
-        projectId: process.env.GOOGLE_CLOUD_PROJECT,
+        projectId: process.env.FIREBASE_PROJECT_ID,
       });
       console.log(
         "✅ Firebase initialized with Application Default Credentials"
       );
     }
-    // Local development with service account
+    // Local development with service account JSON string
     else if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
       const serviceAccount = JSON.parse(
         process.env.FIREBASE_SERVICE_ACCOUNT_KEY
       );
       firebaseApp = admin.initializeApp({
         credential: admin.credential.cert(serviceAccount),
-        projectId: process.env.GOOGLE_CLOUD_PROJECT,
+        projectId: process.env.FIREBASE_PROJECT_ID,
       });
-      console.log("✅ Firebase initialized with Service Account");
+      console.log("✅ Firebase initialized with Service Account JSON");
+    }
+    // Local development with individual environment variables
+    else if (
+      process.env.FIREBASE_PROJECT_ID &&
+      process.env.FIREBASE_PRIVATE_KEY &&
+      process.env.FIREBASE_CLIENT_EMAIL
+    ) {
+      firebaseApp = admin.initializeApp({
+        credential: admin.credential.cert({
+          projectId: process.env.FIREBASE_PROJECT_ID,
+          privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n"),
+          clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+        }),
+        projectId: process.env.FIREBASE_PROJECT_ID,
+      });
+      console.log("✅ Firebase initialized with individual credentials");
     }
     // Fallback for emulator
     else {
       firebaseApp = admin.initializeApp({
-        projectId: process.env.GOOGLE_CLOUD_PROJECT || "demo-project",
+        projectId: process.env.FIREBASE_PROJECT_ID || "demo-project",
       });
       console.log(
         "⚠️  Firebase initialized without credentials (emulator mode)"
