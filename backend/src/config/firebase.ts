@@ -97,12 +97,16 @@ export function getAuth(): admin.auth.Auth {
  * Firestore collection names
  */
 export const COLLECTIONS = {
+  ORGANIZATIONS: "organizations",
+  DEPARTMENTS: "departments",
   USERS: "users",
   BUILDINGS: "buildings",
+  ROOMS: "rooms",
   ISSUES: "issues",
   ISSUE_HISTORY: "issue_history",
   ZONES: "zones",
   RISK_SCORES: "risk_scores",
+  PREDICTIONS: "issue_predictions",
   ANALYTICS: "analytics",
 } as const;
 

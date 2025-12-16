@@ -69,15 +69,18 @@ app.get("/api", (_req: Request, res: Response) => {
   });
 });
 
-// TODO: Import and mount route modules
+// Import and mount route modules
+import aiRoutes from "./modules/ai/routes";
+// TODO: Uncomment when other modules are ready
 // import issueRoutes from './modules/issues/routes';
 // import buildingRoutes from './modules/buildings/routes';
 // import analyticsRoutes from './modules/analytics/routes';
-// import aiRoutes from './modules/ai/routes';
+
+app.use("/api/ai", aiRoutes);
+// TODO: Mount other routes when ready
 // app.use('/api/issues', issueRoutes);
 // app.use('/api/buildings', buildingRoutes);
 // app.use('/api/analytics', analyticsRoutes);
-// app.use('/api/ai', aiRoutes);
 
 // 404 handler
 app.use((req: Request, res: Response) => {
