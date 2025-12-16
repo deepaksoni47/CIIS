@@ -250,7 +250,8 @@ Get key: [aistudio.google.com](https://aistudio.google.com/app/apikey)
 
 ### 🗺️ **Geospatial**
 
-![Google Maps](https://img.shields.io/badge/Google%20Maps%20API-4285F4?style=for-the-badge&logo=google-maps&logoColor=white)
+![OpenStreetMap](https://img.shields.io/badge/OpenStreetMap-7EBC6F?style=for-the-badge&logo=openstreetmap&logoColor=white)
+![Leaflet](https://img.shields.io/badge/Leaflet-199900?style=for-the-badge&logo=leaflet&logoColor=white)
 
 **Interactive Visualization**
 
@@ -480,7 +481,7 @@ graph TB
 - 🎨 Modern UI with Tailwind CSS
 - 📱 Responsive design
 - ⚡ Optimized for speed
-- 🗺️ Google Maps integration
+- 🗺️ OpenStreetMap + Leaflet integration
 
 </td>
 <td width="50%" valign="top">
@@ -547,9 +548,9 @@ graph TB
 </td>
 <td align="center" width="16.66%">
 
-![Maps](https://img.shields.io/badge/Google_Maps-4285F4?style=for-the-badge&logo=google-maps&logoColor=white)
+![OpenStreetMap](https://img.shields.io/badge/OpenStreetMap-7EBC6F?style=for-the-badge&logo=openstreetmap&logoColor=white)
 
-**Geospatial<br/>API**
+**Open Source<br/>Maps**
 
 </td>
 </tr>
@@ -594,7 +595,7 @@ graph TB
 ### 🗺️ **1. Interactive Campus Heatmap**
 
 ![Feature](https://img.shields.io/badge/Status-Implemented-success?style=flat-square)
-![Google Maps](https://img.shields.io/badge/Powered_by-Google_Maps-4285F4?style=flat-square)
+![Leaflet](https://img.shields.io/badge/Powered_by-Leaflet-199900?style=flat-square)
 
 - ✅ Real-time visualization of issue density
 - ✅ Severity-weighted heat intensity
@@ -870,8 +871,7 @@ Create a `.env` file based on `.env.example`:
 GOOGLE_CLOUD_PROJECT="your-firebase-project-id"
 FIREBASE_SERVICE_ACCOUNT_KEY='{"type":"service_account",...}'
 
-# Google APIs (FREE Credits)
-GOOGLE_MAPS_API_KEY="your-maps-api-key"  # $200/month credit
+# Google APIs (FREE)
 GOOGLE_GEMINI_API_KEY="your-gemini-api-key"  # 15 req/min FREE
 
 # Application
@@ -909,7 +909,7 @@ ciis/
 │   ├── src/
 │   │   ├── app/                  # Next.js app router
 │   │   ├── components/           # React components
-│   │   │   ├── Map/             # Google Maps integration
+│   │   │   ├── Map/             # Leaflet + OpenStreetMap
 │   │   │   ├── Charts/          # Data visualization
 │   │   │   └── Dashboard/       # Admin interface
 │   │   ├── lib/                 # Firebase SDK & utilities
@@ -1183,11 +1183,11 @@ Natural language insights and automated report generation
 </td>
 <td width="25%" align="center">
 
-![Maps](https://img.shields.io/badge/Google_Maps-4285F4?style=for-the-badge&logo=google-maps&logoColor=white)
+![Leaflet](https://img.shields.io/badge/Leaflet-199900?style=for-the-badge&logo=leaflet&logoColor=white)
 
-**Geospatial**
+**Interactive Maps**
 
-Interactive mapping and spatial analysis capabilities
+Open source mapping with no API key required
 
 </td>
 <td width="25%" align="center">
