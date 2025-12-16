@@ -6,7 +6,7 @@
 
 ### _Transforming Campus Infrastructure Management with AI & Geospatial Intelligence_
 
-<img src="https://user-images.githubusercontent.com/74038190/212284100-561aa473-3905-4a80-b561-0d28506553ee.gif" width="700">
+<img src="https://user-images.githubusercontent.com/74038190/212284100-561aa473-3905-4a80-b561-0d28506553ee.gif" width="500">
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
@@ -32,10 +32,10 @@
   <img src="https://img.shields.io/badge/Status-Production%20Ready-success?style=for-the-badge&logo=checkmarx&logoColor=white" alt="Status">
   <img src="https://img.shields.io/badge/AI%20Powered-Yes-blueviolet?style=for-the-badge&logo=openai&logoColor=white" alt="AI Powered">
   <img src="https://img.shields.io/badge/Geospatial-Enabled-orange?style=for-the-badge&logo=google-maps&logoColor=white" alt="Geospatial">
-  <img src="https://img.shields.io/github/stars/your-org/ciis?style=for-the-badge&logo=github&color=yellow" alt="Stars">
+  <img src="https://img.shields.io/github/stars/deepaksoni47/CIIS?style=for-the-badge&logo=github&color=yellow" alt="Stars">
 </p>
 
-<img src="https://user-images.githubusercontent.com/74038190/212284115-f47cd8ff-2ffb-4b04-b5bf-4d1c14c0247f.gif" width="1000">
+<img src="https://user-images.githubusercontent.com/74038190/212284115-f47cd8ff-2ffb-4b04-b5bf-4d1c14c0247f.gif" width="700">
 
 </div>
 
@@ -159,7 +159,7 @@ Gemini-powered explanations
 
 <img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=28&duration=3000&pause=1000&color=4285F4&center=true&vCenter=true&width=800&lines=Built+on+Google+Cloud+Platform;8+Google+Services+Integrated;Enterprise-Grade+Infrastructure" alt="Google Stack" />
 
-<img src="https://user-images.githubusercontent.com/74038190/212750147-854a394f-fee9-4080-9770-78a4b7ece53f.gif" width="800">
+<img src="https://user-images.githubusercontent.com/74038190/212750147-854a394f-fee9-4080-9770-78a4b7ece53f.gif" width="500">
 
 </div>
 
@@ -394,7 +394,7 @@ graph TB
 
 <img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=24&duration=3000&pause=1000&color=EA4335&center=true&vCenter=true&width=600&lines=Modern+Production-Ready+Stack;TypeScript+%2B+Next.js+14;Powered+by+Google+Cloud" alt="Tech Stack" />
 
-<img src="https://user-images.githubusercontent.com/74038190/229223263-cf2e4b07-2615-4f87-9c38-e37600f8381a.gif" width="600">
+<img src="https://user-images.githubusercontent.com/74038190/229223263-cf2e4b07-2615-4f87-9c38-e37600f8381a.gif" width="400">
 
 </div>
 
@@ -517,7 +517,7 @@ graph TB
 
 <img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=26&duration=3000&pause=1000&color=34A853&center=true&vCenter=true&width=700&lines=4+Core+AI-Powered+Features;Real-Time+Geospatial+Analytics;Predictive+Risk+Assessment" alt="Features" />
 
-<img src="https://user-images.githubusercontent.com/74038190/212257454-16e3712e-945a-4ca2-b238-408ad0bf87e6.gif" width="600">
+<img src="https://user-images.githubusercontent.com/74038190/212257454-16e3712e-945a-4ca2-b238-408ad0bf87e6.gif" width="400">
 
 </div>
 
@@ -648,7 +648,7 @@ graph TB
 
 <img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=26&duration=3000&pause=1000&color=FBBC04&center=true&vCenter=true&width=600&lines=Quick+Setup+in+3+Steps;Up+and+Running+in+15+Minutes;Docker+%2B+Google+Cloud" alt="Getting Started" />
 
-<img src="https://user-images.githubusercontent.com/74038190/212257467-871d32b7-e401-42e8-a166-fcfd7baa4c6b.gif" width="600">
+<img src="https://user-images.githubusercontent.com/74038190/212257467-871d32b7-e401-42e8-a166-fcfd7baa4c6b.gif" width="400">
 
 ![Setup](https://img.shields.io/badge/Setup_Time-15_Minutes-success?style=for-the-badge&logo=clock&logoColor=white)
 ![Difficulty](https://img.shields.io/badge/Difficulty-Easy-brightgreen?style=for-the-badge&logo=checkmarx&logoColor=white)
@@ -700,8 +700,8 @@ graph TB
 
 ```powershell
 # Clone repository
-git clone https://github.com/your-org/ciis.git
-cd ciis
+git clone https://github.com/deepaksoni47/CIIS.git
+cd CIIS
 
 # Setup environment
 cp .env.example .env
@@ -897,7 +897,7 @@ npm test
 
 <img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=26&duration=3000&pause=1000&color=DB4437&center=true&vCenter=true&width=700&lines=Production+Deployment+on+GCP;Fully+Automated+with+Cloud+Build;Zero-Downtime+Updates" alt="Deployment" />
 
-<img src="https://user-images.githubusercontent.com/74038190/212257472-08e52665-c503-4bd9-aa20-f5a4dae769b5.gif" width="600">
+<img src="https://user-images.githubusercontent.com/74038190/212257472-08e52665-c503-4bd9-aa20-f5a4dae769b5.gif" width="400">
 
 ### **Deploy to Google Cloud Platform in Minutes**
 
@@ -1164,12 +1164,12 @@ Advanced geospatial queries and spatial indexing
 
 <img src="https://user-images.githubusercontent.com/74038190/216122069-5b8169d7-1d8e-4a13-b245-a8e4176c99f8.png" width="200" />
 
-[![GitHub](https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/your-org/ciis)
+[![GitHub](https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/deepaksoni47/CIIS)
 [![Documentation](https://img.shields.io/badge/Docs-Read_More-blue?style=for-the-badge&logo=readthedocs&logoColor=white)](./docs/)
-[![Issues](https://img.shields.io/badge/Issues-Report_Bug-red?style=for-the-badge&logo=github&logoColor=white)](https://github.com/your-org/ciis/issues)
+[![Issues](https://img.shields.io/badge/Issues-Report_Bug-red?style=for-the-badge&logo=github&logoColor=white)](https://github.com/deepaksoni47/CIIS/issues)
 [![Discord](https://img.shields.io/badge/Discord-Join_Community-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/your-invite)
 
-**Project Link:** [https://github.com/your-org/ciis](https://github.com/your-org/ciis)
+**Project Link:** [https://github.com/deepaksoni47/CIIS](https://github.com/deepaksoni47/CIIS)
 
 </div>
 
@@ -1181,14 +1181,14 @@ Advanced geospatial queries and spatial indexing
 
 ## 🌟 **Star this repository if you find it useful!** 🌟
 
-<img src="https://img.shields.io/github/stars/your-org/ciis?style=social" alt="GitHub stars">
+<img src="https://img.shields.io/github/stars/deepaksoni47/CIIS?style=social" alt="GitHub stars">
 
 ![Made with Love](https://img.shields.io/badge/Made_with-❤️-red?style=for-the-badge)
 ![Google Cloud](https://img.shields.io/badge/Powered_by-Google_Cloud-4285F4?style=for-the-badge&logo=google-cloud&logoColor=white)
 
 <img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=20&duration=3000&pause=1000&color=34A853&center=true&vCenter=true&width=800&lines=Built+for+Smarter+Campus+Infrastructure;Transforming+Reactive+into+Proactive;Powered+by+AI+%26+Geospatial+Intelligence" alt="Footer" />
 
-<img src="https://user-images.githubusercontent.com/74038190/212284115-f47cd8ff-2ffb-4b04-b5bf-4d1c14c0247f.gif" width="1000">
+<img src="https://user-images.githubusercontent.com/74038190/212284115-f47cd8ff-2ffb-4b04-b5bf-4d1c14c0247f.gif" width="700">
 
 ---
 
