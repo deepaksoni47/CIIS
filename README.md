@@ -44,7 +44,7 @@
 ## 📋 Table of Contents
 
 - [Problem Statement](#-problem-statement)
-- [Solution Overview](#-solution)
+- [Solution Overview](#-solution-overview)
 - [Google Technology Stack](#-google-technology-integration)
 - [System Architecture](#️-system-architecture)
 - [Key Features](#-key-features)
@@ -91,7 +91,7 @@ Campus infrastructure management today is **largely reactive**, creating signifi
 
 ---
 
-## 💡 Solution
+## 💡 Solution Overview
 
 <div align="center">
 
@@ -116,6 +116,15 @@ Complaints → Data → Insights → Action
 ```
 
 From scattered reports to **data-driven planning**
+
+#### 🔄 How It Works:
+
+1. **📍 Capture** - Issues reported with GPS location
+2. **🗺️ Map** - Real-time heatmaps show density
+3. **📊 Analyze** - Identify patterns & trends
+4. **🤖 Predict** - AI scores risk levels
+5. **💡 Explain** - Plain-English insights
+6. **⚡ Act** - Prioritized action queue
 
 </td>
 <td width="50%" valign="top">
@@ -350,18 +359,6 @@ graph TB
 
 ---
 
-└─────────────────┘ └─────────────────┘
-│ │
-└──────────┬──────────────────┘
-▼
-┌─────────────────┐
-│ Vertex AI + │
-│ Gemini API │
-│ (Intelligence) │
-└─────────────────┘
-
-````
-
 ### Core Components
 
 1. **Web Frontend**
@@ -413,6 +410,7 @@ graph TB
 ![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black)
 
 **Features:**
+
 - 🚀 Server-side rendering for performance
 - 🎨 Modern UI with Tailwind CSS
 - 📱 Responsive design
@@ -430,6 +428,7 @@ graph TB
 ![Docker](https://img.shields.io/badge/Docker-Latest-2496ED?style=for-the-badge&logo=docker&logoColor=white)
 
 **Features:**
+
 - 🔒 Type-safe APIs with TypeScript
 - 📦 ORM with Prisma
 - 🐳 Containerized deployment
@@ -707,7 +706,7 @@ cd ciis
 # Setup environment
 cp .env.example .env
 # Edit .env with your keys
-````
+```
 
 <details>
 <summary>📝 Required API Keys</summary>
@@ -879,29 +878,6 @@ ciis/
 
 ---
 
-│ │ └── hooks/ # Custom React hooks
-│ └── vite.config.ts
-│
-├── analytics/ # BigQuery SQL and Vertex AI notebooks
-│ ├── bigquery/
-│ └── vertex/
-│
-├── docs/ # Documentation
-│ ├── architecture/
-│ ├── api/
-│ ├── data-model/
-│ └── prompts/
-│
-├── infra/ # Infrastructure as code
-│ ├── cloudrun.yaml
-│ └── sql/
-│
-└── scripts/ # Utility scripts
-├── seed-data.ts
-└── export-reports.ts
-
-````
-
 ## 🧪 Testing
 
 ```powershell
@@ -913,7 +889,7 @@ npm run test:coverage
 # Frontend tests
 cd frontend
 npm test
-````
+```
 
 ## 📦 Deployment
 
@@ -926,14 +902,8 @@ npm test
 ### **Deploy to Google Cloud Platform in Minutes**
 
 ![Cloud Run](https://img.shields.io/badge/Deploy_to-Cloud_Run-4285F4?style=for-the-badge&logo=google-cloud&logoColor=white)
-![CI/CD](https://img.shields.io/badge/CI/CD-Cloud_Build-4285F4?style=for-the-badge&logo=google-cloud&logoColor=white)
-
-</div>
-
-### **Production Deployment with Google Cloud**
-
-![Cloud Run](https://img.shields.io/badge/Deploy_to-Cloud_Run-4285F4?style=for-the-badge&logo=google-cloud&logoColor=white)
 ![Firebase](https://img.shields.io/badge/Deploy_to-Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)
+![CI/CD](https://img.shields.io/badge/CI/CD-Cloud_Build-4285F4?style=for-the-badge&logo=google-cloud&logoColor=white)
 
 </div>
 
