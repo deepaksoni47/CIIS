@@ -15,23 +15,21 @@
 
 ---
 
-### 🌟 **Powered by Google Cloud Technologies** 🌟
+### 🌟 **Powered by Firebase & Google AI - NO BILLING REQUIRED!** 🌟
 
-[![Google Cloud](https://img.shields.io/badge/Google%20Cloud-4285F4?style=for-the-badge&logo=google-cloud&logoColor=white&animate=pulse)](https://cloud.google.com/)
-[![Google Maps](https://img.shields.io/badge/Google%20Maps-4285F4?style=for-the-badge&logo=google-maps&logoColor=white)](https://developers.google.com/maps)
-[![Gemini AI](https://img.shields.io/badge/Gemini%20AI-8E75B2?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev/)
-[![Cloud Run](https://img.shields.io/badge/Cloud%20Run-4285F4?style=for-the-badge&logo=google-cloud&logoColor=white)](https://cloud.google.com/run)
-[![BigQuery](https://img.shields.io/badge/BigQuery-669DF6?style=for-the-badge&logo=google-cloud&logoColor=white)](https://cloud.google.com/bigquery)
-[![Cloud SQL](https://img.shields.io/badge/Cloud%20SQL-4285F4?style=for-the-badge&logo=google-cloud&logoColor=white)](https://cloud.google.com/sql)
-[![Vertex AI](https://img.shields.io/badge/Vertex%20AI-4285F4?style=for-the-badge&logo=google-cloud&logoColor=white)](https://cloud.google.com/vertex-ai)
 [![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)](https://firebase.google.com/)
+[![Gemini AI](https://img.shields.io/badge/Gemini%20AI-8E75B2?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev/)
+[![OpenStreetMap](https://img.shields.io/badge/OpenStreetMap-7EBC6F?style=for-the-badge&logo=openstreetmap&logoColor=white)](https://www.openstreetmap.org/)
+[![Leaflet](https://img.shields.io/badge/Leaflet-199900?style=for-the-badge&logo=leaflet&logoColor=white)](https://leafletjs.com/)
 
 ---
 
 <p align="center">
   <img src="https://img.shields.io/badge/Status-Production%20Ready-success?style=for-the-badge&logo=checkmarx&logoColor=white" alt="Status">
+  <img src="https://img.shields.io/badge/Cost-$0%20FOREVER-brightgreen?style=for-the-badge&logo=pricetag&logoColor=white" alt="Free">
+  <img src="https://img.shields.io/badge/No_Billing-Required-blue?style=for-the-badge&logo=shield&logoColor=white" alt="No Billing">
   <img src="https://img.shields.io/badge/AI%20Powered-Yes-blueviolet?style=for-the-badge&logo=openai&logoColor=white" alt="AI Powered">
-  <img src="https://img.shields.io/badge/Geospatial-Enabled-orange?style=for-the-badge&logo=google-maps&logoColor=white" alt="Geospatial">
+  <img src="https://img.shields.io/badge/Maps-OpenStreetMap-orange?style=for-the-badge&logo=openstreetmap&logoColor=white" alt="Maps">
   <img src="https://img.shields.io/github/stars/deepaksoni47/CIIS?style=for-the-badge&logo=github&color=yellow" alt="Stars">
 </p>
 
@@ -45,6 +43,7 @@
 
 - [Problem Statement](#-problem-statement)
 - [Solution Overview](#-solution-overview)
+- [Cost Breakdown](#-cost-breakdown-100-free)
 - [Google Technology Stack](#-google-technology-integration)
 - [System Architecture](#️-system-architecture)
 - [Key Features](#-key-features)
@@ -153,11 +152,93 @@ Gemini-powered explanations
 
 ---
 
+## 💰 Cost Breakdown: 100% FREE!
+
+<div align="center">
+
+### **Perfect for Hackathons & Student Projects - NO BILLING ACCOUNT REQUIRED!**
+
+<img src="https://img.shields.io/badge/Total_Cost-$0/month-success?style=for-the-badge&logo=dollar&logoColor=white" alt="Free">
+<img src="https://img.shields.io/badge/No_Credit_Card-EVER-blue?style=for-the-badge&logo=creditcard&logoColor=white" alt="No CC">
+<img src="https://img.shields.io/badge/No_Billing-Account_Needed-orange?style=for-the-badge&logo=shield&logoColor=white" alt="No Billing">
+
+</div>
+
+<table>
+<tr>
+<td width="33%" align="center">
+
+### ✅ **Firebase (Spark Plan)**
+
+![Free](https://img.shields.io/badge/Status-NO_BILLING-success?style=flat-square)
+
+**Firestore Database**
+
+- 1GB storage
+- 50K reads/day, 20K writes/day
+- 10GB bandwidth
+
+**Authentication**
+
+- Unlimited users FREE
+
+**Hosting**
+
+- 10GB storage, 360MB/day
+
+**Cost: $0** ✅ No billing setup needed
+
+</td>
+<td width="33%" align="center">
+
+### ✅ **Google Gemini AI**
+
+![Free](https://img.shields.io/badge/Status-NO_BILLING-success?style=flat-square)
+
+**AI Studio API Key**
+
+- 15 requests/minute
+- 1,500 requests/day
+- Text generation FREE
+
+**No credit card needed!**
+
+Get key: [aistudio.google.com](https://aistudio.google.com/app/apikey)
+
+**Cost: $0** ✅ Forever free tier
+
+</td>
+<td width="33%" align="center">
+
+### ✅ **OpenStreetMap (Leaflet)**
+
+![Free](https://img.shields.io/badge/Status-NO_BILLING-success?style=flat-square)
+
+**Open Source Maps**
+
+- Unlimited map views
+- No API key needed
+- Community-maintained tiles
+
+**Tile Server FREE**
+
+**Cost: $0** ✅ Open source forever
+
+</td>
+</tr>
+</table>
+
+> **🎓 Student-Friendly:** This entire stack requires ZERO billing accounts, ZERO credit cards, and costs $0 forever. Perfect for hackathons, college projects, and learning!
+
+> **⚠️ What We Removed:** Google Maps API, BigQuery, and Cloud Run all require billing accounts (even for free tiers). We replaced them with Firebase-only + OpenStreetMap!
+
+---
+
 ## 🌐 Google Technology Integration
 
 <div align="center">
 
-<img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=28&duration=3000&pause=1000&color=4285F4&center=true&vCenter=true&width=800&lines=Built+on+Google+Cloud+Platform;8+Google+Services+Integrated;Enterprise-Grade+Infrastructure" alt="Google Stack" />
+<img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=28&duration=3000&pause=1000&color=4285F4&center=true&vCenter=true&width=800&lines=Built+on+Firebase+Platform;3+Services+%E2%80%A2+Zero+Billing;Enterprise-Grade+FREE+Tier" alt="Google Stack" />
 
 <img src="https://user-images.githubusercontent.com/74038190/212750147-854a394f-fee9-4080-9770-78a4b7ece53f.gif" width="500">
 
@@ -184,13 +265,12 @@ Gemini-powered explanations
 ### 🤖 **Artificial Intelligence**
 
 ![Gemini](https://img.shields.io/badge/Gemini%20AI-8E75B2?style=for-the-badge&logo=google&logoColor=white)
-![Vertex AI](https://img.shields.io/badge/Vertex%20AI-4285F4?style=for-the-badge&logo=google-cloud&logoColor=white)
 
-**Intelligent Insights**
+**Intelligent Insights (FREE)**
 
 - Natural language reports
 - Pattern recognition
-- Risk prediction
+- AI-powered explanations
 - Automated categorization
 
 </td>
@@ -199,14 +279,14 @@ Gemini-powered explanations
 ### ☁️ **Cloud Infrastructure**
 
 ![Cloud Run](https://img.shields.io/badge/Cloud%20Run-4285F4?style=for-the-badge&logo=google-cloud&logoColor=white)
-![Cloud SQL](https://img.shields.io/badge/Cloud%20SQL-4285F4?style=for-the-badge&logo=postgresql&logoColor=white)
+![Firestore](https://img.shields.io/badge/Firestore-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)
 
 **Scalable Backend**
 
-- Serverless containers
+- Serverless containers (Free tier)
 - Auto-scaling
-- PostGIS spatial queries
-- Multi-region deployment
+- NoSQL + Geospatial queries
+- Real-time sync
 
 </td>
 </tr>
@@ -262,7 +342,7 @@ Gemini-powered explanations
 
 <div align="center">
 
-### **Cloud-Native Microservices Architecture**
+### **Firebase-First Serverless Architecture - NO BILLING REQUIRED!**
 
 </div>
 
@@ -270,31 +350,28 @@ Gemini-powered explanations
 graph TB
     subgraph Frontend["🖥️ Frontend Layer"]
         NextJS["Next.js 14<br/>SSR + SSG"]
-        Maps["Google Maps API<br/>Heatmap Visualization"]
+        Leaflet["Leaflet + OpenStreetMap<br/>Heatmap Visualization (FREE)"]
     end
 
     subgraph Backend["⚙️ Application Layer"]
-        CloudRun["Google Cloud Run<br/>Serverless API"]
-        Express["Node.js + Express<br/>REST API"]
+        FirebaseHosting["Firebase Hosting<br/>Static + Functions (FREE)"]
+        Express["Node.js + Express<br/>Firebase Functions"]
     end
 
     subgraph Data["💾 Data Layer"]
-        CloudSQL["Cloud SQL<br/>PostgreSQL + PostGIS"]
-        BigQuery["BigQuery<br/>Analytics Warehouse"]
+        Firestore["Firebase Firestore<br/>NoSQL + GeoPoint (FREE)"]
+        FirebaseAnalytics["Firebase Analytics<br/>Event Tracking (FREE)"]
     end
 
     subgraph AI["🤖 AI Layer"]
-        Gemini["Gemini API<br/>Insight Generation"]
-        Vertex["Vertex AI<br/>Risk Prediction"]
+        Gemini["Gemini API<br/>Insight Generation (FREE)"]
     end
 
-    NextJS --> CloudRun
-    Maps --> NextJS
-    CloudRun --> CloudSQL
-    CloudRun --> BigQuery
-    CloudRun --> Gemini
-    CloudRun --> Vertex
-    BigQuery --> Vertex
+    NextJS --> FirebaseHosting
+    Leaflet --> NextJS
+    FirebaseHosting --> Firestore
+    FirebaseHosting --> Gemini
+    Firestore --> FirebaseAnalytics
 
     style Frontend fill:#e3f2fd
     style Backend fill:#fff3e0
@@ -306,52 +383,40 @@ graph TB
 
 <table>
 <tr>
-<td width="25%" align="center">
+<td width="33%" align="center">
 
 #### 🎨 Presentation
 
-**Next.js 14**
+**Next.js 14 + Leaflet**
 
 - Server-side rendering
 - Static generation
-- API routes
-- Image optimization
+- OpenStreetMap tiles
+- No API keys needed
 
 </td>
-<td width="25%" align="center">
-
-#### ⚡ Application
-
-**Cloud Run**
-
-- Auto-scaling
-- Zero-config
-- Containerized
-- Pay-per-use
-
-</td>
-<td width="25%" align="center">
+<td width="33%" align="center">
 
 #### 💽 Data
 
-**Cloud SQL + BigQuery**
+**Firebase Firestore**
 
-- ACID compliance
-- Spatial queries
-- Time-series analytics
-- Data warehousing
+- NoSQL flexibility
+- GeoPoint queries
+- Real-time sync
+- FREE Spark plan
 
 </td>
-<td width="25%" align="center">
+<td width="33%" align="center">
 
 #### 🧠 Intelligence
 
-**Gemini + Vertex AI**
+**Gemini AI Studio**
 
 - NLP insights
 - Pattern recognition
-- Predictive models
-- Explainable AI
+- FREE 15 req/min
+- No billing account
 
 </td>
 </tr>
@@ -363,25 +428,25 @@ graph TB
 
 1. **Web Frontend**
 
-   - Interactive campus map with issue visualization
+   - Interactive campus map with Leaflet & OpenStreetMap
    - Filtering and analytics dashboards
    - Admin management interface
 
 2. **Backend API Services**
 
+   - Firebase Cloud Functions (or Express on Firebase Hosting)
    - Secure issue ingestion and management
-   - Spatial and temporal data processing
-   - Analytics aggregation
+   - Spatial data processing with GeoPoint
 
 3. **Data & Analytics Layer**
 
-   - Cloud SQL (PostgreSQL + PostGIS) for operational data
-   - BigQuery for historical analytics and trend analysis
+   - Firebase Firestore for operational data (NoSQL + Geospatial)
+   - BigQuery Sandbox for historical analytics and trend analysis
 
 4. **AI & Intelligence Layer**
 
-   - Predictive risk scoring via Vertex AI
-   - Explainable insights using Google Gemini
+   - AI-powered insights using Google Gemini API
+   - Pattern recognition and natural language explanations
    - Automated report generation
 
 5. **Reporting & Monitoring**
@@ -424,16 +489,17 @@ graph TB
 
 ![Node.js](https://img.shields.io/badge/Node.js-18+-339933?style=for-the-badge&logo=node.js&logoColor=white)
 ![Express](https://img.shields.io/badge/Express-4.18-000000?style=for-the-badge&logo=express&logoColor=white)
-![Prisma](https://img.shields.io/badge/Prisma-5.0-2D3748?style=for-the-badge&logo=prisma&logoColor=white)
+![Firebase](https://img.shields.io/badge/Firebase-10.0-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)
 ![Docker](https://img.shields.io/badge/Docker-Latest-2496ED?style=for-the-badge&logo=docker&logoColor=white)
 
 **Features:**
 
 - 🔒 Type-safe APIs with TypeScript
-- 📦 ORM with Prisma
+- 🔥 Firebase SDK for database
 - 🐳 Containerized deployment
-- 🔐 JWT authentication
+- 🔐 Firebase authentication
 - 📊 RESTful architecture
+- 💰 **100% Free hosting**
 
 </td>
 </tr>
@@ -453,16 +519,16 @@ graph TB
 </td>
 <td align="center" width="16.66%">
 
-![Cloud SQL](https://img.shields.io/badge/Cloud_SQL-4285F4?style=for-the-badge&logo=postgresql&logoColor=white)
+![Firestore](https://img.shields.io/badge/Firestore-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)
 
-**PostgreSQL<br/>+ PostGIS**
+**NoSQL +<br/>Geospatial**
 
 </td>
 <td align="center" width="16.66%">
 
 ![BigQuery](https://img.shields.io/badge/BigQuery-669DF6?style=for-the-badge&logo=google-cloud&logoColor=white)
 
-**Analytics<br/>Warehouse**
+**Analytics<br/>Sandbox**
 
 </td>
 <td align="center" width="16.66%">
@@ -474,16 +540,16 @@ graph TB
 </td>
 <td align="center" width="16.66%">
 
-![Vertex AI](https://img.shields.io/badge/Vertex_AI-4285F4?style=for-the-badge&logo=google-cloud&logoColor=white)
+![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)
 
-**ML<br/>Platform**
+**Auth &<br/>Hosting**
 
 </td>
 <td align="center" width="16.66%">
 
-![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)
+![Maps](https://img.shields.io/badge/Google_Maps-4285F4?style=for-the-badge&logo=google-maps&logoColor=white)
 
-**Auth &<br/>Hosting**
+**Geospatial<br/>API**
 
 </td>
 </tr>
@@ -682,9 +748,9 @@ graph TB
 </td>
 <td width="25%" align="center">
 
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15+-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
+![Firebase](https://img.shields.io/badge/Firebase-Project-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)
 
-**With PostGIS**
+**100% FREE**
 
 </td>
 </tr>
@@ -711,10 +777,14 @@ cp .env.example .env
 <details>
 <summary>📝 Required API Keys</summary>
 
-- Google Maps API Key
-- Gemini API Key
-- Firebase Config
-- Cloud SQL Connection
+- Google Maps API Key (FREE $200 credit)
+- Gemini API Key (FREE 15 req/min)
+- Firebase Service Account (FREE)
+- Firebase Project ID (FREE)
+
+See **[Quick Start Guide (No Billing)](docs/QUICK_START_NO_BILLING.md)** for 15-minute setup!
+
+See [Firebase Setup Guide](docs/FIREBASE_SETUP.md) for detailed instructions.
 
 </details>
 
@@ -736,25 +806,24 @@ docker-compose logs -f
 
 **Services Started:**
 
-- ✅ PostgreSQL + PostGIS
-- ✅ Backend API
+- ✅ Backend API (Node.js + Express)
 - ✅ Next.js Frontend
-- ✅ pgAdmin (optional)
+- ✅ Firebase Firestore (Cloud)
+- ✅ Firebase Auth (Cloud)
 
 </td>
 <td width="33%" valign="top">
 
-#### **Step 3: Initialize Database**
+#### **Step 3: Initialize Firebase**
 
 ```powershell
 # Backend setup
 cd backend
 npm install
-npx prisma generate
-npx prisma migrate dev
 
-# Seed sample data
-npm run prisma:seed
+# Setup Firebase
+# See docs/FIREBASE_SETUP.md
+npm run dev
 ```
 
 **Frontend setup:**
@@ -765,6 +834,12 @@ npm install
 npm run dev
 ```
 
+**Seed sample data:**
+
+```powershell
+npm run seed
+```
+
 </td>
 </tr>
 </table>
@@ -773,64 +848,38 @@ npm run dev
 
 <div align="center">
 
-| Service             | URL                          | Credentials              |
-| ------------------- | ---------------------------- | ------------------------ |
-| 🎨 **Frontend**     | http://localhost:3000        | -                        |
-| ⚙️ **Backend API**  | http://localhost:3001        | -                        |
-| 🏥 **Health Check** | http://localhost:3001/health | -                        |
-| 🗄️ **pgAdmin**      | http://localhost:5050        | admin@ciis.local / admin |
+| Service                 | URL                                 | Credentials         |
+| ----------------------- | ----------------------------------- | ------------------- |
+| 🎨 **Frontend**         | http://localhost:3000               | -                   |
+| ⚙️ **Backend API**      | http://localhost:3001               | -                   |
+| 🏥 **Health Check**     | http://localhost:3001/health        | -                   |
+| 🔥 **Firebase Console** | https://console.firebase.google.com | Your Google Account |
 
 </div>
 
 ---
 
-```powershell
-cd ../frontend
-npm install
-```
+### 📄 Configuration
 
-6. **Run the application**
-
-   Backend:
-
-   ```powershell
-   cd backend
-   npm run dev
-   ```
-
-   Frontend:
-
-   ```powershell
-   cd frontend
-   npm run dev
-   ```
-
-### Configuration
+For detailed Firebase setup instructions, see **[Firebase Setup Guide](docs/FIREBASE_SETUP.md)**.
 
 #### Environment Variables
 
 Create a `.env` file based on `.env.example`:
 
 ```env
-# Database
-DATABASE_URL="postgresql://user:password@localhost:5432/ciis"
+# Firebase (FREE)
+GOOGLE_CLOUD_PROJECT="your-firebase-project-id"
+FIREBASE_SERVICE_ACCOUNT_KEY='{"type":"service_account",...}'
 
-# Google Cloud
-GOOGLE_CLOUD_PROJECT_ID="your-project-id"
-GOOGLE_CLOUD_SQL_CONNECTION_NAME="project:region:instance"
-GOOGLE_MAPS_API_KEY="your-maps-api-key"
-GOOGLE_GEMINI_API_KEY="your-gemini-api-key"
-
-# Firebase
-FIREBASE_PROJECT_ID="your-firebase-project"
-FIREBASE_PRIVATE_KEY="your-private-key"
-FIREBASE_CLIENT_EMAIL="your-client-email"
+# Google APIs (FREE Credits)
+GOOGLE_MAPS_API_KEY="your-maps-api-key"  # $200/month credit
+GOOGLE_GEMINI_API_KEY="your-gemini-api-key"  # 15 req/min FREE
 
 # Application
-PORT=3000
+PORT=3001
 NODE_ENV=development
-API_BASE_URL="http://localhost:3000"
-FRONTEND_URL="http://localhost:5173"
+FRONTEND_URL="http://localhost:3000"
 ```
 
 ## 📁 Project Structure
@@ -840,20 +889,23 @@ ciis/
 ├── 📄 README.md                    # You are here!
 ├── 🐳 docker-compose.yml           # Multi-service orchestration
 ├── 📚 docs/                        # Comprehensive documentation
+│   ├── FIREBASE_SETUP.md          # Firebase configuration guide
 │   ├── architecture/              # System design docs
 │   ├── api/                       # API specifications
 │   └── prompts/                   # AI prompt templates
 │
 ├── ⚙️ backend/                     # Node.js + Express + TypeScript
 │   ├── src/
+│   │   ├── config/                # Firebase initialization
 │   │   ├── modules/               # Feature modules
 │   │   │   ├── issues/           # Issue management
 │   │   │   ├── analytics/        # Data analytics
 │   │   │   ├── ai/               # Gemini integration
 │   │   │   └── auth/             # Firebase auth
 │   │   ├── middlewares/          # Express middleware
+│   │   ├── types/                # TypeScript definitions
 │   │   └── utils/                # Helper functions
-│   └── prisma/                   # Database ORM
+│   └── package.json              # Dependencies (Firebase Admin)
 │
 ├── 🎨 frontend/                    # Next.js 14 + TypeScript
 │   ├── src/
@@ -862,13 +914,12 @@ ciis/
 │   │   │   ├── Map/             # Google Maps integration
 │   │   │   ├── Charts/          # Data visualization
 │   │   │   └── Dashboard/       # Admin interface
-│   │   ├── lib/                 # Utilities
+│   │   ├── lib/                 # Firebase SDK & utilities
 │   │   └── styles/              # Tailwind CSS
 │   └── public/                  # Static assets
 │
-├── 📊 analytics/                   # BigQuery + Vertex AI
-│   ├── bigquery/                 # SQL queries
-│   └── vertex/                   # ML notebooks
+├── 📊 analytics/                   # BigQuery Analytics
+│   └── bigquery/                 # SQL queries & dashboards
 │
 └── 🏗️ infra/                       # Infrastructure as Code
     ├── cloudrun.yaml             # Cloud Run config
