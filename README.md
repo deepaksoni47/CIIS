@@ -230,7 +230,7 @@ Get key: [aistudio.google.com](https://aistudio.google.com/app/apikey)
 
 > **🎓 Student-Friendly:** This entire stack requires ZERO billing accounts, ZERO credit cards, and costs $0 forever. Perfect for hackathons, college projects, and learning!
 
-> **⚠️ What We Removed:** Google Maps API, BigQuery, and Cloud Run all require billing accounts (even for free tiers). We replaced them with Firebase-only + OpenStreetMap!
+> **⚠️ What We Removed:** Google Maps API, BigQuery, Cloud Run, Cloud SQL, Prisma, and Vertex AI all require billing accounts. We replaced them with **Firebase Spark Plan + OpenStreetMap/Leaflet + Gemini API** - all 100% FREE!
 
 ---
 
@@ -295,14 +295,14 @@ Get key: [aistudio.google.com](https://aistudio.google.com/app/apikey)
 
 ### 📊 **Analytics**
 
-![BigQuery](https://img.shields.io/badge/BigQuery-669DF6?style=for-the-badge&logo=google-cloud&logoColor=white)
+![Firestore](https://img.shields.io/badge/Firestore-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)
 
-**Data Warehouse**
+**Real-time Analytics**
 
-- Time-series analysis
-- Complex aggregations
-- ML model training
-- Real-time dashboards
+- Time-series aggregations
+- Firestore queries
+- Live dashboards
+- Trend analysis
 
 </td>
 <td width="33%" align="center">
@@ -440,8 +440,8 @@ graph TB
 
 3. **Data & Analytics Layer**
 
-   - Firebase Firestore for operational data (NoSQL + Geospatial)
-   - BigQuery Sandbox for historical analytics and trend analysis
+   - Firebase Firestore for all data storage (NoSQL + Geospatial)
+   - Firestore aggregation queries for analytics and trend analysis
 
 4. **AI & Intelligence Layer**
 
@@ -526,9 +526,9 @@ graph TB
 </td>
 <td align="center" width="16.66%">
 
-![BigQuery](https://img.shields.io/badge/BigQuery-669DF6?style=for-the-badge&logo=google-cloud&logoColor=white)
+![Leaflet](https://img.shields.io/badge/Leaflet-199900?style=for-the-badge&logo=leaflet&logoColor=white)
 
-**Analytics<br/>Sandbox**
+**Interactive<br/>Maps**
 
 </td>
 <td align="center" width="16.66%">
@@ -610,7 +610,7 @@ graph TB
 ### 📊 **2. Trend & Pattern Analysis**
 
 ![Feature](https://img.shields.io/badge/Status-Implemented-success?style=flat-square)
-![BigQuery](https://img.shields.io/badge/Powered_by-BigQuery-669DF6?style=flat-square)
+![Firestore](https://img.shields.io/badge/Powered_by-Firestore-FFCA28?style=flat-square)
 
 - ✅ Recurring problem zone detection
 - ✅ Category-wise frequency analysis
@@ -628,11 +628,11 @@ graph TB
 ### 🎯 **3. Predictive Risk Scoring**
 
 ![Feature](https://img.shields.io/badge/Status-Implemented-success?style=flat-square)
-![Vertex AI](https://img.shields.io/badge/Powered_by-Vertex_AI-4285F4?style=flat-square)
+![Gemini](https://img.shields.io/badge/Powered_by-Gemini_AI-8E75B2?style=flat-square)
 
 - ✅ AI-powered risk scores per zone
 - ✅ Recurrence probability estimation
-- ✅ Interpretable model predictions
+- ✅ Gemini-based insights
 - ✅ Priority-based maintenance queue
 - ✅ Resource allocation optimization
 
@@ -775,16 +775,14 @@ cp .env.example .env
 ```
 
 <details>
-<summary>📝 Required API Keys</summary>
+<summary>📝 Required Setup (No Billing)</summary>
 
-- Google Maps API Key (FREE $200 credit)
-- Gemini API Key (FREE 15 req/min)
-- Firebase Service Account (FREE)
-- Firebase Project ID (FREE)
+- Gemini API Key (FREE 15 req/min) - From AI Studio
+- Firebase Service Account (FREE) - From Firebase Console
+- Firebase Project ID (FREE) - No credit card needed
+- OpenStreetMap (FREE) - No API key required!
 
 See **[Quick Start Guide (No Billing)](docs/QUICK_START_NO_BILLING.md)** for 15-minute setup!
-
-See [Firebase Setup Guide](docs/FIREBASE_SETUP.md) for detailed instructions.
 
 </details>
 
@@ -918,13 +916,12 @@ ciis/
 │   │   └── styles/              # Tailwind CSS
 │   └── public/                  # Static assets
 │
-├── 📊 analytics/                   # BigQuery Analytics
-│   └── bigquery/                 # SQL queries & dashboards
+├── 📊 analytics/                   # Analytics Scripts
+│   └── firestore/              # Firestore queries & aggregations
 │
 └── 🏗️ infra/                       # Infrastructure as Code
-    ├── cloudrun.yaml             # Cloud Run config
     ├── firebase.json             # Firebase hosting
-    └── sql/                      # Database scripts
+    └── firestore.rules           # Firestore security rules
 ```
 
 ---
@@ -977,10 +974,10 @@ gcloud run deploy ciis-backend \
 **Auto-configured:**
 
 - ✅ Automatic HTTPS
-- ✅ Auto-scaling (0-100 instances)
-- ✅ Cloud SQL connection
+- ✅ Firebase integration
 - ✅ Environment secrets
 - ✅ Health checks
+- ✅ Free tier: 10GB bandwidth
 
 </td>
 <td width="50%" valign="top">
@@ -1195,11 +1192,11 @@ Interactive mapping and spatial analysis capabilities
 </td>
 <td width="25%" align="center">
 
-![PostGIS](https://img.shields.io/badge/PostGIS-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
+![OpenStreetMap](https://img.shields.io/badge/OpenStreetMap-7EBC6F?style=for-the-badge&logo=openstreetmap&logoColor=white)
 
-**Spatial Database**
+**Open Source Maps**
 
-Advanced geospatial queries and spatial indexing
+Free, unlimited map tiles with no API key required
 
 </td>
 </tr>
