@@ -1,0 +1,160 @@
+"use client";
+
+import { motion, useScroll, useTransform } from "framer-motion";
+import { useState, useEffect } from "react";
+
+export function FloatingNav() {
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { scrollY } = useScroll();
+  const opacity = useTransform(scrollY, [0, 100], [0, 1]);
+  const y = useTransform(scrollY, [0, 100], [-20, 0]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  return (
+    <motion.nav
+      style={{ opacity, y }}
+      className={`
+        fixed top-4 md:top-6 left-1/2 -translate-x-1/2 z-50
+        transition-all duration-300 w-[95%] md:w-auto
+        ${isScrolled ? "translate-y-0" : "-translate-y-32"}
+      `}
+    >
+      <div className="flex items-center justify-between md:justify-center gap-2 px-4 md:px-6 py-3 rounded-full bg-black/40 backdrop-blur-xl border border-white/10 shadow-2xl">
+        {/* Logo */}
+        <motion.a
+          href="/"
+          className="flex items-center gap-2 px-2 md:px-3 py-2 rounded-full hover:bg-white/5 transition-colors"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <div className="w-7 h-7 md:w-8 md:h-8 rounded-lg bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center">
+            <svg
+              className="w-4 h-4 md:w-5 md:h-5 text-white"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
+              />
+            </svg>
+          </div>
+          <span className="font-bold text-white text-sm md:text-base hidden sm:inline">CIIS</span>
+        </motion.a>
+
+        {/* Desktop Navigation */}
+        <div className="hidden md:flex items-center gap-2">
+          <div className="w-px h-8 bg-white/10 mx-2" />
+
+          {/* Action Buttons - Desktop */}
+          <motion.a
+            href="/heatmap"
+            className="px-5 py-2 rounded-full text-white/70 hover:text-white hover:bg-white/5 text-sm font-medium transition-all"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            Heatmap
+          </motion.a>
+          <motion.a
+            href="/priorities"
+            className="px-5 py-2 rounded-full text-white/70 hover:text-white hover:bg-white/5 text-sm font-medium transition-all"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            Priorities
+          </motion.a>
+          <motion.a
+            href="/login"
+            className="px-6 py-2 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white text-sm font-medium shadow-lg shadow-violet-500/25"
+            whileHover={{
+              scale: 1.05,
+              boxShadow: "0 0 20px rgba(167, 139, 250, 0.4)",
+            }}
+            whileTap={{ scale: 0.95 }}
+          >
+            Login
+          </motion.a>
+        </div>
+
+        {/* Mobile Menu Button */}
+        <motion.button
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className="md:hidden p-2 rounded-full hover:bg-white/5 transition-colors"
+          whileTap={{ scale: 0.9 }}
+        >
+          <svg
+            className="w-5 h-5 text-white"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            {isMobileMenuOpen ? (
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            ) : (
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 6h16M4 12h16M4 18h16"
+              />
+            )}
+          </svg>
+        </motion.button>
+      </div>
+
+      {/* Mobile Dropdown Menu */}
+      <motion.div
+        initial={false}
+        animate={{
+          height: isMobileMenuOpen ? "auto" : 0,
+          opacity: isMobileMenuOpen ? 1 : 0,
+        }}
+        transition={{ duration: 0.3, ease: "easeInOut" }}
+        className="md:hidden overflow-hidden mt-2"
+      >
+        <div className="flex flex-col gap-2 px-4 py-4 rounded-2xl bg-black/40 backdrop-blur-xl border border-white/10 shadow-2xl">
+          <motion.a
+            href="/heatmap"
+            className="px-5 py-3 rounded-xl text-white/70 hover:text-white hover:bg-white/5 text-sm font-medium transition-all text-center"
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            🗺️ Heatmap
+          </motion.a>
+          <motion.a
+            href="/priorities"
+            className="px-5 py-3 rounded-xl text-white/70 hover:text-white hover:bg-white/5 text-sm font-medium transition-all text-center"
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            ⚡ Priorities
+          </motion.a>
+          <motion.a
+            href="/login"
+            className="px-5 py-3 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white text-sm font-medium shadow-lg shadow-violet-500/25 text-center"
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            🔐 Login
+          </motion.a>
+        </div>
+      </motion.div>
+    </motion.nav>
+  );
+}

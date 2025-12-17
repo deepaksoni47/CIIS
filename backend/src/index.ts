@@ -61,6 +61,7 @@ app.get("/api", (_req: Request, res: Response) => {
     version: "1.0.0",
     endpoints: {
       health: "/health",
+      auth: "/api/auth",
       issues: "/api/issues",
       buildings: "/api/buildings",
       analytics: "/api/analytics",
@@ -70,12 +71,14 @@ app.get("/api", (_req: Request, res: Response) => {
 });
 
 // Import and mount route modules
+import authRoutes from "./modules/auth/routes";
 import aiRoutes from "./modules/ai/routes";
 // TODO: Uncomment when other modules are ready
 // import issueRoutes from './modules/issues/routes';
 // import buildingRoutes from './modules/buildings/routes';
 // import analyticsRoutes from './modules/analytics/routes';
 
+app.use("/api/auth", authRoutes);
 app.use("/api/ai", aiRoutes);
 // TODO: Mount other routes when ready
 // app.use('/api/issues', issueRoutes);
