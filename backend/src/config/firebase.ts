@@ -20,6 +20,31 @@ export function initializeFirebase(): admin.app.App {
   }
 
   try {
+    console.log("🔍 Debugging Firebase initialization:");
+    console.log("   K_SERVICE:", process.env.K_SERVICE || "not set");
+    console.log(
+      "   FIREBASE_SERVICE_ACCOUNT_KEY:",
+      process.env.FIREBASE_SERVICE_ACCOUNT_KEY
+        ? "Set (length: " +
+            process.env.FIREBASE_SERVICE_ACCOUNT_KEY.length +
+            ")"
+        : "not set"
+    );
+    console.log(
+      "   FIREBASE_PROJECT_ID:",
+      process.env.FIREBASE_PROJECT_ID || "not set"
+    );
+    console.log(
+      "   FIREBASE_PRIVATE_KEY:",
+      process.env.FIREBASE_PRIVATE_KEY
+        ? "Set (length: " + process.env.FIREBASE_PRIVATE_KEY.length + ")"
+        : "not set"
+    );
+    console.log(
+      "   FIREBASE_CLIENT_EMAIL:",
+      process.env.FIREBASE_CLIENT_EMAIL || "not set"
+    );
+
     // Check if running on Cloud Run (uses ADC)
     if (process.env.K_SERVICE) {
       firebaseApp = admin.initializeApp({

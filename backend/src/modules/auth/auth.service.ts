@@ -10,9 +10,15 @@ export async function verifyIdToken(
 ): Promise<admin.auth.DecodedIdToken> {
   try {
     const auth = getAuth();
+    console.log("🔐 Verifying token, length:", idToken.length);
     const decodedToken = await auth.verifyIdToken(idToken);
+    console.log("✅ Token verified for user:", decodedToken.uid);
     return decodedToken;
   } catch (error) {
+    console.error("❌ Token verification failed:", error);
+    if (error instanceof Error) {
+      throw new Error(`Invalid or expired token: ${error.message}`);
+    }
     throw new Error("Invalid or expired token");
   }
 }
