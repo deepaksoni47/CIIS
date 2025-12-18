@@ -62,6 +62,115 @@ export async function loginWithGoogle(req: Request, res: Response) {
 }
 
 /**
+ * Register with email and password
+ * POST /api/auth/register
+ */
+export async function registerWithEmail(req: Request, res: Response) {
+  try {
+    const { email, password, name, organizationId, role } = req.body;
+
+    // Validate required fields
+    if (!email || !password || !name || !organizationId) {
+      return res.status(400).json({
+        error: "Missing parameters",
+        message: "email, password, name, and organizationId are required",
+      });
+    }
+
+    // Validate password strength
+    if (password.length < 6) {
+      return res.status(400).json({
+        error: "Weak password",
+        message: "Password must be at least 6 characters long",
+      });
+    }
+
+    // Create user in Firebase Auth and Firestore
+    const { user, token } = await authService.createUserWithEmail(
+      email,
+      password,
+      name,
+      organizationId,
+      role as UserRole
+    );
+
+    res.status(201).json({
+      success: true,
+      data: {
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: user.role,
+          organizationId: user.organizationId,
+          departmentId: user.departmentId,
+          permissions: user.permissions,
+        },
+        token,
+      },
+      message: "Registration successful",
+    });
+  } catch (error: unknown) {
+    console.error("Registration error:", error);
+    const errorMessage =
+      error instanceof Error ? error.message : "Registration failed";
+    res.status(400).json({
+      error: "Registration failed",
+      message: errorMessage,
+    });
+  }
+}
+
+/**
+ * Login with email and password
+ * POST /api/auth/login
+ */
+export async function loginWithEmail(req: Request, res: Response) {
+  try {
+    const { email, password } = req.body;
+
+    // Validate required fields
+    if (!email || !password) {
+      return res.status(400).json({
+        error: "Missing parameters",
+        message: "email and password are required",
+      });
+    }
+
+    // Authenticate user and get custom token
+    const { user, token } = await authService.authenticateWithEmail(
+      email,
+      password
+    );
+
+    res.json({
+      success: true,
+      data: {
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: user.role,
+          organizationId: user.organizationId,
+          departmentId: user.departmentId,
+          permissions: user.permissions,
+        },
+        token,
+      },
+      message: "Login successful",
+    });
+  } catch (error: unknown) {
+    console.error("Login error:", error);
+    const errorMessage =
+      error instanceof Error ? error.message : "Invalid credentials";
+    res.status(401).json({
+      error: "Authentication failed",
+      message: errorMessage,
+    });
+  }
+}
+
+/**
  * Get current user profile
  */
 export async function getCurrentUser(req: Request, res: Response) {

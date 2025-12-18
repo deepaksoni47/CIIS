@@ -107,6 +107,155 @@ function getDefaultPermissions(role: UserRole) {
 }
 
 /**
+ * Create user with email and password
+ */
+export async function createUserWithEmail(
+  email: string,
+  password: string,
+  name: string,
+  organizationId: string,
+  role?: UserRole
+): Promise<{ user: User; token: string }> {
+  const auth = getAuth();
+  const db = getFirestore();
+
+  try {
+    // Create user in Firebase Auth
+    const userRecord = await auth.createUser({
+      email,
+      password,
+      displayName: name,
+      emailVerified: false,
+    });
+
+    // Create user profile in Firestore
+    const newUser: Omit<User, "id"> = {
+      organizationId,
+      email,
+      name,
+      role: role || UserRole.STUDENT,
+      isActive: true,
+      permissions: getDefaultPermissions(role || UserRole.STUDENT),
+      createdAt:
+        admin.firestore.FieldValue.serverTimestamp() as admin.firestore.Timestamp,
+      updatedAt:
+        admin.firestore.FieldValue.serverTimestamp() as admin.firestore.Timestamp,
+      lastLogin:
+        admin.firestore.FieldValue.serverTimestamp() as admin.firestore.Timestamp,
+    };
+
+    await db.collection("users").doc(userRecord.uid).set(newUser);
+
+    // Create custom token for authentication
+    const token = await auth.createCustomToken(userRecord.uid);
+
+    return {
+      user: { id: userRecord.uid, ...newUser } as User,
+      token,
+    };
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      if (error.message.includes("email-already-exists")) {
+        throw new Error("Email already registered");
+      }
+    }
+    throw new Error("Failed to create user account");
+  }
+}
+
+/**
+ * Authenticate user with email and password
+ */
+export async function authenticateWithEmail(
+  email: string,
+  password: string
+): Promise<{ user: User; token: string }> {
+  const db = getFirestore();
+
+  try {
+    // Verify credentials using Firebase Auth REST API
+    const firebaseApiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
+    if (!firebaseApiKey) {
+      throw new Error("Firebase API key not configured");
+    }
+
+    const authResponse = await fetch(
+      `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${firebaseApiKey}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password,
+          returnSecureToken: true,
+        }),
+      }
+    );
+
+    if (!authResponse.ok) {
+      const errorData = (await authResponse.json()) as {
+        error?: { message?: string };
+      };
+      throw new Error(errorData.error?.message || "Invalid credentials");
+    }
+
+    const authData = (await authResponse.json()) as {
+      localId: string;
+      idToken: string;
+    };
+    const uid = authData.localId;
+
+    // Get user profile from Firestore
+    const userDoc = await db.collection("users").doc(uid).get();
+
+    if (!userDoc.exists) {
+      throw new Error("User profile not found");
+    }
+
+    const userData = userDoc.data() as Omit<User, "id">;
+
+    // Check if user is active
+    if (!userData.isActive) {
+      throw new Error("User account is deactivated");
+    }
+
+    // Update last login
+    await db.collection("users").doc(uid).update({
+      lastLogin: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    // Return the ID token from Firebase Auth
+    const token = authData.idToken;
+
+    return {
+      user: { id: uid, ...userData } as User,
+      token,
+    };
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      if (error.message.includes("User profile not found")) {
+        throw error;
+      }
+      if (error.message.includes("account is deactivated")) {
+        throw error;
+      }
+      if (error.message.includes("INVALID_PASSWORD")) {
+        throw new Error("Invalid email or password");
+      }
+      if (error.message.includes("EMAIL_NOT_FOUND")) {
+        throw new Error("Invalid email or password");
+      }
+      if (error.message.includes("USER_DISABLED")) {
+        throw new Error("User account has been disabled");
+      }
+    }
+    throw new Error("Invalid email or password");
+  }
+}
+
+/**
  * Get user by ID
  */
 export async function getUserById(userId: string): Promise<User | null> {

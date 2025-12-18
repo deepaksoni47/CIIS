@@ -16,12 +16,60 @@ import { body } from "express-validator";
 const router = Router();
 
 /**
+ * @route   POST /api/auth/register
+ * @desc    Register with email and password
+ * @access  Public
+ */
+router.post(
+  "/register",
+  authRateLimiter,
+  body("email")
+    .trim()
+    .isEmail()
+    .withMessage("Valid email is required")
+    .normalizeEmail(),
+  body("password")
+    .isLength({ min: 6 })
+    .withMessage("Password must be at least 6 characters long"),
+  body("name")
+    .trim()
+    .notEmpty()
+    .withMessage("Name is required")
+    .isLength({ max: 100 })
+    .withMessage("Name must be less than 100 characters"),
+  body("organizationId")
+    .trim()
+    .notEmpty()
+    .withMessage("Organization ID is required"),
+  handleValidationErrors,
+  authController.registerWithEmail
+);
+
+/**
  * @route   POST /api/auth/login
- * @desc    Login/Register with Google OAuth
+ * @desc    Login with email and password
  * @access  Public
  */
 router.post(
   "/login",
+  authRateLimiter,
+  body("email")
+    .trim()
+    .isEmail()
+    .withMessage("Valid email is required")
+    .normalizeEmail(),
+  body("password").notEmpty().withMessage("Password is required"),
+  handleValidationErrors,
+  authController.loginWithEmail
+);
+
+/**
+ * @route   POST /api/auth/login/google
+ * @desc    Login/Register with Google OAuth
+ * @access  Public
+ */
+router.post(
+  "/login/google",
   authRateLimiter,
   body("idToken")
     .trim()
