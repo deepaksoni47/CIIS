@@ -1,3 +1,6 @@
+// CRITICAL: Load environment variables FIRST before any other imports
+import "./env";
+
 import express, { Application, Request, Response, NextFunction } from "express";
 import { createServer } from "http";
 import cors from "cors";
