@@ -1,0 +1,497 @@
+import { Request, Response } from "express";
+import {
+  getHeatmapData,
+  HeatmapFilters,
+  HeatmapConfig,
+} from "../modules/heatmap/heatmap.service";
+import { getIssues } from "../modules/issues/issues.service";
+import { IssuePriority, IssueStatus } from "../types";
+
+/**
+ * SSE Client interface
+ */
+interface SSEClient {
+  id: string;
+  response: Response;
+  organizationId: string;
+  campusId?: string;
+  buildingId?: string;
+  filters?: any;
+  lastEventId?: string;
+}
+
+/**
+ * Server-Sent Events (SSE) Service for real-time updates
+ */
+export class SSEService {
+  private static instance: SSEService;
+  private clients: Map<string, SSEClient> = new Map();
+  private heatmapClients: Map<string, SSEClient> = new Map();
+  private issueClients: Map<string, SSEClient> = new Map();
+
+  private constructor() {
+    // Cleanup disconnected clients every minute
+    setInterval(() => {
+      this.cleanupDisconnectedClients();
+    }, 60000);
+  }
+
+  /**
+   * Get SSE service instance (singleton)
+   */
+  public static getInstance(): SSEService {
+    if (!SSEService.instance) {
+      SSEService.instance = new SSEService();
+      console.log("✅ SSE service initialized");
+    }
+    return SSEService.instance;
+  }
+
+  /**
+   * Setup SSE connection
+   */
+  public setupSSEConnection(
+    req: Request,
+    res: Response,
+    clientId: string,
+    filters: any
+  ): void {
+    // Set SSE headers
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Connection", "keep-alive");
+    res.setHeader("X-Accel-Buffering", "no"); // Disable Nginx buffering
+
+    // Send initial connection message
+    this.sendEvent(res, "connected", { clientId, timestamp: new Date() });
+
+    // Store client
+    const client: SSEClient = {
+      id: clientId,
+      response: res,
+      organizationId: filters.organizationId,
+      campusId: filters.campusId,
+      buildingId: filters.buildingId,
+      filters,
+      lastEventId: req.headers["last-event-id"] as string,
+    };
+
+    this.clients.set(clientId, client);
+
+    // Handle client disconnect
+    req.on("close", () => {
+      this.clients.delete(clientId);
+      console.log(`🔌 SSE client disconnected: ${clientId}`);
+    });
+
+    console.log(`🔌 SSE client connected: ${clientId}`);
+  }
+
+  /**
+   * Send SSE event
+   */
+  public sendEvent(res: Response, event: string, data: any, id?: string): void {
+    if (id) {
+      res.write(`id: ${id}\n`);
+    }
+    res.write(`event: ${event}\n`);
+    res.write(`data: ${JSON.stringify(data)}\n\n`);
+  }
+
+  /**
+   * Broadcast to all clients in organization
+   */
+  public broadcastToOrganization(
+    organizationId: string,
+    event: string,
+    data: any
+  ): void {
+    let count = 0;
+    this.clients.forEach((client) => {
+      if (client.organizationId === organizationId) {
+        try {
+          this.sendEvent(client.response, event, data, `${Date.now()}`);
+          count++;
+        } catch (error) {
+          console.error(`Error sending to client ${client.id}:`, error);
+          this.clients.delete(client.id);
+        }
+      }
+    });
+    console.log(
+      `📤 Broadcasted ${event} to ${count} clients in org:${organizationId}`
+    );
+  }
+
+  /**
+   * Broadcast to campus clients
+   */
+  public broadcastToCampus(
+    organizationId: string,
+    campusId: string,
+    event: string,
+    data: any
+  ): void {
+    let count = 0;
+    this.clients.forEach((client) => {
+      if (
+        client.organizationId === organizationId &&
+        client.campusId === campusId
+      ) {
+        try {
+          this.sendEvent(client.response, event, data, `${Date.now()}`);
+          count++;
+        } catch (error) {
+          console.error(`Error sending to client ${client.id}:`, error);
+          this.clients.delete(client.id);
+        }
+      }
+    });
+    console.log(
+      `📤 Broadcasted ${event} to ${count} clients in campus:${campusId}`
+    );
+  }
+
+  /**
+   * Send heatmap update to subscribed clients
+   */
+  public sendHeatmapUpdate(
+    organizationId: string,
+    campusId: string | undefined,
+    data: any
+  ): void {
+    let count = 0;
+    this.heatmapClients.forEach((client) => {
+      if (
+        client.organizationId === organizationId &&
+        (!campusId || client.campusId === campusId)
+      ) {
+        try {
+          this.sendEvent(
+            client.response,
+            "heatmap:update",
+            data,
+            `${Date.now()}`
+          );
+          count++;
+        } catch (error) {
+          console.error(`Error sending heatmap to client ${client.id}:`, error);
+          this.heatmapClients.delete(client.id);
+        }
+      }
+    });
+    console.log(`📤 Sent heatmap update to ${count} clients`);
+  }
+
+  /**
+   * Send issue update to subscribed clients
+   */
+  public sendIssueUpdate(
+    organizationId: string,
+    campusId: string | undefined,
+    buildingId: string | undefined,
+    event: string,
+    data: any
+  ): void {
+    let count = 0;
+    this.issueClients.forEach((client) => {
+      if (
+        client.organizationId === organizationId &&
+        (!campusId || client.campusId === campusId) &&
+        (!buildingId || client.buildingId === buildingId)
+      ) {
+        try {
+          this.sendEvent(client.response, event, data, `${Date.now()}`);
+          count++;
+        } catch (error) {
+          console.error(
+            `Error sending issue update to client ${client.id}:`,
+            error
+          );
+          this.issueClients.delete(client.id);
+        }
+      }
+    });
+    console.log(`📤 Sent ${event} to ${count} clients`);
+  }
+
+  /**
+   * Add heatmap client
+   */
+  public addHeatmapClient(client: SSEClient): void {
+    this.heatmapClients.set(client.id, client);
+  }
+
+  /**
+   * Add issue client
+   */
+  public addIssueClient(client: SSEClient): void {
+    this.issueClients.set(client.id, client);
+  }
+
+  /**
+   * Cleanup disconnected clients
+   */
+  private cleanupDisconnectedClients(): void {
+    let cleaned = 0;
+
+    // Check all clients
+    this.clients.forEach((client, id) => {
+      if (client.response.writableEnded) {
+        this.clients.delete(id);
+        cleaned++;
+      }
+    });
+
+    // Check heatmap clients
+    this.heatmapClients.forEach((client, id) => {
+      if (client.response.writableEnded) {
+        this.heatmapClients.delete(id);
+        cleaned++;
+      }
+    });
+
+    // Check issue clients
+    this.issueClients.forEach((client, id) => {
+      if (client.response.writableEnded) {
+        this.issueClients.delete(id);
+        cleaned++;
+      }
+    });
+
+    if (cleaned > 0) {
+      console.log(`🧹 Cleaned up ${cleaned} disconnected SSE clients`);
+    }
+  }
+
+  /**
+   * Get connected clients count
+   */
+  public getConnectedClientsCount(): number {
+    return (
+      this.clients.size + this.heatmapClients.size + this.issueClients.size
+    );
+  }
+
+  /**
+   * Get clients by organization
+   */
+  public getOrganizationClientsCount(organizationId: string): number {
+    let count = 0;
+    this.clients.forEach((client) => {
+      if (client.organizationId === organizationId) {
+        count++;
+      }
+    });
+    return count;
+  }
+}
+
+/**
+ * SSE Controller functions
+ */
+
+/**
+ * Stream heatmap updates
+ * GET /api/realtime/heatmap/stream
+ */
+export async function streamHeatmapUpdates(
+  req: Request,
+  res: Response
+): Promise<void> {
+  const {
+    organizationId,
+    campusId,
+    buildingIds,
+    categories,
+    updateInterval = 30000, // 30 seconds default
+  } = req.query;
+
+  if (!organizationId) {
+    res.status(400).json({ error: "organizationId is required" });
+    return;
+  }
+
+  const clientId = `heatmap-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  const sseService = SSEService.getInstance();
+
+  // Setup SSE connection
+  sseService.setupSSEConnection(req, res, clientId, {
+    organizationId,
+    campusId,
+    buildingIds,
+    categories,
+  });
+
+  // Add to heatmap clients
+  const client: SSEClient = {
+    id: clientId,
+    response: res,
+    organizationId: organizationId as string,
+    campusId: campusId as string,
+    buildingId: buildingIds as string,
+    filters: { organizationId, campusId, buildingIds, categories },
+  };
+  sseService.addHeatmapClient(client);
+
+  // Send initial heatmap data
+  try {
+    const filters: HeatmapFilters = {
+      organizationId: organizationId as string,
+    };
+    if (campusId) filters.campusId = campusId as string;
+    if (buildingIds) {
+      filters.buildingIds = Array.isArray(buildingIds)
+        ? (buildingIds as string[])
+        : [buildingIds as string];
+    }
+    if (categories) {
+      filters.categories = Array.isArray(categories)
+        ? (categories as string[])
+        : [categories as string];
+    }
+
+    const config: HeatmapConfig = {
+      timeDecayFactor: 0.5,
+      severityWeightMultiplier: 2.0,
+      normalizeWeights: true,
+    };
+
+    const heatmapData = await getHeatmapData(filters, config);
+    sseService.sendEvent(res, "heatmap:initial", heatmapData, `${Date.now()}`);
+  } catch (error) {
+    console.error("Error fetching initial heatmap:", error);
+  }
+
+  // Send periodic updates
+  const interval = setInterval(
+    async () => {
+      try {
+        const filters: HeatmapFilters = {
+          organizationId: organizationId as string,
+        };
+        if (campusId) filters.campusId = campusId as string;
+
+        const config: HeatmapConfig = {
+          timeDecayFactor: 0.5,
+          severityWeightMultiplier: 2.0,
+          normalizeWeights: true,
+        };
+
+        const heatmapData = await getHeatmapData(filters, config);
+        sseService.sendEvent(
+          res,
+          "heatmap:update",
+          heatmapData,
+          `${Date.now()}`
+        );
+      } catch (error) {
+        console.error("Error fetching heatmap update:", error);
+      }
+    },
+    parseInt(updateInterval as string)
+  );
+
+  // Cleanup on disconnect
+  req.on("close", () => {
+    clearInterval(interval);
+  });
+}
+
+/**
+ * Stream issue updates
+ * GET /api/realtime/issues/stream
+ */
+export async function streamIssueUpdates(
+  req: Request,
+  res: Response
+): Promise<void> {
+  const { organizationId, campusId, buildingId, priorities, statuses } =
+    req.query;
+
+  if (!organizationId) {
+    res.status(400).json({ error: "organizationId is required" });
+    return;
+  }
+
+  const clientId = `issues-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  const sseService = SSEService.getInstance();
+
+  // Setup SSE connection
+  sseService.setupSSEConnection(req, res, clientId, {
+    organizationId,
+    campusId,
+    buildingId,
+    priorities,
+    statuses,
+  });
+
+  // Add to issue clients
+  const client: SSEClient = {
+    id: clientId,
+    response: res,
+    organizationId: organizationId as string,
+    campusId: campusId as string,
+    buildingId: buildingId as string,
+    filters: { organizationId, campusId, buildingId, priorities, statuses },
+  };
+  sseService.addIssueClient(client);
+
+  // Send initial issues list
+  try {
+    const issuesResult = await getIssues({
+      organizationId: organizationId as string,
+      buildingId: buildingId as string,
+      priority: priorities
+        ? Array.isArray(priorities)
+          ? (priorities[0] as IssuePriority)
+          : (priorities as IssuePriority)
+        : undefined,
+      status: statuses
+        ? Array.isArray(statuses)
+          ? (statuses[0] as IssueStatus)
+          : (statuses as IssueStatus)
+        : undefined,
+    });
+    sseService.sendEvent(
+      res,
+      "issues:initial",
+      { issues: issuesResult.issues, count: issuesResult.issues.length },
+      `${Date.now()}`
+    );
+  } catch (error) {
+    console.error("Error fetching initial issues:", error);
+  }
+}
+
+/**
+ * Get SSE connection stats
+ * GET /api/realtime/stats
+ */
+export async function getSSEStats(req: Request, res: Response): Promise<void> {
+  try {
+    const sseService = SSEService.getInstance();
+    const { organizationId } = req.query;
+
+    const stats = {
+      totalConnections: sseService.getConnectedClientsCount(),
+      organizationConnections: organizationId
+        ? sseService.getOrganizationClientsCount(organizationId as string)
+        : undefined,
+      timestamp: new Date(),
+    };
+
+    res.json({
+      success: true,
+      data: stats,
+    });
+  } catch (error) {
+    console.error("Error getting SSE stats:", error);
+    res.status(500).json({
+      error: "Failed to get SSE stats",
+      details: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+}
+
+export default SSEService;

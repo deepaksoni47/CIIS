@@ -210,11 +210,11 @@ export async function updateUserRole(req: Request, res: Response) {
     }
 
     const validRoles: UserRole[] = [
-      "admin",
-      "facility_manager",
-      "staff",
-      "faculty",
-      "student",
+      UserRole.ADMIN,
+      UserRole.FACILITY_MANAGER,
+      UserRole.STAFF,
+      UserRole.FACULTY,
+      UserRole.STUDENT,
     ];
     if (!validRoles.includes(role)) {
       return res.status(400).json({
@@ -268,7 +268,7 @@ export async function deactivateUser(req: Request, res: Response) {
 /**
  * Logout (client-side primarily, but can log event)
  */
-export async function logout(req: Request, res: Response) {
+export async function logout(_req: Request, res: Response) {
   try {
     // In Firebase Auth, logout is primarily client-side
     // But we can log the event for analytics

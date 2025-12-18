@@ -1,11 +1,23 @@
 import express, { Application, Request, Response, NextFunction } from "express";
+import { createServer } from "http";
 import cors from "cors";
 import helmet from "helmet";
 import compression from "compression";
 import { initializeFirebase } from "./config/firebase";
+import { WebSocketService } from "./services/websocket.service";
+import { SSEService } from "./services/sse.service";
+import {
+  securityHeaders,
+  preventCommonAttacks,
+  logSuspiciousActivity,
+  enforceHTTPS,
+  addRequestId,
+} from "./utils/security.utils";
+import { globalRateLimiter } from "./middlewares/rateLimiter.middleware";
 
 // Initialize Express app
 const app: Application = express();
+const httpServer = createServer(app);
 const PORT = process.env.PORT || 3001;
 
 // Initialize Firebase Admin SDK
@@ -16,14 +28,30 @@ try {
   process.exit(1);
 }
 
-// Security middleware
-app.use(helmet());
+// Initialize WebSocket service
+try {
+  WebSocketService.initialize(httpServer);
+  SSEService.getInstance();
+} catch (error) {
+  console.error("Failed to initialize real-time services:", error);
+}
+
+// Security middleware (order matters!)
+app.use(addRequestId); // Add request ID for tracking
+app.use(enforceHTTPS); // Force HTTPS in production
+app.use(helmet()); // Helmet security headers
+app.use(securityHeaders); // Additional security headers
 app.use(
   cors({
     origin: process.env.FRONTEND_URL || "http://localhost:3000",
     credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Request-ID"],
   })
 );
+app.use(logSuspiciousActivity); // Log suspicious requests
+app.use(preventCommonAttacks); // Prevent SQL injection, XSS, etc.
+app.use(globalRateLimiter); // Global rate limiting
 
 // Body parsing middleware
 app.use(express.json({ limit: "10mb" }));
@@ -66,6 +94,9 @@ app.get("/api", (_req: Request, res: Response) => {
       buildings: "/api/buildings",
       analytics: "/api/analytics",
       ai: "/api/ai",
+      priority: "/api/priority",
+      heatmap: "/api/heatmap",
+      realtime: "/api/realtime",
     },
   });
 });
@@ -73,17 +104,17 @@ app.get("/api", (_req: Request, res: Response) => {
 // Import and mount route modules
 import authRoutes from "./modules/auth/routes";
 import aiRoutes from "./modules/ai/routes";
-// TODO: Uncomment when other modules are ready
-// import issueRoutes from './modules/issues/routes';
-// import buildingRoutes from './modules/buildings/routes';
-// import analyticsRoutes from './modules/analytics/routes';
+import issueRoutes from "./modules/issues/routes";
+import priorityRoutes from "./modules/priority/routes";
+import heatmapRoutes from "./modules/heatmap/routes";
+import realtimeRoutes from "./modules/realtime/routes";
 
 app.use("/api/auth", authRoutes);
 app.use("/api/ai", aiRoutes);
-// TODO: Mount other routes when ready
-// app.use('/api/issues', issueRoutes);
-// app.use('/api/buildings', buildingRoutes);
-// app.use('/api/analytics', analyticsRoutes);
+app.use("/api/issues", issueRoutes);
+app.use("/api/priority", priorityRoutes);
+app.use("/api/heatmap", heatmapRoutes);
+app.use("/api/realtime", realtimeRoutes);
 
 // 404 handler
 app.use((req: Request, res: Response) => {
@@ -106,7 +137,7 @@ app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
 });
 
 // Start server
-app.listen(PORT, () => {
+httpServer.listen(PORT, () => {
   console.log(`
 🚀 CIIS Backend Server Started
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -114,6 +145,8 @@ app.listen(PORT, () => {
 🏥 Health:      http://localhost:${PORT}/health
 🔧 Environment: ${process.env.NODE_ENV || "development"}
 🔥 Firebase:    Connected
+⚡ WebSocket:   Enabled
+📡 SSE:         Enabled
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   `);
 });

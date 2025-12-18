@@ -5,7 +5,7 @@ import { getFirestore } from "../../config/firebase";
 /**
  * Generate AI insights for all issues
  */
-export async function generateGeneralInsights(req: Request, res: Response) {
+export async function generateGeneralInsights(_req: Request, res: Response) {
   try {
     const db = getFirestore();
     const issuesSnapshot = await db

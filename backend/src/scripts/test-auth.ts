@@ -24,8 +24,6 @@ function log(message: string, color = colors.reset) {
 async function testAuthEndpoints() {
   log("\n🔐 Testing Authentication System\n", colors.blue);
 
-  let idToken = "";
-
   try {
     // Test 1: Health Check
     log("1️⃣  Testing health endpoint...", colors.yellow);

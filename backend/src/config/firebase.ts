@@ -94,6 +94,16 @@ export function getAuth(): admin.auth.Auth {
 }
 
 /**
+ * Get Firebase Storage instance
+ */
+export function getStorage(): admin.storage.Storage {
+  if (!firebaseApp) {
+    initializeFirebase();
+  }
+  return admin.storage();
+}
+
+/**
  * Firestore collection names
  */
 export const COLLECTIONS = {

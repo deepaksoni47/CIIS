@@ -99,6 +99,7 @@ export interface Room {
 export interface Issue {
   id: string;
   organizationId: string;
+  campusId?: string; // Campus identifier (optional)
   buildingId: string;
   departmentId?: string;
   roomId?: string;
@@ -140,8 +141,20 @@ export interface Issue {
   estimatedDuration?: number; // in days
   actualDuration?: number;
 
+  // Priority Engine inputs (optional context)
+  occupancy?: number; // Number of people affected
+  affectedArea?: number; // Square meters
+  blocksAccess?: boolean;
+  safetyRisk?: boolean;
+  criticalInfrastructure?: boolean;
+  affectsAcademics?: boolean;
+  examPeriod?: boolean;
+  currentSemester?: boolean;
+  isRecurring?: boolean;
+  previousOccurrences?: number;
+
   // AI predictions & insights
-  aiRiskScore?: number; // 0-100
+  aiRiskScore?: number; // 0-100 (from priority engine)
   aiPredictedRecurrence?: boolean;
   aiRecommendations?: string[];
   aiSummary?: string;

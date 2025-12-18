@@ -5,17 +5,15 @@ import * as authService from "./auth.service";
 import { UserRole, User } from "../../types";
 
 // Extend Express Request type to include user
-declare global {
-  namespace Express {
-    interface Request {
-      user?: admin.auth.DecodedIdToken;
-      userData?: {
-        id: string;
-        organizationId: string;
-        role: UserRole;
-        permissions: Record<string, boolean>;
-      };
-    }
+declare module "express-serve-static-core" {
+  interface Request {
+    user?: admin.auth.DecodedIdToken;
+    userData?: {
+      id: string;
+      organizationId: string;
+      role: UserRole;
+      permissions: Record<string, boolean>;
+    };
   }
 }
 
@@ -58,7 +56,7 @@ export async function authenticate(
     req.userData = {
       id: user.id,
       organizationId: user.organizationId,
-      role: user.role,
+      role: user.role as UserRole,
       permissions: user.permissions,
     };
 
@@ -150,7 +148,7 @@ export function sameOrganization(
  */
 export async function optionalAuth(
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction
 ) {
   try {
@@ -167,14 +165,14 @@ export async function optionalAuth(
         req.userData = {
           id: user.id,
           organizationId: user.organizationId,
-          role: user.role,
+          role: user.role as UserRole,
           permissions: user.permissions,
         };
       }
     }
 
     next();
-  } catch (error) {
+  } catch (_error) {
     // Don't fail, just proceed without user
     next();
   }

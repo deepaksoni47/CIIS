@@ -42,9 +42,9 @@ export async function getOrCreateUser(
     organizationId,
     email: firebaseUser.email || "",
     name: firebaseUser.name || firebaseUser.email?.split("@")[0] || "User",
-    role: role || "student",
+    role: role || UserRole.STUDENT,
     isActive: true,
-    permissions: getDefaultPermissions(role || "student"),
+    permissions: getDefaultPermissions(role || UserRole.STUDENT),
     createdAt:
       admin.firestore.FieldValue.serverTimestamp() as admin.firestore.Timestamp,
     updatedAt:
