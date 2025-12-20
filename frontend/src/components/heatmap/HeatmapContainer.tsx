@@ -34,6 +34,10 @@ interface HeatmapContainerProps {
   zoom?: number;
   bounds?: [[number, number], [number, number]];
   onGenerateAIInsight?: () => Promise<void>;
+  onFiltersChange?: (filters: {
+    categories: string[];
+    timeRange: "24h" | "7d" | "30d";
+  }) => void;
 }
 
 // Component to handle zoom level changes
@@ -52,6 +56,7 @@ export function HeatmapContainer({
   zoom = 15,
   bounds,
   onGenerateAIInsight,
+  onFiltersChange,
 }: HeatmapContainerProps) {
   const [layers, setLayers] = useState({
     water: true,
@@ -64,17 +69,46 @@ export function HeatmapContainer({
   const [isLoading, setIsLoading] = useState(false);
   const [heatmapData, setHeatmapData] = useState<HeatmapPoint[]>(initialData);
 
+  // Map UI layer names to backend category names
+  const layerCategoryMap: Record<string, string[]> = {
+    water: ["Water", "Plumbing", "Drainage", "Water Supply"],
+    power: ["Power", "Electrical", "Electricity", "Power Supply"],
+    wifi: ["Wi-Fi", "Network", "Internet", "Connectivity", "WiFi"],
+  };
+
   // Show individual markers when zoomed in past level 16
   useEffect(() => {
     setShowMarkers(currentZoom >= 16);
   }, [currentZoom]);
 
+  // Update data when initialData changes
+  useEffect(() => {
+    setHeatmapData(initialData);
+  }, [initialData]);
+
   // Filter heatmap data based on active layers
   const filteredData = useMemo(() => {
     if (!heatmapData.length) return [];
-    // In a real implementation, you'd filter by category based on layers
-    // For now, we'll just return all data
-    return heatmapData;
+    
+    // Filter by active layers (categories)
+    return heatmapData.filter((point) => {
+      if (!point.categories || point.categories.length === 0) {
+        // If no categories, include if all layers are active
+        return layers.water && layers.power && layers.wifi;
+      }
+
+      // Check if point's categories match any active layer
+      const activeCategories: string[] = [];
+      if (layers.water) activeCategories.push(...layerCategoryMap.water);
+      if (layers.power) activeCategories.push(...layerCategoryMap.power);
+      if (layers.wifi) activeCategories.push(...layerCategoryMap.wifi);
+
+      return point.categories.some((cat) =>
+        activeCategories.some((activeCat) =>
+          cat.toLowerCase().includes(activeCat.toLowerCase())
+        )
+      );
+    });
   }, [heatmapData, layers]);
 
   // Convert to heatmap format
@@ -89,13 +123,41 @@ export function HeatmapContainer({
   );
 
   const handleLayerToggle = (layer: "water" | "power" | "wifi") => {
-    setLayers((prev) => ({ ...prev, [layer]: !prev[layer] }));
+    setLayers((prev) => {
+      const newLayers = { ...prev, [layer]: !prev[layer] };
+      
+      // Notify parent component of filter changes
+      if (onFiltersChange) {
+        const activeCategories: string[] = [];
+        if (newLayers.water) activeCategories.push(...layerCategoryMap.water);
+        if (newLayers.power) activeCategories.push(...layerCategoryMap.power);
+        if (newLayers.wifi) activeCategories.push(...layerCategoryMap.wifi);
+        
+        onFiltersChange({
+          categories: activeCategories,
+          timeRange,
+        });
+      }
+      
+      return newLayers;
+    });
   };
 
   const handleTimeRangeChange = (range: "24h" | "7d" | "30d") => {
     setTimeRange(range);
-    // In a real implementation, you'd fetch new data based on time range
-    // For now, we'll just update the state
+    
+    // Notify parent component of filter changes
+    if (onFiltersChange) {
+      const activeCategories: string[] = [];
+      if (layers.water) activeCategories.push(...layerCategoryMap.water);
+      if (layers.power) activeCategories.push(...layerCategoryMap.power);
+      if (layers.wifi) activeCategories.push(...layerCategoryMap.wifi);
+      
+      onFiltersChange({
+        categories: activeCategories,
+        timeRange: range,
+      });
+    }
   };
 
   const handleAIInsight = async () => {

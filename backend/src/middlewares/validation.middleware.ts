@@ -107,6 +107,7 @@ export const validateIssueCreation = [
     .withMessage("Description must be between 10 and 2000 characters"),
 
   body("category")
+    .optional()
     .isIn([
       "Structural",
       "Electrical",
@@ -126,13 +127,25 @@ export const validateIssueCreation = [
     .isIn(["low", "medium", "high", "critical"])
     .withMessage("Invalid priority"),
 
-  body("location.lat")
+  body("latitude")
+    .notEmpty()
+    .withMessage("Latitude is required")
     .isFloat({ min: -90, max: 90 })
-    .withMessage("Invalid latitude (must be between -90 and 90)"),
+    .withMessage("Invalid latitude (must be between -90 and 90)")
+    .customSanitizer((value) => {
+      // Convert string to float if needed
+      return typeof value === "string" ? parseFloat(value) : value;
+    }),
 
-  body("location.lng")
+  body("longitude")
+    .notEmpty()
+    .withMessage("Longitude is required")
     .isFloat({ min: -180, max: 180 })
-    .withMessage("Invalid longitude (must be between -180 and 180)"),
+    .withMessage("Invalid longitude (must be between -180 and 180)")
+    .customSanitizer((value) => {
+      // Convert string to float if needed
+      return typeof value === "string" ? parseFloat(value) : value;
+    }),
 
   body("buildingId")
     .trim()

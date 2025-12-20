@@ -90,15 +90,35 @@ export async function getHeatmap(req: Request, res: Response): Promise<void> {
 
     const heatmapData = await getHeatmapData(filters, config);
 
+    // Always return success, even if no data (empty features array)
     res.json({
       success: true,
       data: heatmapData,
+      message: heatmapData.features.length === 0 
+        ? "No heatmap data found for the specified filters" 
+        : `Found ${heatmapData.features.length} heatmap points`,
     });
   } catch (error) {
     console.error("Error getting heatmap data:", error);
-    res.status(500).json({
+    
+    // Log full error for debugging
+    if (error instanceof Error) {
+      console.error("Error stack:", error.stack);
+    }
+
+    // Return detailed error message
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    const statusCode = errorMessage.includes("permission") || errorMessage.includes("unauthorized") 
+      ? 403 
+      : errorMessage.includes("not found") || errorMessage.includes("does not exist")
+      ? 404
+      : 500;
+
+    res.status(statusCode).json({
+      success: false,
       error: "Failed to get heatmap data",
-      details: error instanceof Error ? error.message : "Unknown error",
+      message: errorMessage,
+      details: process.env.NODE_ENV === "development" ? errorMessage : undefined,
     });
   }
 }
