@@ -142,7 +142,7 @@ export async function getIssue(req: Request, res: Response) {
 export async function getIssues(req: Request, res: Response) {
   try {
     const userId = req.user?.uid;
-    const userRole = req.user?.role;
+    const userRole = req.userData?.role;
 
     if (!userId) {
       return res.status(401).json({
@@ -192,9 +192,10 @@ export async function getIssues(req: Request, res: Response) {
     if (offset) filters.offset = parseInt(offset as string);
 
     // If user is a student, only show their own issues
-    if (userRole === UserRole.STUDENT) {
-      filters.reportedBy = userId;
-    }
+    // Temporarily disabled for Priority List view - students can see all issues
+    // if (userRole === UserRole.STUDENT) {
+    //   filters.reportedBy = userId;
+    // }
 
     const result = await issuesService.getIssues(filters);
 
@@ -456,7 +457,7 @@ export async function uploadImage(req: Request, res: Response) {
     }
 
     const files = req.files as Express.Multer.File[];
-    
+
     if (!files || !Array.isArray(files) || files.length === 0) {
       return res.status(400).json({
         error: "Missing files",

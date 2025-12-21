@@ -191,26 +191,30 @@ export async function getIssues(filters: {
     );
   }
 
-  // Order by creation date (newest first)
-  query = query.orderBy("createdAt", "desc");
-
-  // Count total
-  const countSnapshot = await query.get();
-  const total = countSnapshot.size;
-
-  // Apply pagination
-  if (filters.offset) {
-    query = query.offset(filters.offset);
-  }
-  if (filters.limit) {
-    query = query.limit(filters.limit);
-  }
-
+  // Fetch all matching documents (orderBy removed to avoid index requirement)
   const snapshot = await query.get();
-  const issues: Issue[] = snapshot.docs.map((doc: any) => ({
+
+  // Sort in memory by creation date (newest first)
+  let issues: Issue[] = snapshot.docs.map((doc: any) => ({
     id: doc.id,
     ...doc.data(),
   }));
+
+  // Sort by createdAt descending
+  issues.sort((a, b) => {
+    const aTime = a.createdAt?._seconds || 0;
+    const bTime = b.createdAt?._seconds || 0;
+    return bTime - aTime;
+  });
+
+  const total = issues.length;
+
+  // Apply pagination after sorting
+  if (filters.offset || filters.limit) {
+    const start = filters.offset || 0;
+    const end = filters.limit ? start + filters.limit : issues.length;
+    issues = issues.slice(start, end);
+  }
 
   return { issues, total };
 }
