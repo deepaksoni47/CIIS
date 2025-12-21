@@ -8,12 +8,12 @@ export default function LoginPage() {
   const router = useRouter();
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const existingToken = window.localStorage.getItem("ciis_token");
-      if (existingToken) {
-        router.replace("/");
+      if (typeof window !== "undefined") {
+        const existingToken = window.localStorage.getItem("ciis_token");
+        if (existingToken) {
+          router.replace("/dashboard");
+        }
       }
-    }
   }, [router]);
 
   return (

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useState, useEffect } from "react";
@@ -157,6 +157,26 @@ export function FloatingNav() {
           <div className="w-px h-8 bg-white/10 mx-2" />
 
           {/* Action Buttons - Desktop */}
+          {isLoggedIn && (
+            <>
+              <motion.a
+                href="/dashboard"
+                className="px-5 py-2 rounded-full text-white/70 hover:text-white hover:bg-white/5 text-sm font-medium transition-all"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Dashboard
+              </motion.a>
+              <motion.a
+                href="/report"
+                className="px-5 py-2 rounded-full text-white/70 hover:text-white hover:bg-white/5 text-sm font-medium transition-all"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Report Issue
+              </motion.a>
+            </>
+          )}
           <motion.a
             href="/heatmap"
             className="px-5 py-2 rounded-full text-white/70 hover:text-white hover:bg-white/5 text-sm font-medium transition-all"
@@ -165,14 +185,6 @@ export function FloatingNav() {
           >
             Heatmap
           </motion.a>
-          <motion.a
-            href="/priorities"
-            className="px-5 py-2 rounded-full text-white/70 hover:text-white hover:bg-white/5 text-sm font-medium transition-all"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            Priorities
-          </motion.a>
           {isLoggedIn ? (
             <>
               {userName && (
@@ -180,6 +192,15 @@ export function FloatingNav() {
                   {userName}
                 </span>
               )}
+              <motion.a
+                href="/priority"
+                className="text-sm font-medium text-white/70 hover:text-white transition-colors"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Priority
+              </motion.a>
+              <div className="h-4 w-[1px] bg-white/10" />
               <motion.button
                 onClick={handleLogout}
                 className="px-6 py-2 rounded-full bg-gradient-to-r from-rose-600 to-pink-600 text-white text-sm font-medium shadow-lg shadow-rose-500/25"
@@ -249,6 +270,26 @@ export function FloatingNav() {
         className="md:hidden overflow-hidden mt-2"
       >
         <div className="flex flex-col gap-2 px-4 py-4 rounded-2xl bg-black/40 backdrop-blur-xl border border-white/10 shadow-2xl">
+          {isLoggedIn && (
+            <>
+              <motion.a
+                href="/dashboard"
+                className="px-5 py-3 rounded-xl text-white/70 hover:text-white hover:bg-white/5 text-sm font-medium transition-all text-center"
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Dashboard
+              </motion.a>
+              <motion.a
+                href="/report"
+                className="px-5 py-3 rounded-xl text-white/70 hover:text-white hover:bg-white/5 text-sm font-medium transition-all text-center"
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Report Issue
+              </motion.a>
+            </>
+          )}
           <motion.a
             href="/heatmap"
             className="px-5 py-3 rounded-xl text-white/70 hover:text-white hover:bg-white/5 text-sm font-medium transition-all text-center"

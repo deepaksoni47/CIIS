@@ -105,7 +105,13 @@ export function getFirestore(): admin.firestore.Firestore {
   if (!firebaseApp) {
     initializeFirebase();
   }
-  return admin.firestore();
+  const db = admin.firestore();
+  try {
+    db.settings({ ignoreUndefinedProperties: true });
+  } catch (e) {
+    // Settings might have already been applied
+  }
+  return db;
 }
 
 /**

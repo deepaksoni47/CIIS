@@ -14,13 +14,13 @@ import { firestore } from "firebase-admin";
  */
 export async function createIssue(req: Request, res: Response) {
   try {
-    const userId = req.user?.uid;
-    const userRole = req.user?.role;
+    const userId = req.userData?.id || req.user?.uid;
+    const userRole = req.userData?.role;
 
     if (!userId || !userRole) {
       return res.status(401).json({
         error: "Unauthorized",
-        message: "User not authenticated",
+        message: "User not authenticated or missing role information",
       });
     }
 
@@ -437,7 +437,7 @@ export async function getIssueHistory(req: Request, res: Response) {
  */
 export async function uploadImage(req: Request, res: Response) {
   try {
-    const userId = req.user?.uid;
+    const userId = req.userData?.id || req.user?.uid;
 
     if (!userId) {
       return res.status(401).json({
@@ -446,31 +446,39 @@ export async function uploadImage(req: Request, res: Response) {
       });
     }
 
-    // TODO: Handle multipart/form-data file upload
-    // For now, assume base64 encoded image in body
-    const { image, fileName, organizationId, issueId } = req.body;
+    const { organizationId, issueId } = req.body;
 
-    if (!image || !fileName || !organizationId) {
+    if (!organizationId) {
       return res.status(400).json({
         error: "Missing parameters",
-        message: "image, fileName, and organizationId are required",
+        message: "organizationId is required",
       });
     }
 
-    // Convert base64 to buffer
-    const buffer = Buffer.from(image, "base64");
+    const files = req.files as Express.Multer.File[];
+    
+    if (!files || !Array.isArray(files) || files.length === 0) {
+      return res.status(400).json({
+        error: "Missing files",
+        message: "No images provided",
+      });
+    }
 
-    const url = await issuesService.uploadIssueImage(
-      buffer,
-      fileName,
-      organizationId,
-      issueId
+    const uploadPromises = files.map((file) =>
+      issuesService.uploadIssueImage(
+        file.buffer,
+        `${Date.now()}_${file.originalname.replace(/\s+/g, "_")}`,
+        organizationId,
+        issueId
+      )
     );
+
+    const urls = await Promise.all(uploadPromises);
 
     res.json({
       success: true,
-      data: { url },
-      message: "Image uploaded successfully",
+      data: { urls },
+      message: "Images uploaded successfully",
     });
   } catch (error: unknown) {
     console.error("Upload image error:", error);

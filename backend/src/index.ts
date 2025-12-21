@@ -42,16 +42,44 @@ try {
 // Security middleware (order matters!)
 app.use(addRequestId); // Add request ID for tracking
 app.use(enforceHTTPS); // Force HTTPS in production
-app.use(helmet()); // Helmet security headers
-app.use(securityHeaders); // Additional security headers
+
+// CORS configuration - MUST be before helmet to avoid conflicts
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(",").map((origin) => origin.trim())
+  : ["http://localhost:3000"];
+
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:3000",
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps, Postman, etc.)
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      // Check if origin is in allowed list
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      // Reject origin
+      return callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "X-Request-ID"],
+    exposedHeaders: ["X-Request-ID"],
+    maxAge: 86400, // 24 hours
   })
 );
+
+// Helmet security headers (configured to not interfere with CORS)
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+    crossOriginEmbedderPolicy: false,
+  })
+);
+app.use(securityHeaders); // Additional security headers
 app.use(logSuspiciousActivity); // Log suspicious requests
 app.use(preventCommonAttacks); // Prevent SQL injection, XSS, etc.
 app.use(globalRateLimiter); // Global rate limiting

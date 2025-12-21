@@ -144,53 +144,121 @@ export async function getHeatmapData(
     normalizeWeights: true,
   }
 ): Promise<HeatmapGeoJSON> {
-  // Fetch issues based on filters
+  // Build query with minimal filters to avoid index requirements
+  // We'll filter the rest in memory
   let query = firestore
     .collection("issues")
     .where("organizationId", "==", filters.organizationId);
 
-  // Apply filters
-  if (filters.campusId) {
-    query = query.where("campusId", "==", filters.campusId);
-  }
-
-  if (filters.buildingIds && filters.buildingIds.length > 0) {
-    query = query.where("buildingId", "in", filters.buildingIds.slice(0, 10));
-  }
-
-  if (filters.categories && filters.categories.length > 0) {
-    query = query.where("category", "in", filters.categories.slice(0, 10));
-  }
-
-  if (filters.priorities && filters.priorities.length > 0) {
-    query = query.where("priority", "in", filters.priorities);
-  }
-
-  if (filters.statuses && filters.statuses.length > 0) {
-    query = query.where("status", "in", filters.statuses);
-  }
-
-  if (filters.startDate) {
+  // Only apply date range filters at database level (most important for performance)
+  // This requires a simple composite index: organizationId + createdAt
+  if (filters.startDate && filters.endDate) {
+    // Use date range query (requires index: organizationId, createdAt)
+    query = query
+      .where(
+        "createdAt",
+        ">=",
+        adminFirestore.Timestamp.fromDate(filters.startDate)
+      )
+      .where(
+        "createdAt",
+        "<=",
+        adminFirestore.Timestamp.fromDate(filters.endDate)
+      );
+  } else if (filters.startDate) {
     query = query.where(
-      "reportedAt",
+      "createdAt",
       ">=",
       adminFirestore.Timestamp.fromDate(filters.startDate)
     );
-  }
-
-  if (filters.endDate) {
+  } else if (filters.endDate) {
     query = query.where(
-      "reportedAt",
+      "createdAt",
       "<=",
       adminFirestore.Timestamp.fromDate(filters.endDate)
     );
   }
 
-  const snapshot = await query.get();
+  // Fetch all matching issues
+  let snapshot;
+  try {
+    snapshot = await query.get();
+  } catch (error: any) {
+    // Handle Firestore index errors
+    if (error?.code === 9 || error?.message?.includes("index")) {
+      const indexUrl = error?.message?.match(/https:\/\/console\.firebase\.google\.com[^\s]+/)?.[0];
+      
+      console.warn("⚠️  Firestore index required for optimal performance.");
+      console.warn("   Error:", error.message);
+      if (indexUrl) {
+        console.warn("   Create index at:", indexUrl);
+      } else {
+        console.warn("   Required index: issues collection, fields: organizationId (Ascending), createdAt (Ascending)");
+        console.warn("   Create at: https://console.firebase.google.com/project/ciis-2882b/firestore/indexes");
+      }
+      
+      // Fallback: Query without date range and filter in memory
+      console.warn("   Falling back to in-memory date filtering (slower but works without index)");
+      const fallbackQuery = firestore
+        .collection("issues")
+        .where("organizationId", "==", filters.organizationId);
+      
+      snapshot = await fallbackQuery.get();
+    } else {
+      throw error;
+    }
+  }
+
   let issues: Issue[] = snapshot.docs.map((doc) => ({
     id: doc.id,
     ...doc.data(),
   })) as Issue[];
+
+  // Apply date filters in memory if we used fallback query
+  // (This happens if the index doesn't exist and we fall back to basic query)
+  if (filters.startDate || filters.endDate) {
+    issues = issues.filter((issue) => {
+      if (!issue.createdAt) return false;
+      
+      const issueDate = (issue.createdAt as adminFirestore.Timestamp).toDate();
+      
+      if (filters.startDate && issueDate < filters.startDate) return false;
+      if (filters.endDate && issueDate > filters.endDate) return false;
+      
+      return true;
+    });
+  }
+
+  // Apply remaining filters in memory (avoids complex index requirements)
+  if (filters.campusId) {
+    issues = issues.filter((issue) => issue.campusId === filters.campusId);
+  }
+
+  if (filters.buildingIds && filters.buildingIds.length > 0) {
+    issues = issues.filter(
+      (issue) => issue.buildingId && filters.buildingIds!.includes(issue.buildingId)
+    );
+  }
+
+  if (filters.categories && filters.categories.length > 0) {
+    issues = issues.filter(
+      (issue) => issue.category && filters.categories!.includes(issue.category)
+    );
+  }
+
+  if (filters.priorities && filters.priorities.length > 0) {
+    const priorityValues = filters.priorities.map((p) => p.toString());
+    issues = issues.filter(
+      (issue) => issue.priority && priorityValues.includes(issue.priority.toString())
+    );
+  }
+
+  if (filters.statuses && filters.statuses.length > 0) {
+    const statusValues = filters.statuses.map((s) => s.toString());
+    issues = issues.filter(
+      (issue) => issue.status && statusValues.includes(issue.status.toString())
+    );
+  }
 
   // Apply additional filters
   if (filters.minSeverity) {
@@ -579,6 +647,18 @@ function formatAsGeoJSON(
     f.properties.newestIssue,
   ]);
 
+  // Handle empty date range
+  const now = new Date();
+  const dateRange = allDates.length > 0
+    ? {
+        start: new Date(Math.min(...allDates.map((d) => d.getTime()))),
+        end: new Date(Math.max(...allDates.map((d) => d.getTime()))),
+      }
+    : {
+        start: now,
+        end: now,
+      };
+
   return {
     type: "FeatureCollection",
     features,
@@ -587,10 +667,7 @@ function formatAsGeoJSON(
         (sum, f) => sum + f.properties.issueCount,
         0
       ),
-      dateRange: {
-        start: new Date(Math.min(...allDates.map((d) => d.getTime()))),
-        end: new Date(Math.max(...allDates.map((d) => d.getTime()))),
-      },
+      dateRange,
       timeDecayFactor: config.timeDecayFactor,
       severityWeightEnabled: config.severityWeightMultiplier > 0,
       clusterRadius: config.clusterRadius,
