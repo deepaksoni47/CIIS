@@ -139,6 +139,7 @@ import issueRoutes from "./modules/issues/routes";
 import priorityRoutes from "./modules/priority/routes";
 import heatmapRoutes from "./modules/heatmap/routes";
 import realtimeRoutes from "./modules/realtime/routes";
+import analyticsRoutes from "./modules/analytics/routes";
 
 app.use("/api/auth", authRoutes);
 app.use("/api/ai", aiRoutes);
@@ -146,6 +147,7 @@ app.use("/api/issues", issueRoutes);
 app.use("/api/priority", priorityRoutes);
 app.use("/api/heatmap", heatmapRoutes);
 app.use("/api/realtime", realtimeRoutes);
+app.use("/api/analytics", analyticsRoutes);
 
 // 404 handler
 app.use((req: Request, res: Response) => {

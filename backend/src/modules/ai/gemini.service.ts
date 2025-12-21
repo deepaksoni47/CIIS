@@ -360,6 +360,705 @@ Respond in JSON:
   }
 }
 
+/**
+ * 1. TEXT ISSUE UNDERSTANDING
+ * Classify issue from natural language text input
+ */
+export async function classifyIssueFromText(
+  textInput: string,
+  context?: {
+    buildingName?: string;
+    zone?: string;
+    reporterName?: string;
+  }
+): Promise<{
+  issueType: string;
+  category: string;
+  severity: number;
+  priority: "low" | "medium" | "high" | "critical";
+  extractedLocation?: {
+    building?: string;
+    room?: string;
+    floor?: string;
+    zone?: string;
+  };
+  suggestedTitle: string;
+  structuredDescription: string;
+  urgency: string;
+  estimatedResolutionTime: string;
+}> {
+  const prompt = `You are an AI assistant for a Campus Infrastructure Intelligence System. Analyze this issue report and extract structured information.
+
+User Input: "${textInput}"
+
+${context?.buildingName ? `Building Context: ${context.buildingName}` : ""}
+${context?.zone ? `Zone Context: ${context.zone}` : ""}
+${context?.reporterName ? `Reporter: ${context.reporterName}` : ""}
+
+Extract and classify the following in JSON format:
+{
+  "issueType": "specific issue type (e.g., 'Water Leak', 'Broken Light', 'AC Not Working')",
+  "category": "one of: Structural/Electrical/Plumbing/HVAC/Safety/Maintenance/Cleanliness/Network/Furniture/Other",
+  "severity": <number 1-10, where 1=minor, 10=critical emergency>,
+  "priority": "low|medium|high|critical",
+  "extractedLocation": {
+    "building": "building name if mentioned",
+    "room": "room number/name if mentioned",
+    "floor": "floor number if mentioned",
+    "zone": "specific zone/area if mentioned"
+  },
+  "suggestedTitle": "short descriptive title (max 100 chars)",
+  "structuredDescription": "clear, professional description with key details",
+  "urgency": "brief urgency assessment (1-2 sentences)",
+  "estimatedResolutionTime": "estimated time to fix (e.g., '2-4 hours', '1-2 days')"
+}
+
+Classification Guidelines:
+- Severity 9-10: Immediate danger, major system failure
+- Severity 7-8: Significant disruption, urgent repair needed
+- Severity 4-6: Moderate issue, scheduled repair
+- Severity 1-3: Minor cosmetic or non-critical
+- Priority "critical": Safety hazard or major infrastructure failure
+- Priority "high": Significant disruption to operations
+- Priority "medium": Noticeable issue but manageable
+- Priority "low": Minor inconvenience
+
+Only respond with valid JSON.`;
+
+  try {
+    const response = await generateInsights(prompt);
+    const jsonMatch = response.match(/\{[\s\S]*\}/);
+
+    if (jsonMatch) {
+      const parsed = JSON.parse(jsonMatch[0]);
+
+      // Validate and sanitize
+      return {
+        issueType: parsed.issueType || "General Issue",
+        category: parsed.category || "Other",
+        severity: Math.max(1, Math.min(10, parsed.severity || 5)),
+        priority: ["low", "medium", "high", "critical"].includes(
+          parsed.priority
+        )
+          ? parsed.priority
+          : "medium",
+        extractedLocation: parsed.extractedLocation || {},
+        suggestedTitle:
+          parsed.suggestedTitle?.substring(0, 100) ||
+          textInput.substring(0, 100),
+        structuredDescription: parsed.structuredDescription || textInput,
+        urgency: parsed.urgency || "Standard priority",
+        estimatedResolutionTime: parsed.estimatedResolutionTime || "1-3 days",
+      };
+    }
+
+    throw new Error("Failed to parse JSON response");
+  } catch (error) {
+    console.error("Text classification error:", error);
+
+    // Intelligent fallback
+    const lowerText = textInput.toLowerCase();
+    let category = "Other";
+    let severity = 5;
+    let priority: "low" | "medium" | "high" | "critical" = "medium";
+
+    // Category detection
+    if (/(leak|water|pipe|flood|drain)/i.test(textInput)) {
+      category = "Plumbing";
+      severity = 7;
+    } else if (/(electric|power|light|outlet|wire)/i.test(textInput)) {
+      category = "Electrical";
+      severity = 6;
+    } else if (/(ac|heat|hvac|temperature|ventilat)/i.test(textInput)) {
+      category = "HVAC";
+      severity = 6;
+    } else if (
+      /(crack|structural|ceiling|wall|floor|foundation)/i.test(textInput)
+    ) {
+      category = "Structural";
+      severity = 8;
+    } else if (/(danger|hazard|unsafe|emergency|fire)/i.test(textInput)) {
+      category = "Safety";
+      severity = 9;
+      priority = "critical";
+    }
+
+    // Severity keywords
+    if (/(critical|emergency|urgent|immediate|danger)/i.test(textInput)) {
+      severity = Math.max(severity, 8);
+      priority = severity >= 8 ? "critical" : "high";
+    } else if (/(serious|major|significant)/i.test(textInput)) {
+      severity = Math.max(severity, 6);
+      priority = "high";
+    }
+
+    return {
+      issueType: textInput.split(/[.!?]/)[0].substring(0, 50),
+      category,
+      severity,
+      priority,
+      extractedLocation: context
+        ? {
+            building: context.buildingName,
+            zone: context.zone,
+          }
+        : {},
+      suggestedTitle: textInput.substring(0, 100),
+      structuredDescription: textInput,
+      urgency:
+        priority === "critical"
+          ? "Immediate attention required"
+          : "Standard processing",
+      estimatedResolutionTime: severity >= 8 ? "Same day" : "2-5 days",
+    };
+  }
+}
+
+/**
+ * 2. VOICE ISSUE PROCESSING
+ * Process voice input - transcribe and extract issue details
+ */
+export async function processVoiceInput(
+  audioBase64: string,
+  mimeType: string = "audio/mp3",
+  context?: {
+    buildingName?: string;
+    zone?: string;
+    reporterName?: string;
+  }
+): Promise<{
+  transcription: string;
+  confidence: number;
+  issueClassification: Awaited<ReturnType<typeof classifyIssueFromText>>;
+  detectedIntent: string;
+  suggestedAction: string;
+}> {
+  try {
+    const model = getGeminiModel();
+
+    const prompt = `You are an AI assistant transcribing and analyzing a voice report about campus infrastructure issues.
+
+Transcribe the audio and then:
+1. Extract the exact spoken text
+2. Identify the speaker's intent (reporting issue, asking question, requesting help)
+3. Classify the issue if one is being reported
+
+Respond in JSON:
+{
+  "transcription": "exact transcribed text",
+  "confidence": <0-1, transcription confidence>,
+  "detectedIntent": "report_issue|ask_question|request_help|other",
+  "summary": "brief summary of what was said"
+}`;
+
+    // Note: Gemini Pro doesn't directly support audio in the current SDK version
+    // This is a placeholder for when audio support is added or using Gemini 1.5 Pro
+    // For now, we'll return a message indicating audio processing needs upgrade
+
+    // Simulated response structure for future implementation
+    const result = await model.generateContent([
+      prompt,
+      {
+        inlineData: {
+          data: audioBase64,
+          mimeType: mimeType,
+        },
+      },
+    ]);
+
+    const response = result.response.text();
+    const jsonMatch = response.match(/\{[\s\S]*\}/);
+
+    if (jsonMatch) {
+      const parsed = JSON.parse(jsonMatch[0]);
+
+      // Now classify the transcribed text
+      const issueClassification = await classifyIssueFromText(
+        parsed.transcription,
+        context
+      );
+
+      return {
+        transcription: parsed.transcription,
+        confidence: parsed.confidence || 0.85,
+        issueClassification,
+        detectedIntent: parsed.detectedIntent || "report_issue",
+        suggestedAction:
+          parsed.detectedIntent === "report_issue"
+            ? "Create new issue ticket"
+            : "Route to appropriate handler",
+      };
+    }
+
+    throw new Error("Failed to process audio");
+  } catch (error) {
+    console.error("Voice processing error:", error);
+    throw new Error(
+      "Voice processing not fully supported yet. Please use text input or upgrade to Gemini 1.5 Pro with audio capabilities."
+    );
+  }
+}
+
+/**
+ * 3. ENHANCED IMAGE UNDERSTANDING
+ * Improved image analysis for infrastructure issues
+ */
+export async function analyzeInfrastructureImage(
+  imageUrl: string,
+  options?: {
+    expectedCategory?: string;
+    buildingName?: string;
+    additionalContext?: string;
+  }
+): Promise<{
+  issueDetected: boolean;
+  description: string;
+  severity: number;
+  severityConfidence: number;
+  suggestedCategory: string;
+  visualIndicators: string[];
+  safetyRisk: boolean;
+  immediateActionRequired: boolean;
+  recommendations: string[];
+  structuredAnalysis: {
+    damageType: string;
+    affectedArea: string;
+    estimatedScope: string;
+    urgencyLevel: string;
+  };
+}> {
+  try {
+    const model = getGeminiVisionModel();
+
+    const prompt = `You are an expert infrastructure assessment AI analyzing campus facility images.
+
+${options?.buildingName ? `Building: ${options.buildingName}` : ""}
+${options?.expectedCategory ? `Expected Category: ${options.expectedCategory}` : ""}
+${options?.additionalContext ? `Context: ${options.additionalContext}` : ""}
+
+Analyze this image for infrastructure issues and provide:
+
+1. Is there a visible infrastructure issue? (yes/no)
+2. Detailed description of what you see
+3. Severity rating (1-10) with confidence level
+4. Visual indicators (specific damage visible)
+5. Safety risk assessment
+6. Whether immediate action is required
+7. Category classification
+8. Structured analysis of damage
+9. Specific recommendations
+
+Respond in JSON format:
+{
+  "issueDetected": true/false,
+  "description": "detailed description of visible issue",
+  "severity": <1-10>,
+  "severityConfidence": <0-1>,
+  "suggestedCategory": "Structural/Electrical/Plumbing/HVAC/Safety/Maintenance/Cleanliness/Network/Furniture/Other",
+  "visualIndicators": ["indicator 1", "indicator 2", ...],
+  "safetyRisk": true/false,
+  "immediateActionRequired": true/false,
+  "recommendations": ["action 1", "action 2", ...],
+  "structuredAnalysis": {
+    "damageType": "type of damage observed",
+    "affectedArea": "which area/component is affected",
+    "estimatedScope": "small/medium/large",
+    "urgencyLevel": "low/medium/high/critical"
+  }
+}
+
+Guidelines:
+- Be conservative with severity ratings
+- Flag ANY safety hazards
+- Consider both visible and potential hidden damage
+- Provide actionable recommendations`;
+
+    // Fetch image as base64
+    const response = await fetch(imageUrl);
+    const arrayBuffer = await response.arrayBuffer();
+    const base64Image = Buffer.from(arrayBuffer).toString("base64");
+
+    const result = await model.generateContent([
+      prompt,
+      {
+        inlineData: {
+          data: base64Image,
+          mimeType: "image/jpeg",
+        },
+      },
+    ]);
+
+    const text = result.response.text();
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+
+    if (jsonMatch) {
+      const parsed = JSON.parse(jsonMatch[0]);
+
+      return {
+        issueDetected: parsed.issueDetected !== false,
+        description: parsed.description || "Issue detected in image",
+        severity: Math.max(1, Math.min(10, parsed.severity || 5)),
+        severityConfidence: Math.max(
+          0,
+          Math.min(1, parsed.severityConfidence || 0.7)
+        ),
+        suggestedCategory:
+          parsed.suggestedCategory ||
+          options?.expectedCategory ||
+          "Maintenance",
+        visualIndicators: Array.isArray(parsed.visualIndicators)
+          ? parsed.visualIndicators
+          : [],
+        safetyRisk: parsed.safetyRisk === true,
+        immediateActionRequired: parsed.immediateActionRequired === true,
+        recommendations: Array.isArray(parsed.recommendations)
+          ? parsed.recommendations
+          : ["Inspect in person", "Document condition", "Schedule repair"],
+        structuredAnalysis: parsed.structuredAnalysis || {
+          damageType: "Unknown",
+          affectedArea: "Unknown",
+          estimatedScope: "medium",
+          urgencyLevel: "medium",
+        },
+      };
+    }
+
+    throw new Error("Failed to parse image analysis");
+  } catch (error) {
+    console.error("Image analysis error:", error);
+    throw new Error("Failed to analyze infrastructure image");
+  }
+}
+
+/**
+ * 4. ADMIN SUMMARIES
+ * Generate daily issue summary for administrators
+ */
+export async function generateDailySummary(
+  organizationId: string,
+  date: Date = new Date()
+): Promise<{
+  date: string;
+  executiveSummary: string;
+  keyMetrics: {
+    totalIssues: number;
+    newIssues: number;
+    resolvedIssues: number;
+    criticalIssues: number;
+    averageSeverity: number;
+  };
+  topConcerns: string[];
+  trendAnalysis: string;
+  recommendations: string[];
+  upcomingRisks: string[];
+}> {
+  try {
+    const db = admin.firestore();
+
+    // Get today's issues
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const todaySnapshot = await db
+      .collection("issues")
+      .where("organizationId", "==", organizationId)
+      .where("createdAt", ">=", startOfDay)
+      .where("createdAt", "<=", endOfDay)
+      .get();
+
+    const todayIssues = todaySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    // Get all open issues
+    const openSnapshot = await db
+      .collection("issues")
+      .where("organizationId", "==", organizationId)
+      .where("status", "in", ["open", "in_progress"])
+      .get();
+
+    const openIssues = openSnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    const resolvedToday = todayIssues.filter(
+      (i: any) => i.status === "resolved"
+    ).length;
+
+    const criticalIssues = openIssues.filter(
+      (i: any) => i.severity >= 8 || i.priority === "critical"
+    );
+
+    const avgSeverity =
+      todayIssues.reduce((sum: number, i: any) => sum + (i.severity || 0), 0) /
+      (todayIssues.length || 1);
+
+    // Category distribution
+    const categories = todayIssues.reduce((acc: any, issue: any) => {
+      acc[issue.category] = (acc[issue.category] || 0) + 1;
+      return acc;
+    }, {});
+
+    const prompt = `You are an AI assistant generating a daily infrastructure summary for campus administrators.
+
+Date: ${date.toDateString()}
+
+Metrics:
+- Total Active Issues: ${openIssues.length}
+- New Issues Today: ${todayIssues.length}
+- Resolved Today: ${resolvedToday}
+- Critical Open Issues: ${criticalIssues.length}
+- Average Severity: ${avgSeverity.toFixed(1)}/10
+- Issue Categories Today: ${JSON.stringify(categories)}
+
+Critical Issues:
+${criticalIssues
+  .slice(0, 5)
+  .map((i: any) => `- ${i.title} (${i.buildingId}, Severity: ${i.severity})`)
+  .join("\n")}
+
+Generate a comprehensive daily summary in JSON format:
+{
+  "executiveSummary": "2-3 paragraph executive summary for leadership",
+  "topConcerns": ["concern 1", "concern 2", "concern 3"],
+  "trendAnalysis": "brief analysis of trends compared to recent days",
+  "recommendations": ["recommendation 1", "recommendation 2", "recommendation 3"],
+  "upcomingRisks": ["potential risk 1", "potential risk 2"]
+}
+
+Keep it professional, concise, and actionable.`;
+
+    const response = await generateInsights(prompt);
+    const jsonMatch = response.match(/\{[\s\S]*\}/);
+
+    const aiGenerated = jsonMatch ? JSON.parse(jsonMatch[0]) : {};
+
+    return {
+      date: date.toISOString().split("T")[0],
+      executiveSummary:
+        aiGenerated.executiveSummary ||
+        `Today's infrastructure status: ${todayIssues.length} new issues reported, ${resolvedToday} resolved. ${criticalIssues.length} critical issues require immediate attention.`,
+      keyMetrics: {
+        totalIssues: openIssues.length,
+        newIssues: todayIssues.length,
+        resolvedIssues: resolvedToday,
+        criticalIssues: criticalIssues.length,
+        averageSeverity: Math.round(avgSeverity * 10) / 10,
+      },
+      topConcerns: aiGenerated.topConcerns || [
+        `${criticalIssues.length} critical issues pending`,
+        `${todayIssues.length} new issues reported`,
+      ],
+      trendAnalysis:
+        aiGenerated.trendAnalysis || "Trend data requires multi-day history",
+      recommendations: aiGenerated.recommendations || [
+        "Address critical issues immediately",
+        "Review resource allocation",
+      ],
+      upcomingRisks: aiGenerated.upcomingRisks || [
+        "Monitor high-severity areas",
+      ],
+    };
+  } catch (error) {
+    console.error("Daily summary error:", error);
+    throw new Error("Failed to generate daily summary");
+  }
+}
+
+/**
+ * Generate trend explanation for administrators
+ */
+export async function generateTrendExplanation(
+  trendData: {
+    metric: string;
+    currentValue: number;
+    previousValue: number;
+    percentageChange: number;
+    timeframe: string;
+  }[]
+): Promise<{
+  summary: string;
+  keyFindings: string[];
+  concerningTrends: string[];
+  positiveTrends: string[];
+  actionableInsights: string[];
+}> {
+  const prompt = `You are an AI assistant explaining infrastructure trends for campus administrators.
+
+Trend Data:
+${trendData
+  .map(
+    (t) =>
+      `- ${t.metric}: ${t.currentValue} (was ${t.previousValue}) - ${t.percentageChange > 0 ? "+" : ""}${t.percentageChange.toFixed(1)}% over ${t.timeframe}`
+  )
+  .join("\n")}
+
+Analyze these trends and provide:
+{
+  "summary": "2-3 sentence overall trend summary",
+  "keyFindings": ["finding 1", "finding 2", "finding 3"],
+  "concerningTrends": ["negative trend 1", "negative trend 2"],
+  "positiveTrends": ["positive trend 1", "positive trend 2"],
+  "actionableInsights": ["insight 1", "insight 2", "insight 3"]
+}
+
+Focus on actionable insights and root causes.`;
+
+  try {
+    const response = await generateInsights(prompt);
+    const jsonMatch = response.match(/\{[\s\S]*\}/);
+
+    if (jsonMatch) {
+      return JSON.parse(jsonMatch[0]);
+    }
+
+    // Fallback
+    const concerning = trendData
+      .filter((t) => t.percentageChange > 20)
+      .map((t) => `${t.metric} increased by ${t.percentageChange.toFixed(1)}%`);
+
+    const positive = trendData
+      .filter((t) => t.percentageChange < -10)
+      .map(
+        (t) =>
+          `${t.metric} decreased by ${Math.abs(t.percentageChange).toFixed(1)}%`
+      );
+
+    return {
+      summary: `Analysis of ${trendData.length} infrastructure metrics over recent period shows mixed results.`,
+      keyFindings: trendData.map(
+        (t) =>
+          `${t.metric}: ${t.currentValue} (${t.percentageChange > 0 ? "+" : ""}${t.percentageChange.toFixed(1)}%)`
+      ),
+      concerningTrends:
+        concerning.length > 0 ? concerning : ["No concerning trends"],
+      positiveTrends: positive.length > 0 ? positive : ["Metrics stable"],
+      actionableInsights: [
+        "Monitor high-change metrics closely",
+        "Investigate root causes of increases",
+        "Continue successful practices",
+      ],
+    };
+  } catch (error) {
+    console.error("Trend explanation error:", error);
+    throw new Error("Failed to generate trend explanation");
+  }
+}
+
+/**
+ * Generate incident report for specific issue
+ */
+export async function generateIncidentReport(
+  issue: any,
+  relatedIssues: any[] = []
+): Promise<{
+  reportTitle: string;
+  executiveSummary: string;
+  incidentDetails: {
+    what: string;
+    when: string;
+    where: string;
+    severity: string;
+    impact: string;
+  };
+  timeline: Array<{ timestamp: string; event: string }>;
+  rootCauseAnalysis: string;
+  immediateActions: string[];
+  preventiveMeasures: string[];
+  lessonsLearned: string[];
+  recommendations: string[];
+}> {
+  const prompt = `You are an AI assistant generating a formal incident report for campus infrastructure.
+
+Incident Details:
+- Title: ${issue.title}
+- Category: ${issue.category}
+- Severity: ${issue.severity}/10
+- Priority: ${issue.priority}
+- Location: ${issue.buildingId} ${issue.zone ? `- ${issue.zone}` : ""}
+- Reported: ${new Date(issue.createdAt?.toDate?.() || issue.createdAt).toLocaleString()}
+- Status: ${issue.status}
+- Description: ${issue.description}
+
+${relatedIssues.length > 0 ? `Related Issues: ${relatedIssues.length} similar issues in the past 90 days` : ""}
+
+Generate a professional incident report in JSON format:
+{
+  "reportTitle": "formal report title",
+  "executiveSummary": "2-3 paragraph executive summary",
+  "incidentDetails": {
+    "what": "what happened",
+    "when": "when it occurred",
+    "where": "specific location details",
+    "severity": "severity assessment",
+    "impact": "impact on operations/safety"
+  },
+  "timeline": [
+    {"timestamp": "time", "event": "event description"},
+    ...
+  ],
+  "rootCauseAnalysis": "analysis of root cause(s)",
+  "immediateActions": ["action 1", "action 2"],
+  "preventiveMeasures": ["measure 1", "measure 2"],
+  "lessonsLearned": ["lesson 1", "lesson 2"],
+  "recommendations": ["recommendation 1", "recommendation 2"]
+}
+
+Make it thorough and professional for administrative records.`;
+
+  try {
+    const response = await generateInsights(prompt);
+    const jsonMatch = response.match(/\{[\s\S]*\}/);
+
+    if (jsonMatch) {
+      const parsed = JSON.parse(jsonMatch[0]);
+
+      // Ensure all required fields exist
+      return {
+        reportTitle: parsed.reportTitle || `Incident Report: ${issue.title}`,
+        executiveSummary:
+          parsed.executiveSummary ||
+          `Infrastructure incident at ${issue.buildingId}`,
+        incidentDetails: parsed.incidentDetails || {
+          what: issue.description,
+          when: new Date(
+            issue.createdAt?.toDate?.() || issue.createdAt
+          ).toLocaleString(),
+          where: `${issue.buildingId} ${issue.zone || ""}`,
+          severity: `${issue.severity}/10`,
+          impact: "Assessment pending",
+        },
+        timeline: Array.isArray(parsed.timeline) ? parsed.timeline : [],
+        rootCauseAnalysis: parsed.rootCauseAnalysis || "Analysis in progress",
+        immediateActions: Array.isArray(parsed.immediateActions)
+          ? parsed.immediateActions
+          : ["Assess damage", "Secure area", "Notify stakeholders"],
+        preventiveMeasures: Array.isArray(parsed.preventiveMeasures)
+          ? parsed.preventiveMeasures
+          : ["Regular inspections", "Preventive maintenance"],
+        lessonsLearned: Array.isArray(parsed.lessonsLearned)
+          ? parsed.lessonsLearned
+          : ["Document for future reference"],
+        recommendations: Array.isArray(parsed.recommendations)
+          ? parsed.recommendations
+          : ["Follow up after resolution"],
+      };
+    }
+
+    throw new Error("Failed to parse incident report");
+  } catch (error) {
+    console.error("Incident report error:", error);
+    throw new Error("Failed to generate incident report");
+  }
+}
+
+// Add admin import at top
+import * as admin from "firebase-admin";
+
 export default {
   getGeminiModel,
   getGeminiVisionModel,
@@ -371,4 +1070,11 @@ export default {
   analyzeIssueImage,
   calculatePriority,
   generateFailurePrediction,
+  // New functions
+  classifyIssueFromText,
+  processVoiceInput,
+  analyzeInfrastructureImage,
+  generateDailySummary,
+  generateTrendExplanation,
+  generateIncidentReport,
 };

@@ -72,4 +72,100 @@ router.post(
   aiController.chatWithAI
 );
 
+/**
+ * @route   POST /api/ai/classify-text
+ * @desc    Classify issue from text input with structured JSON output
+ * @access  Public
+ */
+router.post(
+  "/classify-text",
+  aiRateLimiter,
+  body("text")
+    .trim()
+    .notEmpty()
+    .withMessage("Text is required")
+    .isLength({ min: 10, max: 5000 })
+    .withMessage("Text must be between 10 and 5000 characters"),
+  body("buildingName").optional().trim(),
+  body("zone").optional().trim(),
+  body("reporterName").optional().trim(),
+  handleValidationErrors,
+  aiController.classifyTextIssue
+);
+
+/**
+ * @route   POST /api/ai/process-voice
+ * @desc    Process voice input (speech-to-text + intent extraction)
+ * @access  Public
+ */
+router.post(
+  "/process-voice",
+  aiRateLimiter,
+  body("audioBase64")
+    .trim()
+    .notEmpty()
+    .withMessage("Audio data (base64) is required"),
+  body("mimeType")
+    .optional()
+    .trim()
+    .isIn(["audio/mp3", "audio/wav", "audio/webm"]),
+  body("buildingName").optional().trim(),
+  body("zone").optional().trim(),
+  body("reporterName").optional().trim(),
+  handleValidationErrors,
+  aiController.processVoice
+);
+
+/**
+ * @route   POST /api/ai/analyze-image
+ * @desc    Analyze infrastructure issue from image
+ * @access  Public
+ */
+router.post(
+  "/analyze-image",
+  aiRateLimiter,
+  body("imageUrl")
+    .trim()
+    .notEmpty()
+    .withMessage("Image URL is required")
+    .isURL(),
+  body("expectedCategory").optional().trim(),
+  body("buildingName").optional().trim(),
+  body("additionalContext").optional().trim().isLength({ max: 500 }),
+  handleValidationErrors,
+  aiController.analyzeImage
+);
+
+/**
+ * @route   GET /api/ai/daily-summary
+ * @desc    Generate daily issue summary for administrators
+ * @access  Public
+ */
+router.get("/daily-summary", aiRateLimiter, aiController.getDailySummary);
+
+/**
+ * @route   POST /api/ai/trend-explanation
+ * @desc    Generate explanation for trend data
+ * @access  Public
+ */
+router.post(
+  "/trend-explanation",
+  aiRateLimiter,
+  body("trends").isArray({ min: 1 }).withMessage("Trends array is required"),
+  handleValidationErrors,
+  aiController.getTrendExplanation
+);
+
+/**
+ * @route   GET /api/ai/incident-report/:issueId
+ * @desc    Generate comprehensive incident report
+ * @access  Public
+ */
+router.get(
+  "/incident-report/:issueId",
+  aiRateLimiter,
+  validateId("issueId"),
+  aiController.getIncidentReport
+);
+
 export default router;
