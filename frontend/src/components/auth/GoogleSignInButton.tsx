@@ -6,7 +6,8 @@ import { signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "@/lib/firebase";
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  "https://ciis-backend-production.up.railway.app";
 
 interface GoogleSignInButtonProps {
   organizationId?: string;
@@ -124,5 +125,3 @@ export function GoogleSignInButton({
     </div>
   );
 }
-
-

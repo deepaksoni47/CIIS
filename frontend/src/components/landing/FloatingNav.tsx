@@ -7,7 +7,8 @@ import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  "https://ciis-backend-production.up.railway.app";
 
 export function FloatingNav() {
   const router = useRouter();

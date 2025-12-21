@@ -46,7 +46,11 @@ app.use(enforceHTTPS); // Force HTTPS in production
 // CORS configuration - MUST be before helmet to avoid conflicts
 const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(",").map((origin) => origin.trim())
-  : ["http://localhost:3000"];
+  : [
+      "http://localhost:3000",
+      "http://localhost:3001",
+      "https://ciis-innovex.vercel.app",
+    ];
 
 app.use(
   cors({
