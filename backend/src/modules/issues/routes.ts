@@ -65,11 +65,11 @@ router.get(
 );
 
 /**
- * @route   GET /api/issues/priorities
+ * @route   GET /api/issues/priority
  * @desc    Get high-priority issues
  * @access  Private (All authenticated users)
  */
-router.get("/priorities", authenticate, issuesController.getHighPriorityIssues);
+router.get("/priority", authenticate, issuesController.getHighPriorityIssues);
 
 /**
  * @route   GET /api/issues/stats

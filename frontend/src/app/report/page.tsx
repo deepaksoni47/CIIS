@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { FloatingNav } from "@/components/landing/FloatingNav";
 import { auth } from "@/lib/firebase";
 import toast from "react-hot-toast";
 
@@ -314,7 +313,6 @@ export default function ReportPage() {
   if (!isAuthenticated) {
     return (
       <div className="relative min-h-screen bg-[#050814]">
-        <FloatingNav />
         <div className="flex items-center justify-center h-screen">
           <div className="text-center">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-violet-500 mb-4"></div>
@@ -327,12 +325,10 @@ export default function ReportPage() {
 
   return (
     <div className="relative min-h-screen bg-[#050814] text-white">
-      <FloatingNav />
-
-      {/* Ambient background */}
       <div className="fixed inset-0 -z-10">
-        <div className="absolute top-20 left-20 w-96 h-96 bg-violet-500/10 rounded-full blur-3xl animate-pulse-slow" />
-        <div className="absolute bottom-40 right-20 w-80 h-80 bg-fuchsia-500/10 rounded-full blur-3xl animate-pulse-slower" />
+        <div className="absolute top-[-10%] left-[-10%] w-[40rem] h-[40rem] bg-violet-500/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[36rem] h-[36rem] bg-fuchsia-500/10 rounded-full blur-3xl" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_#1f2937_0,_#020617_55%,_#020617_100%)] opacity-60" />
       </div>
 
       <main className="pt-24 pb-12 px-4 md:px-6 lg:px-8 max-w-4xl mx-auto">

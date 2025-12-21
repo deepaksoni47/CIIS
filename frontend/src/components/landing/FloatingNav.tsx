@@ -2,7 +2,7 @@
 
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 
@@ -18,6 +18,15 @@ export function FloatingNav() {
   const { scrollY } = useScroll();
   const opacity = useTransform(scrollY, [0, 100], [0, 1]);
   const y = useTransform(scrollY, [0, 100], [-20, 0]);
+  const pathname = usePathname();
+
+  // Determine if we should show nav regardless of scroll (all pages except home)
+  const isAlwaysVisible = pathname !== "/";
+
+  // Override opacity and y if always visible
+  const effectiveOpacity = isAlwaysVisible ? 1 : opacity;
+  const effectiveY = isAlwaysVisible ? 0 : y;
+  const effectiveTranslateY = isAlwaysVisible || isScrolled ? "translate-y-0" : "-translate-y-32";
 
   // Check authentication state
   useEffect(() => {
@@ -117,11 +126,11 @@ export function FloatingNav() {
 
   return (
     <motion.nav
-      style={{ opacity, y }}
+      style={{ opacity: effectiveOpacity, y: effectiveY }}
       className={`
         fixed top-4 md:top-6 left-1/2 z-50
         transition-all duration-300
-        ${isScrolled ? "translate-y-0" : "-translate-y-32"}
+        ${effectiveTranslateY}
       `}
     >
       <div className="flex items-center justify-center gap-2 px-4 md:px-6 py-3 rounded-full bg-black/40 backdrop-blur-xl border border-white/10 shadow-2xl transform -translate-x-1/2">
@@ -299,7 +308,7 @@ export function FloatingNav() {
             Heatmap
           </motion.a>
           <motion.a
-            href="/priorities"
+            href="/priority"
             className="px-5 py-3 rounded-xl text-white/70 hover:text-white hover:bg-white/5 text-sm font-medium transition-all text-center"
             whileTap={{ scale: 0.95 }}
             onClick={() => setIsMobileMenuOpen(false)}

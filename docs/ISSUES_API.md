@@ -358,7 +358,7 @@ GET /api/issues/nearby?organizationId=org-1&latitude=22.131&longitude=82.149&rad
 
 ### 11. Get High-Priority Issues
 
-**GET** `/api/issues/priorities`
+**GET** `/api/issues/priority`
 
 Get sorted list of high-priority issues.
 

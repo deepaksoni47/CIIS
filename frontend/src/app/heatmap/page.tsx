@@ -308,7 +308,6 @@ Keep the response concise and actionable.`;
   if (isLoading) {
     return (
       <div className="relative min-h-screen bg-[#050814]">
-        <FloatingNav />
         <div className="flex items-center justify-center h-screen">
           <div className="text-center">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-violet-500 mb-4"></div>
@@ -321,7 +320,7 @@ Keep the response concise and actionable.`;
 
   return (
     <div className="relative min-h-screen bg-[#050814] overflow-hidden">
-      <FloatingNav />
+
       
       {/* Main heatmap container */}
       <div className="h-screen pt-16">

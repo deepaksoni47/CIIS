@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { FloatingNav } from "@/components/landing/FloatingNav";
 import toast from "react-hot-toast";
 import { auth } from "@/lib/firebase";
 
@@ -151,8 +150,6 @@ export default function PriorityPage() {
         <div className="absolute bottom-[-10%] right-[-10%] w-[36rem] h-[36rem] bg-sky-500/10 rounded-full blur-3xl" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_#1f2937_0,_#020617_55%,_#020617_100%)] opacity-60" />
       </div>
-
-      <FloatingNav />
 
       <div className="container mx-auto px-4 pt-32 pb-20">
         <div className="max-w-4xl mx-auto">

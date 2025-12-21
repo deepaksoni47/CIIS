@@ -537,7 +537,7 @@ export async function getNearbyIssues(req: Request, res: Response) {
 
 /**
  * Get high-priority issues
- * GET /api/issues/priorities
+ * GET /api/issues/priority
  */
 export async function getHighPriorityIssues(req: Request, res: Response) {
   try {

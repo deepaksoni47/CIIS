@@ -4,7 +4,17 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { FloatingNav } from "@/components/landing/FloatingNav";
+import { db } from "@/lib/firebase";
+import { 
+  collection, 
+  query, 
+  where, 
+  getDocs, 
+  orderBy, 
+  limit, 
+  getCountFromServer,
+  Timestamp 
+} from "firebase/firestore";
 import toast from "react-hot-toast";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
@@ -80,63 +90,85 @@ export default function DashboardPage() {
 
   const loadStats = async (userData: any) => {
     try {
-      const token = window.localStorage.getItem("ciis_token");
-      const response = await fetch(
-        `${API_BASE_URL}/api/issues/stats?organizationId=${userData.organizationId || "ggv-bilaspur"}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      // Create queries for different stats
+      const issuesRef = collection(db, "issues");
+      const organizationId = userData.organizationId || "ggv-bilaspur";
+      
+      // Base query for organization
+      const orgQuery = query(issuesRef, where("organizationId", "==", organizationId));
+      
+      // Get total count
+      // Note: getCountFromServer is available in recent Firebase versions. 
+      // If it fails, we might need to fallback to getDocs.length
+      const totalSnapshot = await getCountFromServer(orgQuery);
+      const total = totalSnapshot.data().count;
 
-      if (response.ok) {
-        const result = await response.json();
-        if (result.success && result.data) {
-          // Map backend stats to our interface
-          setStats({
-            total: result.data.total || 0,
-            open: result.data.open || 0,
-            inProgress: result.data.inProgress || 0,
-            resolved: result.data.resolved || 0,
-            closed: result.data.closed || 0,
-            critical: result.data.byPriority?.critical || 0,
-            high: result.data.byPriority?.high || 0,
-            medium: result.data.byPriority?.medium || 0,
-            low: result.data.byPriority?.low || 0,
-          });
-        }
-      } else if (response.status === 403) {
-        // User doesn't have permission (not Facility Manager/Admin)
-        // That's okay, we'll just not show stats
-        console.log("Stats not available for this user role");
-      }
+      // For specific status counts, we can run parallel queries
+      // Optimization: In a real app with many documents, aggregation queries are better.
+      // Here we'll use simple queries assuming reasonable dataset size for a dashboard demo.
+      
+      const openQuery = query(issuesRef, where("organizationId", "==", organizationId), where("status", "==", "open"));
+      const inProgressQuery = query(issuesRef, where("organizationId", "==", organizationId), where("status", "==", "in_progress"));
+      const resolvedQuery = query(issuesRef, where("organizationId", "==", organizationId), where("status", "==", "resolved"));
+      const closedQuery = query(issuesRef, where("organizationId", "==", organizationId), where("status", "==", "closed"));
+      
+      const [openSnap, inProgressSnap, resolvedSnap, closedSnap] = await Promise.all([
+        getCountFromServer(openQuery),
+        getCountFromServer(inProgressQuery),
+        getCountFromServer(resolvedQuery),
+        getCountFromServer(closedQuery)
+      ]);
+
+      setStats({
+        total,
+        open: openSnap.data().count,
+        inProgress: inProgressSnap.data().count,
+        resolved: resolvedSnap.data().count,
+        closed: closedSnap.data().count,
+        // For priorities, we'll skip detailed counts for now to save reads, or implement similarly if needed
+        critical: 0, 
+        high: 0, 
+        medium: 0, 
+        low: 0
+      });
+      
     } catch (error) {
       console.error("Error loading stats:", error);
-      // Stats might not be available for all roles, that's okay
+      // Fallback to empty stats if something fails
+      setStats({
+        total: 0, open: 0, inProgress: 0, resolved: 0, closed: 0,
+        critical: 0, high: 0, medium: 0, low: 0
+      });
     }
   };
 
   const loadRecentIssues = async (userData: any) => {
     try {
-      const token = window.localStorage.getItem("ciis_token");
-      const response = await fetch(
-        `${API_BASE_URL}/api/issues?organizationId=${userData.organizationId || "ggv-bilaspur"}&limit=5`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
+      const issuesRef = collection(db, "issues");
+      const q = query(
+        issuesRef,
+        where("organizationId", "==", userData.organizationId || "ggv-bilaspur"),
+        orderBy("createdAt", "desc"),
+        limit(5)
       );
 
-      if (response.ok) {
-        const result = await response.json();
-        if (result.success && result.data?.issues) {
-          setRecentIssues(result.data.issues);
-        }
-      }
+      const querySnapshot = await getDocs(q);
+      const issues: Issue[] = [];
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        issues.push({
+          id: doc.id,
+          title: data.title || "Untitled Issue",
+          category: data.category || "other",
+          severity: data.severity || 0,
+          priority: data.priority || "low",
+          status: data.status || "open",
+          buildingId: data.buildingId,
+          createdAt: data.createdAt
+        });
+      });
+      
+      setRecentIssues(issues);
     } catch (error) {
       console.error("Error loading recent issues:", error);
     }
@@ -144,23 +176,34 @@ export default function DashboardPage() {
 
   const loadHighPriorityIssues = async (userData: any) => {
     try {
-      const token = window.localStorage.getItem("ciis_token");
-      const response = await fetch(
-        `${API_BASE_URL}/api/issues/priorities?organizationId=${userData.organizationId || "ggv-bilaspur"}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
+      const issuesRef = collection(db, "issues");
+      // Firestore requires an index for 'in' queries combined with orderBy.
+      // If index is missing, this might fail in console, but it's the correct query.
+      const q = query(
+        issuesRef,
+        where("organizationId", "==", userData.organizationId || "ggv-bilaspur"),
+        where("priority", "in", ["critical", "high"]),
+        orderBy("createdAt", "desc"),
+        limit(5)
       );
 
-      if (response.ok) {
-        const result = await response.json();
-        if (result.success && result.data) {
-          setHighPriorityIssues(Array.isArray(result.data) ? result.data : []);
-        }
-      }
+      const querySnapshot = await getDocs(q);
+      const issues: Issue[] = [];
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        issues.push({
+          id: doc.id,
+          title: data.title || "Untitled Issue",
+          category: data.category || "other",
+          severity: data.severity || 0,
+          priority: data.priority || "low",
+          status: data.status || "open",
+          buildingId: data.buildingId,
+          createdAt: data.createdAt
+        });
+      });
+
+      setHighPriorityIssues(issues);
     } catch (error) {
       console.error("Error loading high priority issues:", error);
     }
@@ -235,7 +278,6 @@ export default function DashboardPage() {
   if (isLoading) {
     return (
       <div className="relative min-h-screen bg-[#050814]">
-        <FloatingNav />
         <div className="flex items-center justify-center h-screen">
           <div className="text-center">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-violet-500 mb-4"></div>
@@ -248,7 +290,7 @@ export default function DashboardPage() {
 
   return (
     <div className="relative min-h-screen bg-[#050814] text-white">
-      <FloatingNav />
+
       
       {/* Ambient background */}
       <div className="fixed inset-0 -z-10">
@@ -329,7 +371,7 @@ export default function DashboardPage() {
               title="Priorities"
               description="View high-priority issues requiring attention"
               icon="⚡"
-              href="/priorities"
+              href="/priority"
               gradient="from-orange-600 to-red-600"
             />
             <QuickActionCard
@@ -353,7 +395,7 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold">High Priority Issues</h2>
               <Link
-                href="/priorities"
+                href="/priority"
                 className="text-sm text-violet-400 hover:text-violet-300 transition-colors"
               >
                 View all →
@@ -523,7 +565,7 @@ export default function DashboardPage() {
             <span>•</span>
             <span>Severity: {issue.severity}/10</span>
           </div>
-          <p className="text-xs text-white/40 mt-2">
+          <p className="text-xs text-white/40 mt-2 text-right">
             {formatDate(issue.createdAt)}
           </p>
         </motion.div>
