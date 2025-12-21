@@ -288,14 +288,8 @@ export default function ReportPage() {
           router.push("/dashboard");
         }, 1500);
       } else {
-        // Show validation errors if available
-        if (result.details && Array.isArray(result.details) && result.details.length > 0) {
-          const errorMessages = result.details.map((detail: any) => detail.message).join(", ");
-          toast.error(`Validation error: ${errorMessages}`);
-        } else {
-          const errorMessage = result.message || result.error || "Failed to report issue";
-          toast.error(errorMessage);
-        }
+        const errorMessage = result.message || result.error || "Failed to report issue";
+        toast.error(errorMessage);
       }
     } catch (error) {
       console.error("Error submitting issue:", error);
