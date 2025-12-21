@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { FloatingNav } from "@/components/landing/FloatingNav";
+import { auth } from "@/lib/firebase";
 import toast from "react-hot-toast";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
@@ -239,7 +240,18 @@ export default function ReportPage() {
     setIsSubmitting(true);
 
     try {
-      const token = window.localStorage.getItem("ciis_token");
+      let token = window.localStorage.getItem("ciis_token");
+      
+      // Refresh token if possible
+      if (auth.currentUser) {
+        try {
+          token = await auth.currentUser.getIdToken();
+          // Update local storage
+          window.localStorage.setItem("ciis_token", token);
+        } catch (e) {
+          console.error("Token refresh failed", e);
+        }
+      }
 
       // Upload images first if any
       const imageUrls = await uploadImages();

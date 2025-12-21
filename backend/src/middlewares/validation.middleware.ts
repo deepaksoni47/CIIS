@@ -96,7 +96,7 @@ export const validateIssueCreation = [
     .withMessage("Title is required")
     .isLength({ min: 5, max: 200 })
     .withMessage("Title must be between 5 and 200 characters")
-    .matches(/^[a-zA-Z0-9\s\-.,!?()]+$/)
+    .matches(/^[a-zA-Z0-9\s\-.,!?()'":/@#]+$/)
     .withMessage("Title contains invalid characters"),
 
   body("description")
