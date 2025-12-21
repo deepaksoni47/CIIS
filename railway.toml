@@ -1,6 +1,14 @@
 [build]
 builder = "NIXPACKS"
-buildCommand = "cd backend && npm install && npm run build"
+
+[build.nixpacks]
+# Tell Nixpacks this is a Node.js project
+pkgs = ["nodejs_20", "npm-10"]
+
+[build.nixpacksPlan]
+phases.setup.nixPkgs = ["nodejs_20"]
+phases.install.cmds = ["cd backend && npm ci"]
+phases.build.cmds = ["cd backend && npm run build"]
 
 [deploy]
 startCommand = "cd backend && npm start"
