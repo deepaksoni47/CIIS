@@ -142,7 +142,7 @@ export async function getIssue(req: Request, res: Response) {
 export async function getIssues(req: Request, res: Response) {
   try {
     const userId = req.user?.uid;
-    const userRole = req.userData?.role;
+    // const userRole = req.userData?.role; // Commented out - currently not used
 
     if (!userId) {
       return res.status(401).json({

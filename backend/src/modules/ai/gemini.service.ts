@@ -509,7 +509,7 @@ Only respond with valid JSON.`;
     console.error("Text classification error:", error);
 
     // Intelligent fallback
-    const lowerText = textInput.toLowerCase();
+    // const lowerText = textInput.toLowerCase(); // Not used currently
     let category = "Other";
     let severity = 5;
     let priority: "low" | "medium" | "high" | "critical" = "medium";
