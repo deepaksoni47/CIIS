@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Campus Infrastructure Intelligence System - Frontend Application",
   "private": true,
+  "npmConfig": {
+    "legacy-peer-deps": "true"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",

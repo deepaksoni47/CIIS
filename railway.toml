@@ -11,7 +11,7 @@ providers = ["node"]
 nixPkgs = ["nodejs_20"]
 
 [build.nixpacksPlan.phases.install]
-cmds = ["cd backend && npm ci --prefer-offline --no-audit"]
+cmds = ["cd backend && npm install --prefer-offline --no-audit"]
 
 [build.nixpacksPlan.phases.build]
 cmds = ["cd backend && npm run build"]
