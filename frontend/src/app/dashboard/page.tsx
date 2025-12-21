@@ -333,7 +333,7 @@ export default function DashboardPage() {
               title="Priorities"
               description="View high-priority issues requiring attention"
               icon="⚡"
-              href="/priorities"
+              href="/priority"
               gradient="from-orange-600 to-red-600"
             />
             <QuickActionCard
@@ -357,7 +357,7 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold">High Priority Issues</h2>
               <Link
-                href="/priorities"
+                href="/priority"
                 className="text-sm text-violet-400 hover:text-violet-300 transition-colors"
               >
                 View all →

@@ -302,7 +302,7 @@ export function FloatingNav() {
             Heatmap
           </motion.a>
           <motion.a
-            href="/priorities"
+            href="/priority"
             className="px-5 py-3 rounded-xl text-white/70 hover:text-white hover:bg-white/5 text-sm font-medium transition-all text-center"
             whileTap={{ scale: 0.95 }}
             onClick={() => setIsMobileMenuOpen(false)}
