@@ -7,7 +7,7 @@ import { auth, googleProvider } from "@/lib/firebase";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
-  "https://ciis-backend-production.up.railway.app";
+  "https://ciis-production-ebbd.up.railway.app";
 
 interface GoogleSignInButtonProps {
   organizationId?: string;
