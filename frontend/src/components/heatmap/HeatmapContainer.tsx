@@ -2,18 +2,24 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
-import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from "react-leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Popup,
+  useMapEvents,
+} from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { HeatmapLayer } from "./HeatmapLayer";
-import { HeatmapSidebar } from "./HeatmapSidebar";
 import { HeatmapLegend } from "./HeatmapLegend";
 
 // Fix for default marker icons in Next.js
 if (typeof window !== "undefined") {
   delete (L.Icon.Default.prototype as any)._getIconUrl;
   L.Icon.Default.mergeOptions({
-    iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+    iconRetinaUrl:
+      "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
     iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
     shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
   });
@@ -41,7 +47,11 @@ interface HeatmapContainerProps {
 }
 
 // Component to handle zoom level changes
-function ZoomHandler({ onZoomChange }: { onZoomChange: (zoom: number) => void }) {
+function ZoomHandler({
+  onZoomChange,
+}: {
+  onZoomChange: (zoom: number) => void;
+}) {
   const map = useMapEvents({
     zoomend: () => {
       onZoomChange(map.getZoom());
@@ -89,7 +99,7 @@ export function HeatmapContainer({
   // Filter heatmap data based on active layers
   const filteredData = useMemo(() => {
     if (!heatmapData.length) return [];
-    
+
     // Filter by active layers (categories)
     return heatmapData.filter((point) => {
       if (!point.categories || point.categories.length === 0) {
@@ -125,34 +135,34 @@ export function HeatmapContainer({
   const handleLayerToggle = (layer: "water" | "power" | "wifi") => {
     setLayers((prev) => {
       const newLayers = { ...prev, [layer]: !prev[layer] };
-      
+
       // Notify parent component of filter changes
       if (onFiltersChange) {
         const activeCategories: string[] = [];
         if (newLayers.water) activeCategories.push(...layerCategoryMap.water);
         if (newLayers.power) activeCategories.push(...layerCategoryMap.power);
         if (newLayers.wifi) activeCategories.push(...layerCategoryMap.wifi);
-        
+
         onFiltersChange({
           categories: activeCategories,
           timeRange,
         });
       }
-      
+
       return newLayers;
     });
   };
 
   const handleTimeRangeChange = (range: "24h" | "7d" | "30d") => {
     setTimeRange(range);
-    
+
     // Notify parent component of filter changes
     if (onFiltersChange) {
       const activeCategories: string[] = [];
       if (layers.water) activeCategories.push(...layerCategoryMap.water);
       if (layers.power) activeCategories.push(...layerCategoryMap.power);
       if (layers.wifi) activeCategories.push(...layerCategoryMap.wifi);
-      
+
       onFiltersChange({
         categories: activeCategories,
         timeRange: range,
@@ -175,13 +185,14 @@ export function HeatmapContainer({
   return (
     <div className="relative w-full h-full">
       <MapContainer
+        key="heatmap-map"
         center={center}
         zoom={zoom}
         style={{ height: "100%", width: "100%" }}
         className="z-0"
-        bounds={bounds}
-        maxBounds={bounds}
         scrollWheelZoom={true}
+        minZoom={5}
+        maxZoom={19}
       >
         {/* Dark theme tile layer (CartoDB Dark Matter) */}
         <TileLayer
@@ -218,7 +229,8 @@ export function HeatmapContainer({
                   )}
                   {point.avgSeverity && (
                     <p className="text-sm text-gray-700 mb-1">
-                      <strong>Avg Severity:</strong> {point.avgSeverity.toFixed(1)}/10
+                      <strong>Avg Severity:</strong>{" "}
+                      {point.avgSeverity.toFixed(1)}/10
                     </p>
                   )}
                   {point.categories && point.categories.length > 0 && (
@@ -237,15 +249,6 @@ export function HeatmapContainer({
         {/* Zoom handler */}
         <ZoomHandler onZoomChange={setCurrentZoom} />
       </MapContainer>
-
-      {/* Sidebar */}
-      <HeatmapSidebar
-        layers={layers}
-        timeRange={timeRange}
-        onLayerToggle={handleLayerToggle}
-        onTimeRangeChange={handleTimeRangeChange}
-        onClose={() => {}}
-      />
 
       {/* Legend */}
       <HeatmapLegend />
@@ -308,4 +311,3 @@ export function HeatmapContainer({
     </div>
   );
 }
-

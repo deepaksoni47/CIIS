@@ -16,8 +16,8 @@ export function FloatingNav() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState<string | null>(null);
   const { scrollY } = useScroll();
-  const opacity = useTransform(scrollY, [0, 100], [0, 1]);
-  const y = useTransform(scrollY, [0, 100], [-20, 0]);
+  // Always show navbar, just adjust styling based on scroll
+  const backgroundBlur = useTransform(scrollY, [0, 100], [0.3, 0.5]);
 
   // Check authentication state
   useEffect(() => {
@@ -25,7 +25,7 @@ export function FloatingNav() {
       if (typeof window !== "undefined") {
         const token = window.localStorage.getItem("ciis_token");
         const userStr = window.localStorage.getItem("ciis_user");
-        
+
         if (token) {
           setIsLoggedIn(true);
           if (userStr) {
@@ -75,7 +75,10 @@ export function FloatingNav() {
           });
         } catch (err) {
           // Backend logout failed, but continue with client-side cleanup
-          console.warn("Backend logout failed, continuing with client-side logout:", err);
+          console.warn(
+            "Backend logout failed, continuing with client-side logout:",
+            err
+          );
         }
       }
 
@@ -117,14 +120,13 @@ export function FloatingNav() {
 
   return (
     <motion.nav
-      style={{ opacity, y }}
       className={`
         fixed top-4 md:top-6 left-1/2 z-50
         transition-all duration-300
-        ${isScrolled ? "translate-y-0" : "-translate-y-32"}
+        transform -translate-x-1/2
       `}
     >
-      <div className="flex items-center justify-center gap-2 px-4 md:px-6 py-3 rounded-full bg-black/40 backdrop-blur-xl border border-white/10 shadow-2xl transform -translate-x-1/2">
+      <div className="flex items-center justify-center gap-2 px-4 md:px-6 py-3 rounded-full bg-black/40 backdrop-blur-xl border border-white/10 shadow-2xl">
         {/* Logo */}
         <motion.a
           href="/"

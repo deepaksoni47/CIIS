@@ -4,10 +4,10 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { FloatingNav } from "@/components/landing/FloatingNav";
 import toast from "react-hot-toast";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
 
 interface Issue {
   id: string;
@@ -52,8 +52,14 @@ export default function DashboardPage() {
   }, []);
 
   const checkAuthAndLoadData = async () => {
-    const token = typeof window !== "undefined" ? window.localStorage.getItem("ciis_token") : null;
-    const userStr = typeof window !== "undefined" ? window.localStorage.getItem("ciis_user") : null;
+    const token =
+      typeof window !== "undefined"
+        ? window.localStorage.getItem("ciis_token")
+        : null;
+    const userStr =
+      typeof window !== "undefined"
+        ? window.localStorage.getItem("ciis_user")
+        : null;
 
     if (!token || !userStr) {
       toast.error("Please log in to access dashboard");
@@ -235,7 +241,6 @@ export default function DashboardPage() {
   if (isLoading) {
     return (
       <div className="relative min-h-screen bg-[#050814]">
-        <FloatingNav />
         <div className="flex items-center justify-center h-screen">
           <div className="text-center">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-violet-500 mb-4"></div>
@@ -248,8 +253,6 @@ export default function DashboardPage() {
 
   return (
     <div className="relative min-h-screen bg-[#050814] text-white">
-      <FloatingNav />
-      
       {/* Ambient background */}
       <div className="fixed inset-0 -z-10">
         <div className="absolute top-20 left-20 w-96 h-96 bg-violet-500/10 rounded-full blur-3xl animate-pulse-slow" />
@@ -361,9 +364,9 @@ export default function DashboardPage() {
             </div>
             <div className="space-y-3">
               {highPriorityIssues.length > 0 ? (
-                highPriorityIssues.slice(0, 5).map((issue) => (
-                  <IssueCard key={issue.id} issue={issue} />
-                ))
+                highPriorityIssues
+                  .slice(0, 5)
+                  .map((issue) => <IssueCard key={issue.id} issue={issue} />)
               ) : (
                 <p className="text-white/40 text-sm py-4 text-center">
                   No high-priority issues at the moment
@@ -458,7 +461,9 @@ export default function DashboardPage() {
       <div className="bg-black/40 backdrop-blur-xl border border-white/10 rounded-xl p-4">
         <div className="flex items-center justify-between mb-2">
           <span className="text-2xl">{icon}</span>
-          <span className={`text-2xl font-bold bg-gradient-to-r ${gradient} bg-clip-text text-transparent`}>
+          <span
+            className={`text-2xl font-bold bg-gradient-to-r ${gradient} bg-clip-text text-transparent`}
+          >
             {value}
           </span>
         </div>
@@ -517,7 +522,9 @@ export default function DashboardPage() {
           <div className="flex items-center gap-3 text-xs text-white/60">
             <span className="capitalize">{issue.category}</span>
             <span>•</span>
-            <span className={`px-2 py-0.5 rounded ${getStatusColor(issue.status)}`}>
+            <span
+              className={`px-2 py-0.5 rounded ${getStatusColor(issue.status)}`}
+            >
               {issue.status.replace("_", " ")}
             </span>
             <span>•</span>
@@ -531,4 +538,3 @@ export default function DashboardPage() {
     );
   }
 }
-

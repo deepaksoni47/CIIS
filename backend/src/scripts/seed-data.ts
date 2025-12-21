@@ -36,12 +36,12 @@ const db = admin.firestore();
 async function main() {
   console.log("🌱 Starting Firestore seed...");
 
-  // Sample buildings
+  // Sample buildings - Coordinates: 22°07′45″N, 82°08′10″E
   const buildingsData = [
     {
       id: "BLDG-101",
       name: "Engineering Building",
-      location: new admin.firestore.GeoPoint(40.7128, -74.006),
+      location: new admin.firestore.GeoPoint(22.1292, 82.1361),
       address: "123 Campus Drive",
       buildingType: "Academic",
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -50,7 +50,7 @@ async function main() {
     {
       id: "BLDG-102",
       name: "Science Hall",
-      location: new admin.firestore.GeoPoint(40.7138, -74.007),
+      location: new admin.firestore.GeoPoint(22.1302, 82.1371),
       address: "456 University Avenue",
       buildingType: "Academic",
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -59,7 +59,7 @@ async function main() {
     {
       id: "BLDG-103",
       name: "Library",
-      location: new admin.firestore.GeoPoint(40.712, -74.005),
+      location: new admin.firestore.GeoPoint(22.1282, 82.1351),
       address: "789 Academic Way",
       buildingType: "Library",
       createdAt: admin.firestore.FieldValue.serverTimestamp(),

@@ -186,23 +186,31 @@ export async function getHeatmapData(
   } catch (error: any) {
     // Handle Firestore index errors
     if (error?.code === 9 || error?.message?.includes("index")) {
-      const indexUrl = error?.message?.match(/https:\/\/console\.firebase\.google\.com[^\s]+/)?.[0];
-      
+      const indexUrl = error?.message?.match(
+        /https:\/\/console\.firebase\.google\.com[^\s]+/
+      )?.[0];
+
       console.warn("⚠️  Firestore index required for optimal performance.");
       console.warn("   Error:", error.message);
       if (indexUrl) {
         console.warn("   Create index at:", indexUrl);
       } else {
-        console.warn("   Required index: issues collection, fields: organizationId (Ascending), createdAt (Ascending)");
-        console.warn("   Create at: https://console.firebase.google.com/project/ciis-2882b/firestore/indexes");
+        console.warn(
+          "   Required index: issues collection, fields: organizationId (Ascending), createdAt (Ascending)"
+        );
+        console.warn(
+          "   Create at: https://console.firebase.google.com/project/ciis-2882b/firestore/indexes"
+        );
       }
-      
+
       // Fallback: Query without date range and filter in memory
-      console.warn("   Falling back to in-memory date filtering (slower but works without index)");
+      console.warn(
+        "   Falling back to in-memory date filtering (slower but works without index)"
+      );
       const fallbackQuery = firestore
         .collection("issues")
         .where("organizationId", "==", filters.organizationId);
-      
+
       snapshot = await fallbackQuery.get();
     } else {
       throw error;
@@ -219,50 +227,74 @@ export async function getHeatmapData(
   if (filters.startDate || filters.endDate) {
     issues = issues.filter((issue) => {
       if (!issue.createdAt) return false;
-      
+
       const issueDate = (issue.createdAt as adminFirestore.Timestamp).toDate();
-      
+
       if (filters.startDate && issueDate < filters.startDate) return false;
       if (filters.endDate && issueDate > filters.endDate) return false;
-      
+
       return true;
     });
   }
 
   // Apply remaining filters in memory (avoids complex index requirements)
+  console.log(`🔍 Heatmap filter - Initial issues: ${issues.length}`);
+  console.log(`   Categories filter:`, filters.categories);
+  console.log(`   Priorities filter:`, filters.priorities);
+  console.log(`   Statuses filter:`, filters.statuses);
+
   if (filters.campusId) {
     issues = issues.filter((issue) => issue.campusId === filters.campusId);
+    console.log(`   After campusId filter: ${issues.length} issues`);
   }
 
   if (filters.buildingIds && filters.buildingIds.length > 0) {
     issues = issues.filter(
-      (issue) => issue.buildingId && filters.buildingIds!.includes(issue.buildingId)
+      (issue) =>
+        issue.buildingId && filters.buildingIds!.includes(issue.buildingId)
     );
+    console.log(`   After buildingIds filter: ${issues.length} issues`);
   }
 
   if (filters.categories && filters.categories.length > 0) {
+    // Make category filter case-insensitive
+    const lowerCaseCategories = filters.categories.map((c) => c.toLowerCase());
     issues = issues.filter(
-      (issue) => issue.category && filters.categories!.includes(issue.category)
+      (issue) =>
+        issue.category &&
+        lowerCaseCategories.includes(issue.category.toLowerCase())
     );
+    console.log(`   After categories filter: ${issues.length} issues`);
   }
 
   if (filters.priorities && filters.priorities.length > 0) {
-    const priorityValues = filters.priorities.map((p) => p.toString());
-    issues = issues.filter(
-      (issue) => issue.priority && priorityValues.includes(issue.priority.toString())
+    const priorityValues = filters.priorities.map((p) =>
+      p.toString().toLowerCase()
     );
+    issues = issues.filter(
+      (issue) =>
+        issue.priority &&
+        priorityValues.includes(issue.priority.toString().toLowerCase())
+    );
+    console.log(`   After priorities filter: ${issues.length} issues`);
   }
 
   if (filters.statuses && filters.statuses.length > 0) {
-    const statusValues = filters.statuses.map((s) => s.toString());
-    issues = issues.filter(
-      (issue) => issue.status && statusValues.includes(issue.status.toString())
+    const statusValues = filters.statuses.map((s) =>
+      s.toString().toLowerCase()
     );
+    issues = issues.filter(
+      (issue) =>
+        issue.status &&
+        statusValues.includes(issue.status.toString().toLowerCase())
+    );
+    console.log(`   After statuses filter: ${issues.length} issues`);
   }
 
   // Apply additional filters
   if (filters.minSeverity) {
     issues = issues.filter((issue) => issue.severity >= filters.minSeverity!);
+    console.log(`   After minSeverity filter: ${issues.length} issues`);
   }
 
   if (filters.maxAge) {
@@ -272,7 +304,10 @@ export async function getHeatmapData(
       const createdAt = issue.createdAt.toDate();
       return createdAt >= cutoffDate;
     });
+    console.log(`   After maxAge filter: ${issues.length} issues`);
   }
+
+  console.log(`✅ Final filtered issues: ${issues.length}`);
 
   // Group issues by location
   const points = aggregateByLocation(issues, config.gridSize);
@@ -649,15 +684,16 @@ function formatAsGeoJSON(
 
   // Handle empty date range
   const now = new Date();
-  const dateRange = allDates.length > 0
-    ? {
-        start: new Date(Math.min(...allDates.map((d) => d.getTime()))),
-        end: new Date(Math.max(...allDates.map((d) => d.getTime()))),
-      }
-    : {
-        start: now,
-        end: now,
-      };
+  const dateRange =
+    allDates.length > 0
+      ? {
+          start: new Date(Math.min(...allDates.map((d) => d.getTime()))),
+          end: new Date(Math.max(...allDates.map((d) => d.getTime()))),
+        }
+      : {
+          start: now,
+          end: now,
+        };
 
   return {
     type: "FeatureCollection",

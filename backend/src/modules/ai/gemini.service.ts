@@ -10,7 +10,7 @@ const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_API_KEY || "");
  * Get Gemini Pro model instance
  */
 export function getGeminiModel() {
-  return genAI.getGenerativeModel({ model: "gemini-pro" });
+  return genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
 }
 
 /**
@@ -25,14 +25,66 @@ export function getGeminiVisionModel() {
  */
 export async function generateInsights(prompt: string): Promise<string> {
   try {
+    // Check if API key is configured
+    if (
+      !process.env.GOOGLE_GEMINI_API_KEY ||
+      process.env.GOOGLE_GEMINI_API_KEY === ""
+    ) {
+      console.warn(
+        "⚠️ GOOGLE_GEMINI_API_KEY not configured. Using fallback response."
+      );
+      return generateFallbackInsight(prompt);
+    }
+
     const model = getGeminiModel();
     const result = await model.generateContent(prompt);
     const response = await result.response;
     return response.text();
   } catch (error) {
     console.error("Gemini API error:", error);
-    throw new Error("Failed to generate AI insights");
+    console.warn("⚠️ Falling back to mock insights due to API error");
+    return generateFallbackInsight(prompt);
   }
+}
+
+/**
+ * Generate fallback insights when Gemini API is not available
+ */
+function generateFallbackInsight(prompt: string): string {
+  // Extract key information from the prompt
+  const criticalCount = (prompt.match(/critical/gi) || []).length;
+  const highCount = (prompt.match(/high/gi) || []).length;
+  const plumbingCount = (prompt.match(/plumbing|water|leak/gi) || []).length;
+  const electricalCount = (prompt.match(/electrical|power|electric/gi) || [])
+    .length;
+  const hvacCount = (prompt.match(/hvac|ac|air conditioning/gi) || []).length;
+
+  let insights = "**Infrastructure Analysis Summary**\n\n";
+
+  if (criticalCount > 0 || highCount > 0) {
+    insights += `🚨 **Priority Alert**: Detected ${criticalCount} critical and ${highCount} high-priority issues requiring immediate attention.\n\n`;
+  }
+
+  if (plumbingCount > 0) {
+    insights += `💧 **Water & Plumbing**: ${plumbingCount} plumbing-related issues identified. Recommend immediate inspection to prevent water damage and health hazards.\n\n`;
+  }
+
+  if (electricalCount > 0) {
+    insights += `⚡ **Electrical Systems**: ${electricalCount} electrical issues detected. Safety inspection recommended to prevent fire hazards.\n\n`;
+  }
+
+  if (hvacCount > 0) {
+    insights += `🌡️ **HVAC Systems**: ${hvacCount} climate control issues reported. Temperature regulation affecting user comfort.\n\n`;
+  }
+
+  insights += `**Recommended Actions:**\n`;
+  insights += `1. Address all critical-priority issues within 24 hours\n`;
+  insights += `2. Schedule preventive maintenance for recurring issue areas\n`;
+  insights += `3. Allocate additional resources to high-traffic areas\n`;
+  insights += `4. Monitor infrastructure systems for early warning signs\n\n`;
+  insights += `*Note: To enable AI-powered insights with Google Gemini, configure GOOGLE_GEMINI_API_KEY in your environment.*`;
+
+  return insights;
 }
 
 /**

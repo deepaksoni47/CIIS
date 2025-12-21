@@ -3,11 +3,11 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { FloatingNav } from "@/components/landing/FloatingNav";
 import { auth } from "@/lib/firebase";
 import toast from "react-hot-toast";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
 
 const CATEGORIES = [
   "Structural",
@@ -58,7 +58,7 @@ export default function ReportPage() {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    category: "Other" as typeof CATEGORIES[number],
+    category: "Other" as (typeof CATEGORIES)[number],
     buildingId: "",
     departmentId: "",
     roomId: "",
@@ -72,8 +72,14 @@ export default function ReportPage() {
   }, []);
 
   const checkAuth = () => {
-    const token = typeof window !== "undefined" ? window.localStorage.getItem("ciis_token") : null;
-    const userStr = typeof window !== "undefined" ? window.localStorage.getItem("ciis_user") : null;
+    const token =
+      typeof window !== "undefined"
+        ? window.localStorage.getItem("ciis_token")
+        : null;
+    const userStr =
+      typeof window !== "undefined"
+        ? window.localStorage.getItem("ciis_user")
+        : null;
 
     if (!token || !userStr) {
       toast.error("Please log in to report an issue");
@@ -117,7 +123,8 @@ export default function ReportPage() {
         let errorMessage = "Unable to retrieve your location";
         switch (error.code) {
           case error.PERMISSION_DENIED:
-            errorMessage = "Location access denied. Please enable location access to report issues.";
+            errorMessage =
+              "Location access denied. Please enable location access to report issues.";
             break;
           case error.POSITION_UNAVAILABLE:
             errorMessage = "Location information unavailable";
@@ -142,7 +149,9 @@ export default function ReportPage() {
   };
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -202,11 +211,15 @@ export default function ReportPage() {
       } else {
         const errorData = await response.json().catch(() => ({}));
         console.error("Failed to upload images:", errorData);
-        toast.error("Failed to upload images. You can still submit without images.");
+        toast.error(
+          "Failed to upload images. You can still submit without images."
+        );
       }
     } catch (error) {
       console.error("Error uploading images:", error);
-      toast.error("Error uploading images. You can still submit without images.");
+      toast.error(
+        "Error uploading images. You can still submit without images."
+      );
     }
 
     return uploadedUrls;
@@ -241,7 +254,7 @@ export default function ReportPage() {
 
     try {
       let token = window.localStorage.getItem("ciis_token");
-      
+
       // Refresh token if possible
       if (auth.currentUser) {
         try {
@@ -300,7 +313,8 @@ export default function ReportPage() {
           router.push("/dashboard");
         }, 1500);
       } else {
-        const errorMessage = result.message || result.error || "Failed to report issue";
+        const errorMessage =
+          result.message || result.error || "Failed to report issue";
         toast.error(errorMessage);
       }
     } catch (error) {
@@ -314,7 +328,6 @@ export default function ReportPage() {
   if (!isAuthenticated) {
     return (
       <div className="relative min-h-screen bg-[#050814]">
-        <FloatingNav />
         <div className="flex items-center justify-center h-screen">
           <div className="text-center">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-violet-500 mb-4"></div>
@@ -327,8 +340,6 @@ export default function ReportPage() {
 
   return (
     <div className="relative min-h-screen bg-[#050814] text-white">
-      <FloatingNav />
-
       {/* Ambient background */}
       <div className="fixed inset-0 -z-10">
         <div className="absolute top-20 left-20 w-96 h-96 bg-violet-500/10 rounded-full blur-3xl animate-pulse-slow" />
@@ -362,8 +373,8 @@ export default function ReportPage() {
             location.latitude && location.longitude
               ? "bg-green-950/40 border-green-500/30"
               : location.error
-              ? "bg-rose-950/40 border-rose-500/30"
-              : "bg-yellow-950/40 border-yellow-500/30"
+                ? "bg-rose-950/40 border-rose-500/30"
+                : "bg-yellow-950/40 border-yellow-500/30"
           }`}
         >
           <div className="flex items-center justify-between">
@@ -410,26 +421,28 @@ export default function ReportPage() {
                   {location.latitude && location.longitude
                     ? "Location Access Granted"
                     : location.isRequesting
-                    ? "Requesting Location..."
-                    : location.error
-                    ? "Location Access Required"
-                    : "Requesting Location..."}
+                      ? "Requesting Location..."
+                      : location.error
+                        ? "Location Access Required"
+                        : "Requesting Location..."}
                 </p>
                 <p className="text-sm text-white/60">
                   {location.latitude && location.longitude
                     ? `Lat: ${location.latitude.toFixed(6)}, Lng: ${location.longitude.toFixed(6)}`
-                    : location.error || "Please allow location access to continue"}
+                    : location.error ||
+                      "Please allow location access to continue"}
                 </p>
               </div>
             </div>
-            {(!location.latitude || !location.longitude) && !location.isRequesting && (
-              <button
-                onClick={requestLocation}
-                className="px-4 py-2 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium transition-colors"
-              >
-                Retry
-              </button>
-            )}
+            {(!location.latitude || !location.longitude) &&
+              !location.isRequesting && (
+                <button
+                  onClick={requestLocation}
+                  className="px-4 py-2 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium transition-colors"
+                >
+                  Retry
+                </button>
+              )}
           </div>
         </motion.div>
 
@@ -465,7 +478,10 @@ export default function ReportPage() {
 
           {/* Description */}
           <div>
-            <label htmlFor="description" className="block text-sm font-medium mb-2">
+            <label
+              htmlFor="description"
+              className="block text-sm font-medium mb-2"
+            >
               Description <span className="text-rose-400">*</span>
             </label>
             <textarea
@@ -487,7 +503,10 @@ export default function ReportPage() {
 
           {/* Category */}
           <div>
-            <label htmlFor="category" className="block text-sm font-medium mb-2">
+            <label
+              htmlFor="category"
+              className="block text-sm font-medium mb-2"
+            >
               Category <span className="text-rose-400">*</span>
             </label>
             <select
@@ -508,7 +527,10 @@ export default function ReportPage() {
 
           {/* Building */}
           <div>
-            <label htmlFor="buildingId" className="block text-sm font-medium mb-2">
+            <label
+              htmlFor="buildingId"
+              className="block text-sm font-medium mb-2"
+            >
               Building <span className="text-rose-400">*</span>
             </label>
             <select
@@ -523,7 +545,11 @@ export default function ReportPage() {
                 Select a building
               </option>
               {BUILDINGS.map((building) => (
-                <option key={building.id} value={building.id} className="bg-[#1a1a2e]">
+                <option
+                  key={building.id}
+                  value={building.id}
+                  className="bg-[#1a1a2e]"
+                >
                   {building.name}
                 </option>
               ))}
@@ -532,8 +558,12 @@ export default function ReportPage() {
 
           {/* Department (Optional) */}
           <div>
-            <label htmlFor="departmentId" className="block text-sm font-medium mb-2">
-              Department <span className="text-white/40 text-xs">(Optional)</span>
+            <label
+              htmlFor="departmentId"
+              className="block text-sm font-medium mb-2"
+            >
+              Department{" "}
+              <span className="text-white/40 text-xs">(Optional)</span>
             </label>
             <input
               type="text"
@@ -549,7 +579,8 @@ export default function ReportPage() {
           {/* Room (Optional) */}
           <div>
             <label htmlFor="roomId" className="block text-sm font-medium mb-2">
-              Room Number <span className="text-white/40 text-xs">(Optional)</span>
+              Room Number{" "}
+              <span className="text-white/40 text-xs">(Optional)</span>
             </label>
             <input
               type="text"
@@ -565,7 +596,8 @@ export default function ReportPage() {
           {/* Image Upload */}
           <div>
             <label className="block text-sm font-medium mb-2">
-              Images <span className="text-white/40 text-xs">(Optional, max 5)</span>
+              Images{" "}
+              <span className="text-white/40 text-xs">(Optional, max 5)</span>
             </label>
             <div className="space-y-3">
               <input
@@ -637,7 +669,9 @@ export default function ReportPage() {
           <div className="pt-4">
             <button
               type="submit"
-              disabled={isSubmitting || !location.latitude || !location.longitude}
+              disabled={
+                isSubmitting || !location.latitude || !location.longitude
+              }
               className="w-full px-6 py-4 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold transition-all shadow-lg shadow-violet-500/25 flex items-center justify-center gap-2"
             >
               {isSubmitting ? (
@@ -675,4 +709,3 @@ export default function ReportPage() {
     </div>
   );
 }
-

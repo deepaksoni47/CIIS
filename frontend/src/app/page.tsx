@@ -7,7 +7,6 @@ import { LiveDataTrust } from "@/components/landing/LiveDataTrust";
 import { ImpactMetrics } from "@/components/landing/ImpactMetrics";
 import { TrustAccess } from "@/components/landing/TrustAccess";
 import { FinalCTA } from "@/components/landing/FinalCTA";
-import { FloatingNav } from "@/components/landing/FloatingNav";
 
 export default function Home() {
   return (
@@ -18,9 +17,6 @@ export default function Home() {
         <div className="absolute bottom-40 right-20 w-80 h-80 bg-fuchsia-500/10 rounded-full blur-3xl animate-pulse-slower" />
         <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl animate-float" />
       </div>
-
-      {/* Floating Navigation */}
-      <FloatingNav />
 
       {/* Hero Section */}
       <Hero />

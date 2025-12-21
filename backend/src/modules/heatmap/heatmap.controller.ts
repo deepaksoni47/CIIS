@@ -54,17 +54,25 @@ export async function getHeatmap(req: Request, res: Response): Promise<void> {
     if (categories) {
       filters.categories = Array.isArray(categories)
         ? (categories as string[])
-        : [categories as string];
+        : (categories as string).includes(",")
+          ? (categories as string).split(",").map((c) => c.trim())
+          : [categories as string];
     }
     if (priorities) {
-      filters.priorities = (
-        Array.isArray(priorities) ? priorities : [priorities]
-      ) as IssuePriority[];
+      const priorityArray = Array.isArray(priorities)
+        ? priorities
+        : (priorities as string).includes(",")
+          ? (priorities as string).split(",").map((p) => p.trim())
+          : [priorities];
+      filters.priorities = priorityArray as IssuePriority[];
     }
     if (statuses) {
-      filters.statuses = (
-        Array.isArray(statuses) ? statuses : [statuses]
-      ) as IssueStatus[];
+      const statusArray = Array.isArray(statuses)
+        ? statuses
+        : (statuses as string).includes(",")
+          ? (statuses as string).split(",").map((s) => s.trim())
+          : [statuses];
+      filters.statuses = statusArray as IssueStatus[];
     }
     if (startDate) filters.startDate = new Date(startDate as string);
     if (endDate) filters.endDate = new Date(endDate as string);
@@ -94,31 +102,37 @@ export async function getHeatmap(req: Request, res: Response): Promise<void> {
     res.json({
       success: true,
       data: heatmapData,
-      message: heatmapData.features.length === 0 
-        ? "No heatmap data found for the specified filters" 
-        : `Found ${heatmapData.features.length} heatmap points`,
+      message:
+        heatmapData.features.length === 0
+          ? "No heatmap data found for the specified filters"
+          : `Found ${heatmapData.features.length} heatmap points`,
     });
   } catch (error) {
     console.error("Error getting heatmap data:", error);
-    
+
     // Log full error for debugging
     if (error instanceof Error) {
       console.error("Error stack:", error.stack);
     }
 
     // Return detailed error message
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
-    const statusCode = errorMessage.includes("permission") || errorMessage.includes("unauthorized") 
-      ? 403 
-      : errorMessage.includes("not found") || errorMessage.includes("does not exist")
-      ? 404
-      : 500;
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
+    const statusCode =
+      errorMessage.includes("permission") ||
+      errorMessage.includes("unauthorized")
+        ? 403
+        : errorMessage.includes("not found") ||
+            errorMessage.includes("does not exist")
+          ? 404
+          : 500;
 
     res.status(statusCode).json({
       success: false,
       error: "Failed to get heatmap data",
       message: errorMessage,
-      details: process.env.NODE_ENV === "development" ? errorMessage : undefined,
+      details:
+        process.env.NODE_ENV === "development" ? errorMessage : undefined,
     });
   }
 }
@@ -333,17 +347,25 @@ export async function getStats(req: Request, res: Response): Promise<void> {
     if (categories) {
       filters.categories = Array.isArray(categories)
         ? (categories as string[])
-        : [categories as string];
+        : (categories as string).includes(",")
+          ? (categories as string).split(",").map((c) => c.trim())
+          : [categories as string];
     }
     if (priorities) {
-      filters.priorities = (
-        Array.isArray(priorities) ? priorities : [priorities]
-      ) as IssuePriority[];
+      const priorityArray = Array.isArray(priorities)
+        ? priorities
+        : (priorities as string).includes(",")
+          ? (priorities as string).split(",").map((p) => p.trim())
+          : [priorities];
+      filters.priorities = priorityArray as IssuePriority[];
     }
     if (statuses) {
-      filters.statuses = (
-        Array.isArray(statuses) ? statuses : [statuses]
-      ) as IssueStatus[];
+      const statusArray = Array.isArray(statuses)
+        ? statuses
+        : (statuses as string).includes(",")
+          ? (statuses as string).split(",").map((s) => s.trim())
+          : [statuses];
+      filters.statuses = statusArray as IssueStatus[];
     }
     if (startDate) filters.startDate = new Date(startDate as string);
     if (endDate) filters.endDate = new Date(endDate as string);
