@@ -239,3 +239,243 @@ User Question: ${message}`;
     });
   }
 }
+
+/**
+ * Classify issue from text input
+ */
+export async function classifyTextIssue(req: Request, res: Response) {
+  try {
+    const { text, buildingName, zone, reporterName } = req.body;
+
+    if (!text) {
+      return res.status(400).json({
+        error: "Missing parameter",
+        message: "text is required in request body",
+      });
+    }
+
+    const classification = await geminiService.classifyIssueFromText(text, {
+      buildingName,
+      zone,
+      reporterName,
+    });
+
+    res.json({
+      success: true,
+      data: {
+        originalText: text,
+        classification,
+        timestamp: new Date().toISOString(),
+      },
+    });
+  } catch (error: any) {
+    console.error("Error classifying text:", error);
+    res.status(500).json({
+      error: "Failed to classify issue",
+      message: error.message,
+    });
+  }
+}
+
+/**
+ * Process voice input
+ */
+export async function processVoice(req: Request, res: Response) {
+  try {
+    const { audioBase64, mimeType, buildingName, zone, reporterName } =
+      req.body;
+
+    if (!audioBase64) {
+      return res.status(400).json({
+        error: "Missing parameter",
+        message: "audioBase64 is required in request body",
+      });
+    }
+
+    const result = await geminiService.processVoiceInput(
+      audioBase64,
+      mimeType || "audio/mp3",
+      {
+        buildingName,
+        zone,
+        reporterName,
+      }
+    );
+
+    res.json({
+      success: true,
+      data: result,
+    });
+  } catch (error: any) {
+    console.error("Error processing voice:", error);
+    res.status(500).json({
+      error: "Failed to process voice input",
+      message: error.message,
+    });
+  }
+}
+
+/**
+ * Analyze infrastructure image
+ */
+export async function analyzeImage(req: Request, res: Response) {
+  try {
+    const { imageUrl, expectedCategory, buildingName, additionalContext } =
+      req.body;
+
+    if (!imageUrl) {
+      return res.status(400).json({
+        error: "Missing parameter",
+        message: "imageUrl is required in request body",
+      });
+    }
+
+    const analysis = await geminiService.analyzeInfrastructureImage(imageUrl, {
+      expectedCategory,
+      buildingName,
+      additionalContext,
+    });
+
+    res.json({
+      success: true,
+      data: {
+        imageUrl,
+        analysis,
+        timestamp: new Date().toISOString(),
+      },
+    });
+  } catch (error: any) {
+    console.error("Error analyzing image:", error);
+    res.status(500).json({
+      error: "Failed to analyze image",
+      message: error.message,
+    });
+  }
+}
+
+/**
+ * Generate daily summary for administrators
+ */
+export async function getDailySummary(req: Request, res: Response) {
+  try {
+    const { organizationId, date } = req.query;
+
+    if (!organizationId) {
+      return res.status(400).json({
+        error: "Missing parameter",
+        message: "organizationId is required",
+      });
+    }
+
+    const summaryDate = date ? new Date(date as string) : new Date();
+
+    const summary = await geminiService.generateDailySummary(
+      organizationId as string,
+      summaryDate
+    );
+
+    res.json({
+      success: true,
+      data: summary,
+    });
+  } catch (error: any) {
+    console.error("Error generating daily summary:", error);
+    res.status(500).json({
+      error: "Failed to generate daily summary",
+      message: error.message,
+    });
+  }
+}
+
+/**
+ * Generate trend explanation
+ */
+export async function getTrendExplanation(req: Request, res: Response) {
+  try {
+    const { trends } = req.body;
+
+    if (!trends || !Array.isArray(trends)) {
+      return res.status(400).json({
+        error: "Missing parameter",
+        message: "trends array is required in request body",
+      });
+    }
+
+    const explanation = await geminiService.generateTrendExplanation(trends);
+
+    res.json({
+      success: true,
+      data: explanation,
+    });
+  } catch (error: any) {
+    console.error("Error generating trend explanation:", error);
+    res.status(500).json({
+      error: "Failed to generate trend explanation",
+      message: error.message,
+    });
+  }
+}
+
+/**
+ * Generate incident report
+ */
+export async function getIncidentReport(req: Request, res: Response) {
+  try {
+    const { issueId } = req.params;
+
+    if (!issueId) {
+      return res.status(400).json({
+        error: "Missing parameter",
+        message: "issueId is required",
+      });
+    }
+
+    const db = getFirestore();
+    const issueDoc = await db.collection("issues").doc(issueId).get();
+
+    if (!issueDoc.exists) {
+      return res.status(404).json({
+        error: "Issue not found",
+        message: `Issue with ID ${issueId} does not exist`,
+      });
+    }
+
+    const issue = { id: issueDoc.id, ...issueDoc.data() };
+
+    // Get related issues (same category and building, last 90 days)
+    const ninetyDaysAgo = new Date();
+    ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+
+    const relatedSnapshot = await db
+      .collection("issues")
+      .where("buildingId", "==", issue.buildingId)
+      .where("category", "==", issue.category)
+      .where("createdAt", ">=", ninetyDaysAgo)
+      .get();
+
+    const relatedIssues = relatedSnapshot.docs
+      .map((doc) => ({ id: doc.id, ...doc.data() }))
+      .filter((i: any) => i.id !== issueId);
+
+    const report = await geminiService.generateIncidentReport(
+      issue,
+      relatedIssues
+    );
+
+    res.json({
+      success: true,
+      data: {
+        issueId,
+        report,
+        relatedIssuesCount: relatedIssues.length,
+        generatedAt: new Date().toISOString(),
+      },
+    });
+  } catch (error: any) {
+    console.error("Error generating incident report:", error);
+    res.status(500).json({
+      error: "Failed to generate incident report",
+      message: error.message,
+    });
+  }
+}
