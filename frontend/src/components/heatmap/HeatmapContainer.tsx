@@ -11,8 +11,70 @@ import {
 } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import "@/styles/heatmap.css";
 import { HeatmapLayer } from "./HeatmapLayer";
 import { HeatmapLegend } from "./HeatmapLegend";
+
+// Custom marker icons for different categories
+const createCustomIcon = (category?: string[]) => {
+  let color = "#8b5cf6"; // Default purple
+  let icon = "⚡";
+
+  if (category && category.length > 0) {
+    const cat = category[0].toLowerCase();
+    if (cat.includes("water") || cat.includes("plumb")) {
+      color = "#06b6d4"; // Cyan
+      icon = "💧";
+    } else if (cat.includes("power") || cat.includes("electric")) {
+      color = "#f59e0b"; // Amber
+      icon = "⚡";
+    } else if (cat.includes("wifi") || cat.includes("network")) {
+      color = "#10b981"; // Green
+      icon = "📡";
+    } else if (cat.includes("hvac") || cat.includes("ac")) {
+      color = "#3b82f6"; // Blue
+      icon = "❄️";
+    } else if (cat.includes("maintenance")) {
+      color = "#6366f1"; // Indigo
+      icon = "🔧";
+    }
+  }
+
+  return L.divIcon({
+    className: "custom-marker",
+    html: `
+      <div style="
+        position: relative;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      ">
+        <div style="
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          background: ${color};
+          border-radius: 50% 50% 50% 0;
+          transform: rotate(-45deg);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+          border: 3px solid white;
+        "></div>
+        <div style="
+          position: relative;
+          font-size: 18px;
+          transform: rotate(0deg);
+          z-index: 10;
+          filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
+        ">${icon}</div>
+      </div>
+    `,
+    iconSize: [40, 40],
+    iconAnchor: [20, 40],
+    popupAnchor: [0, -40],
+  });
+};
 
 // Fix for default marker icons in Next.js
 if (typeof window !== "undefined") {
@@ -206,45 +268,145 @@ export function HeatmapContainer({
         {heatmapPoints.length > 0 && (
           <HeatmapLayer
             points={heatmapPoints}
-            radius={25}
-            blur={15}
+            radius={40}
+            blur={25}
             maxZoom={17}
-            minOpacity={0.05}
+            max={1.5}
+            minOpacity={0.2}
           />
         )}
 
         {/* Individual Markers (when zoomed in) */}
         {showMarkers &&
-          filteredData.map((point, index) => (
-            <Marker key={index} position={[point.lat, point.lng]}>
-              <Popup>
-                <div className="min-w-[200px]">
-                  <h3 className="font-semibold text-gray-900 mb-2">
-                    Infrastructure Issue
-                  </h3>
-                  {point.issueCount && (
-                    <p className="text-sm text-gray-700 mb-1">
-                      <strong>Issues:</strong> {point.issueCount}
-                    </p>
-                  )}
-                  {point.avgSeverity && (
-                    <p className="text-sm text-gray-700 mb-1">
-                      <strong>Avg Severity:</strong>{" "}
-                      {point.avgSeverity.toFixed(1)}/10
-                    </p>
-                  )}
-                  {point.categories && point.categories.length > 0 && (
-                    <p className="text-sm text-gray-700">
-                      <strong>Categories:</strong> {point.categories.join(", ")}
-                    </p>
-                  )}
-                  <p className="text-xs text-gray-500 mt-2">
-                    Intensity: {(point.intensity * 100).toFixed(0)}%
-                  </p>
-                </div>
-              </Popup>
-            </Marker>
-          ))}
+          filteredData.map((point, index) => {
+            const severityColor = point.avgSeverity
+              ? point.avgSeverity >= 8
+                ? "#ef4444" // Red
+                : point.avgSeverity >= 6
+                  ? "#f59e0b" // Orange
+                  : point.avgSeverity >= 4
+                    ? "#eab308" // Yellow
+                    : "#22c55e" // Green
+              : "#8b5cf6"; // Purple default
+
+            const categoryIcon =
+              point.categories && point.categories.length > 0
+                ? point.categories[0].toLowerCase().includes("water")
+                  ? "💧"
+                  : point.categories[0].toLowerCase().includes("power") ||
+                      point.categories[0].toLowerCase().includes("electric")
+                    ? "⚡"
+                    : point.categories[0].toLowerCase().includes("wifi") ||
+                        point.categories[0].toLowerCase().includes("network")
+                      ? "📡"
+                      : point.categories[0].toLowerCase().includes("hvac") ||
+                          point.categories[0].toLowerCase().includes("ac")
+                        ? "❄️"
+                        : "🔧"
+                : "📍";
+
+            return (
+              <Marker
+                key={index}
+                position={[point.lat, point.lng]}
+                icon={createCustomIcon(point.categories)}
+              >
+                <Popup maxWidth={320} className="custom-popup">
+                  <div
+                    className="min-w-[280px] rounded-lg overflow-hidden"
+                    style={{
+                      background:
+                        "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                    }}
+                  >
+                    {/* Header */}
+                    <div className="px-4 py-3 text-white">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-2xl">{categoryIcon}</span>
+                        <h3 className="font-bold text-lg">
+                          Infrastructure Issue
+                        </h3>
+                      </div>
+                      {point.categories && point.categories.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {point.categories.map((cat, i) => (
+                            <span
+                              key={i}
+                              className="px-2 py-1 text-xs font-semibold rounded-full"
+                              style={{
+                                background: "rgba(255,255,255,0.2)",
+                                backdropFilter: "blur(10px)",
+                              }}
+                            >
+                              {cat}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Body */}
+                    <div className="px-4 py-3 bg-white">
+                      {point.issueCount && (
+                        <div className="flex items-center justify-between mb-2 pb-2 border-b border-gray-200">
+                          <span className="text-sm font-medium text-gray-700">
+                            Total Issues
+                          </span>
+                          <span className="text-lg font-bold text-purple-600">
+                            {point.issueCount}
+                          </span>
+                        </div>
+                      )}
+
+                      {point.avgSeverity && (
+                        <div className="mb-3">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-sm font-medium text-gray-700">
+                              Severity Level
+                            </span>
+                            <span
+                              className="text-sm font-bold"
+                              style={{ color: severityColor }}
+                            >
+                              {point.avgSeverity.toFixed(1)}/10
+                            </span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                            <div
+                              className="h-full rounded-full transition-all duration-300"
+                              style={{
+                                width: `${(point.avgSeverity / 10) * 100}%`,
+                                background: `linear-gradient(90deg, ${severityColor} 0%, ${severityColor}dd 100%)`,
+                              }}
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="flex items-center gap-2 text-xs text-gray-500 mt-3 pt-2 border-t border-gray-100">
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M13 10V3L4 14h7v7l9-11h-7z"
+                          />
+                        </svg>
+                        <span>
+                          Intensity: {(point.intensity * 100).toFixed(0)}%
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </Popup>
+              </Marker>
+            );
+          })}
 
         {/* Zoom handler */}
         <ZoomHandler onZoomChange={setCurrentZoom} />

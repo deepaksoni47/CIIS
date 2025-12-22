@@ -3,6 +3,7 @@
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 
@@ -48,7 +49,12 @@ export function FloatingNav() {
 
     // Listen for storage changes (e.g., login/logout from another tab)
     window.addEventListener("storage", checkAuth);
-    return () => window.removeEventListener("storage", checkAuth);
+    // Listen for custom auth change event dispatched in the same tab
+    window.addEventListener("ciis_auth_changed", checkAuth);
+    return () => {
+      window.removeEventListener("storage", checkAuth);
+      window.removeEventListener("ciis_auth_changed", checkAuth);
+    };
   }, []);
 
   useEffect(() => {
@@ -135,94 +141,91 @@ export function FloatingNav() {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
-          <div className="w-7 h-7 md:w-8 md:h-8 rounded-lg bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center">
-            <svg
-              className="w-4 h-4 md:w-5 md:h-5 text-white"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
-              />
-            </svg>
+          <div className="w-7 h-7 md:w-8 md:h-8 relative rounded-lg overflow-hidden">
+            <Image
+              src="/logo.png"
+              alt="CIIS"
+              fill={false}
+              width={32}
+              height={32}
+              className="object-cover"
+            />
           </div>
-          <span className="font-bold text-white text-sm md:text-base hidden sm:inline">
-            CIIS
-          </span>
+          <div className="hidden sm:flex items-center gap-2">
+            <span className="font-bold text-white text-sm md:text-base">
+              CIIS
+            </span>
+            <div className="w-px h-6 bg-white/10" />
+          </div>
         </motion.a>
 
         {/* Desktop Navigation */}
-        <div className="hidden md:flex items-center gap-2">
-          <div className="w-px h-8 bg-white/10 mx-2" />
+        <div className="hidden md:flex items-center gap-2 w-full">
+          <div className="flex items-center gap-2">
+            {/* Action Buttons - Desktop (left side) */}
+            {isLoggedIn && (
+              <>
+                <motion.a
+                  href="/dashboard"
+                  className="px-5 py-2 rounded-full text-white/70 hover:text-white hover:bg-white/5 text-sm font-medium transition-all"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  Dashboard
+                </motion.a>
+                <motion.a
+                  href="/report"
+                  className="px-5 py-2 rounded-full text-white/70 hover:text-white hover:bg-white/5 text-sm font-medium transition-all"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  Report Issue
+                </motion.a>
+              </>
+            )}
 
-          {/* Action Buttons - Desktop */}
-          {isLoggedIn && (
-            <>
+            <motion.a
+              href="/heatmap"
+              className="px-5 py-2 rounded-full text-white/70 hover:text-white hover:bg-white/5 text-sm font-medium transition-all"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Heatmap
+            </motion.a>
+
+            <motion.a
+              href="/priority"
+              className="text-sm font-medium text-white/70 hover:text-white transition-colors"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Priority
+            </motion.a>
+          </div>
+
+          <div className="flex-1" />
+
+          {/* Right side: user name (rightmost) or login button */}
+          {isLoggedIn && userName ? (
+            <div className="hidden md:flex items-center">
+              <div className="w-px h-6 bg-white/10 mr-4" />
               <motion.a
-                href="/dashboard"
-                className="px-5 py-2 rounded-full text-white/70 hover:text-white hover:bg-white/5 text-sm font-medium transition-all"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                href="/profile"
+                className="px-4 py-2 text-sm font-semibold text-violet-300 hover:text-violet-200 transition-colors rounded-full hover:bg-white/5"
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.98 }}
+                title="View Profile"
               >
-                Dashboard
+                {userName}
               </motion.a>
-              <motion.a
-                href="/report"
-                className="px-5 py-2 rounded-full text-white/70 hover:text-white hover:bg-white/5 text-sm font-medium transition-all"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                Report Issue
-              </motion.a>
-            </>
-          )}
-          <motion.a
-            href="/heatmap"
-            className="px-5 py-2 rounded-full text-white/70 hover:text-white hover:bg-white/5 text-sm font-medium transition-all"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            Heatmap
-          </motion.a>
-          {isLoggedIn ? (
-            <>
-              {userName && (
-                <span className="px-4 py-2 text-sm text-white/60">
-                  {userName}
-                </span>
-              )}
-              <motion.a
-                href="/priority"
-                className="text-sm font-medium text-white/70 hover:text-white transition-colors"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                Priority
-              </motion.a>
-              <div className="h-4 w-[1px] bg-white/10" />
-              <motion.button
-                onClick={handleLogout}
-                className="px-6 py-2 rounded-full bg-gradient-to-r from-rose-600 to-pink-600 text-white text-sm font-medium shadow-lg shadow-rose-500/25"
-                whileHover={{
-                  scale: 1.05,
-                  boxShadow: "0 0 20px rgba(244, 63, 94, 0.4)",
-                }}
-                whileTap={{ scale: 0.95 }}
-              >
-                Logout
-              </motion.button>
-            </>
+            </div>
           ) : (
             <motion.a
               href="/login"
               className="px-6 py-2 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white text-sm font-medium shadow-lg shadow-violet-500/25"
               whileHover={{
                 scale: 1.05,
-                boxShadow: "0 0 20px rgba(167, 139, 250, 0.4)",
+                boxShadow: "0 0 20px rgba(167,139,250,0.4)",
               }}
               whileTap={{ scale: 0.95 }}
             >
@@ -312,17 +315,15 @@ export function FloatingNav() {
           {isLoggedIn ? (
             <>
               {userName && (
-                <div className="px-5 py-2 text-sm text-white/60 text-center border-b border-white/10">
+                <motion.a
+                  href="/profile"
+                  className="px-5 py-3 rounded-xl text-white/80 hover:text-white hover:bg-white/5 text-sm font-medium transition-all text-center border-b border-white/10"
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
                   {userName}
-                </div>
+                </motion.a>
               )}
-              <motion.button
-                onClick={handleLogout}
-                className="px-5 py-3 rounded-xl bg-gradient-to-r from-rose-600 to-pink-600 text-white text-sm font-medium shadow-lg shadow-rose-500/25 text-center"
-                whileTap={{ scale: 0.95 }}
-              >
-                Logout
-              </motion.button>
             </>
           ) : (
             <motion.a

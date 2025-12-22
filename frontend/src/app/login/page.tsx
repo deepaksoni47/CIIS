@@ -8,12 +8,23 @@ import { EmailSignInForm } from "@/components/auth/EmailSignInForm";
 export default function LoginPage() {
   const router = useRouter();
   const [authMethod, setAuthMethod] = useState<"google" | "email">("google");
+  const [registered, setRegistered] = useState<string | null>(null);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
       const existingToken = window.localStorage.getItem("ciis_token");
       if (existingToken) {
         router.replace("/dashboard");
+        return;
+      }
+
+      // Read `registered` from the URL query string on client only
+      try {
+        const sp = new URLSearchParams(window.location.search);
+        const reg = sp.get("registered");
+        setRegistered(reg);
+      } catch (e) {
+        setRegistered(null);
       }
     }
   }, [router]);
@@ -41,6 +52,12 @@ export default function LoginPage() {
         </div>
 
         <div className="relative rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-[0_0_80px_rgba(79,70,229,0.35)] p-6 md:p-8 space-y-6">
+          {registered === "1" && (
+            <div className="mb-2 p-3 rounded-lg bg-green-900/40 border border-green-600 text-green-100">
+              Account created successfully — please sign in with your new
+              credentials.
+            </div>
+          )}
           {/* Authentication Method Tabs */}
           <div className="flex gap-2 p-1 bg-black/40 rounded-xl border border-white/10">
             <button

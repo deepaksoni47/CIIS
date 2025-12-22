@@ -11,6 +11,52 @@ export const metadata: Metadata = {
   description:
     "Data-driven, geospatial, and AI-assisted platform for proactive campus infrastructure management",
   keywords: ["campus", "infrastructure", "AI", "geospatial", "management"],
+  // themeColor moved to viewport export per Next.js guidance
+  icons: {
+    icon: "/logo.png",
+    shortcut: "/logo.png",
+    apple: "/logo.png",
+  },
+  openGraph: {
+    title: "CIIS - Campus Infrastructure Intelligence System",
+    description:
+      "Data-driven, geospatial, and AI-assisted platform for proactive campus infrastructure management",
+    url: "https://your-domain.example", // replace with production URL
+    siteName: "CIIS",
+    images: [
+      {
+        url: "/logo.png",
+        width: 1200,
+        height: 630,
+        alt: "CIIS Logo",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "CIIS - Campus Infrastructure Intelligence System",
+    description:
+      "Data-driven, geospatial, and AI-assisted platform for proactive campus infrastructure management",
+    images: ["/logo.png"],
+    creator: "@your_twitter_handle",
+  },
+};
+
+// Base URL used to resolve absolute URLs for social previews; replace with production URL
+export const metadataBase = new URL("https://your-domain.example");
+
+// Move visual theme color descriptors into viewport export to satisfy Next.js
+export const viewport = {
+  // standard viewport settings
+  width: "device-width",
+  initialScale: 1,
+  // themeColor controls meta[name=theme-color]
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0f172a" },
+  ],
 };
 
 export default function RootLayout({

@@ -59,17 +59,30 @@ export function EmailSignInForm({
         throw new Error(message);
       }
 
-      // Store user + token
-      if (typeof window !== "undefined") {
-        window.localStorage.setItem("ciis_token", data.data.token);
-        window.localStorage.setItem(
-          "ciis_user",
-          JSON.stringify(data.data.user)
-        );
-      }
+      // If logging in, store token and redirect to dashboard.
+      // If registering, redirect user to login page with a success flag
+      // (require them to sign in explicitly).
+      if (isLogin) {
+        if (typeof window !== "undefined") {
+          window.localStorage.setItem("ciis_token", data.data.token);
+          window.localStorage.setItem(
+            "ciis_user",
+            JSON.stringify(data.data.user)
+          );
+        }
 
-      // Redirect to dashboard
-      router.push("/dashboard");
+        // Redirect to dashboard
+        // Notify other components in this tab about auth change
+        try {
+          window.dispatchEvent(new Event("ciis_auth_changed"));
+        } catch (_) {
+          /* ignore */
+        }
+        router.push("/dashboard");
+      } else {
+        // Registration successful — redirect to login and ask user to sign in
+        router.push("/login?registered=1");
+      }
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Unexpected error occurred.";

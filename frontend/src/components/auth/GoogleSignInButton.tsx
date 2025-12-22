@@ -65,6 +65,12 @@ export function GoogleSignInButton({
           "ciis_user",
           JSON.stringify(data.data.user)
         );
+        // Notify other components in this tab about auth change
+        try {
+          window.dispatchEvent(new Event("ciis_auth_changed"));
+        } catch (_) {
+          /* ignore */
+        }
       }
 
       // 5. Redirect to dashboard

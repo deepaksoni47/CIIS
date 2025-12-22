@@ -1,0 +1,49 @@
+/* Custom styles for heatmap popups */
+.leaflet-popup-content-wrapper {
+  padding: 0 !important;
+  border-radius: 12px !important;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3) !important;
+}
+
+.leaflet-popup-content {
+  margin: 0 !important;
+  width: auto !important;
+}
+
+.leaflet-popup-tip {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Custom marker styles */
+.custom-marker {
+  background: transparent;
+  border: none;
+}
+
+.custom-marker:hover {
+  transform: scale(1.1);
+  transition: transform 0.2s ease;
+}
+
+/* Pulse animation for markers */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.marker-pulse {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* Responsive popup styling */
+@media (max-width: 768px) {
+  .leaflet-popup-content-wrapper {
+    max-width: 280px !important;
+  }
+}
