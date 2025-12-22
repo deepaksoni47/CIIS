@@ -155,6 +155,12 @@ export const COLLECTIONS = {
   RISK_SCORES: "risk_scores",
   PREDICTIONS: "issue_predictions",
   ANALYTICS: "analytics",
+  // Voting & Rewards collections
+  VOTES: "votes",
+  BADGES: "badges",
+  USER_BADGES: "user_badges",
+  REWARD_TRANSACTIONS: "reward_transactions",
+  LEADERBOARD: "leaderboard",
 } as const;
 
 /**

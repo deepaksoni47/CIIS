@@ -51,6 +51,16 @@ export async function getOrCreateUser(
     role: role || UserRole.STUDENT,
     isActive: true,
     permissions: getDefaultPermissions(role || UserRole.STUDENT),
+    badges: [],
+    rewardPoints: 0,
+    level: 1,
+    statistics: {
+      issuesReported: 0,
+      issuesResolved: 0,
+      votesReceived: 0,
+      votesCast: 0,
+      helpfulReports: 0,
+    },
     createdAt:
       admin.firestore.FieldValue.serverTimestamp() as admin.firestore.Timestamp,
     updatedAt:
@@ -142,6 +152,16 @@ export async function createUserWithEmail(
       role: role || UserRole.STUDENT,
       isActive: true,
       permissions: getDefaultPermissions(role || UserRole.STUDENT),
+      badges: [],
+      rewardPoints: 0,
+      level: 1,
+      statistics: {
+        issuesReported: 0,
+        issuesResolved: 0,
+        votesReceived: 0,
+        votesCast: 0,
+        helpfulReports: 0,
+      },
       createdAt:
         admin.firestore.FieldValue.serverTimestamp() as admin.firestore.Timestamp,
       updatedAt:

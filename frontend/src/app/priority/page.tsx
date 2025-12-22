@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 import { auth } from "@/lib/firebase";
+import { VoteButton } from "@/components/voting/VoteButton";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
@@ -895,8 +897,8 @@ export default function PriorityPage() {
                           <th className="pb-3 text-sm font-medium text-white/70 uppercase tracking-wider hidden lg:table-cell">
                             Status
                           </th>
-                          <th className="pb-3 text-sm font-medium text-white/70 uppercase tracking-wider hidden lg:table-cell">
-                            SLA
+                          <th className="pb-3 text-sm font-medium text-white/70 uppercase tracking-wider">
+                            Vote
                           </th>
                         </tr>
                       </thead>
@@ -928,7 +930,7 @@ export default function PriorityPage() {
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: index * 0.03 }}
-                                className="border-b border-white/5 hover:bg-white/5 transition"
+                                className="border-b border-white/5 hover:bg-white/5 transition group"
                               >
                                 <td className="py-4">
                                   <div
@@ -958,14 +960,17 @@ export default function PriorityPage() {
                                   </span>
                                 </td>
                                 <td className="py-4">
-                                  <div className="max-w-xs">
-                                    <p className="text-sm font-medium text-white truncate">
+                                  <Link
+                                    href={`/issues/${issue.id}`}
+                                    className="block max-w-xs hover:text-violet-400 transition-colors"
+                                  >
+                                    <p className="text-sm font-medium text-white truncate group-hover:text-violet-400 transition-colors">
                                       {issue.title}
                                     </p>
                                     <p className="text-xs text-white/50 truncate">
                                       {issue.description}
                                     </p>
-                                  </div>
+                                  </Link>
                                 </td>
                                 <td className="py-4 hidden lg:table-cell">
                                   <span
@@ -982,12 +987,13 @@ export default function PriorityPage() {
                                     {issue.status.replace("_", " ")}
                                   </span>
                                 </td>
-                                <td className="py-4 hidden lg:table-cell">
-                                  <span className="text-sm text-white/60">
-                                    {issue.slaHours
-                                      ? `${issue.slaHours}h`
-                                      : "-"}
-                                  </span>
+                                <td className="py-4">
+                                  <VoteButton
+                                    issueId={issue.id}
+                                    initialVoteCount={issue.voteCount || 0}
+                                    size="sm"
+                                    showCount={true}
+                                  />
                                 </td>
                               </motion.tr>
                             );

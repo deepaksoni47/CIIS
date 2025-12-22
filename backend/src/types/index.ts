@@ -153,6 +153,10 @@ export interface Issue {
   isRecurring?: boolean;
   previousOccurrences?: number;
 
+  // Voting system
+  voteCount: number; // Total number of upvotes
+  votedBy: string[]; // Array of user IDs who voted
+
   // AI predictions & insights
   aiRiskScore?: number; // 0-100 (from priority engine)
   aiPredictedRecurrence?: boolean;
@@ -242,6 +246,17 @@ export interface User {
     canViewAllIssues: boolean;
     canManageUsers: boolean;
   };
+  // Rewards system
+  rewardPoints: number; // Total reward points earned
+  level: number; // User level based on points (e.g., 1-10)
+  badges: string[]; // Array of badge IDs earned
+  statistics: {
+    issuesReported: number;
+    issuesResolved: number; // For facility managers
+    votesReceived: number; // Votes on their reported issues
+    votesCast: number; // Number of times they voted
+    helpfulReports: number; // Issues marked as helpful/resolved quickly
+  };
   createdAt: firestore.Timestamp;
   updatedAt: firestore.Timestamp;
   lastLogin?: firestore.Timestamp;
@@ -289,6 +304,99 @@ export interface AnalyticsEvent {
   userId?: string;
   metadata?: Record<string, any>;
   timestamp: firestore.Timestamp;
+}
+
+/**
+ * Vote Document - tracks individual votes on issues
+ */
+export interface Vote {
+  id: string;
+  issueId: string;
+  userId: string;
+  organizationId: string;
+  createdAt: firestore.Timestamp;
+}
+
+/**
+ * Badge Definition - achievements users can earn
+ */
+export interface Badge {
+  id: string;
+  name: string;
+  description: string;
+  icon: string; // emoji or icon identifier
+  category: "reporter" | "voter" | "resolver" | "community" | "special";
+  criteria: {
+    type:
+      | "issues_reported"
+      | "votes_received"
+      | "votes_cast"
+      | "issues_resolved"
+      | "helpful_reports"
+      | "streak_days"
+      | "points_earned"
+      | "custom";
+    threshold: number; // e.g., 10 issues, 50 votes, etc.
+    description: string;
+  };
+  pointsAwarded: number; // Points given when badge is earned
+  rarity: "common" | "rare" | "epic" | "legendary";
+  isActive: boolean;
+  createdAt: firestore.Timestamp;
+}
+
+/**
+ * User Badge - junction table for user-earned badges
+ */
+export interface UserBadge {
+  id: string;
+  userId: string;
+  badgeId: string;
+  organizationId: string;
+  earnedAt: firestore.Timestamp;
+  progress?: number; // For tracking progress towards next level of same badge
+}
+
+/**
+ * Reward Transaction - tracks point awards and deductions
+ */
+export interface RewardTransaction {
+  id: string;
+  userId: string;
+  organizationId: string;
+  type:
+    | "issue_created"
+    | "issue_resolved"
+    | "vote_received"
+    | "vote_cast"
+    | "badge_earned"
+    | "helpful_report"
+    | "admin_bonus"
+    | "penalty";
+  points: number; // positive for awards, negative for penalties
+  relatedEntityId?: string; // Issue ID, Badge ID, etc.
+  relatedEntityType?: "issue" | "badge" | "vote" | "other";
+  description: string;
+  createdAt: firestore.Timestamp;
+}
+
+/**
+ * Leaderboard Entry - cached leaderboard data
+ */
+export interface LeaderboardEntry {
+  id: string;
+  userId: string;
+  organizationId: string;
+  userName: string;
+  userRole: string;
+  rewardPoints: number;
+  level: number;
+  rank: number;
+  issuesReported: number;
+  votesReceived: number;
+  badges: string[];
+  period: "all_time" | "monthly" | "weekly";
+  updatedAt: firestore.Timestamp;
 }
 
 /**

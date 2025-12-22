@@ -1,13 +1,12 @@
 import { Request, Response, NextFunction } from "express";
-import * as admin from "firebase-admin";
 import { getAuth } from "../../config/firebase";
 import * as authService from "./auth.service";
 import { UserRole, User } from "../../types";
+import { AuthUser } from "../../middlewares/auth";
 
-// Extend Express Request type to include user
+// Extend Express Request type to include additional user data
 declare module "express-serve-static-core" {
   interface Request {
-    user?: admin.auth.DecodedIdToken;
     userData?: {
       id: string;
       organizationId: string;
@@ -40,7 +39,6 @@ export async function authenticate(
 
     // Verify token
     const decodedToken = await auth.verifyIdToken(idToken);
-    req.user = decodedToken;
 
     // Get user data from Firestore
     const user = await authService.getUserById(decodedToken.uid);
@@ -52,7 +50,15 @@ export async function authenticate(
       });
     }
 
-    // Attach user data to request
+    // Attach user info to request (using AuthUser type)
+    req.user = {
+      uid: decodedToken.uid,
+      email: decodedToken.email,
+      role: user.role,
+      organizationId: user.organizationId,
+    } as AuthUser;
+
+    // Attach detailed user data to request
     req.userData = {
       id: user.id,
       organizationId: user.organizationId,
