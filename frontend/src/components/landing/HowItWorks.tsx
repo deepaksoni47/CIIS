@@ -209,13 +209,13 @@ export function HowItWorks() {
           transition={{ duration: 0.8, delay: 0.8 }}
           className="mt-16 text-center"
         >
-          <a
-            href="/demo"
+          <p
+            // href="/demo"
             className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-semibold hover:shadow-2xl hover:shadow-fuchsia-500/30 transition-all duration-300 group"
           >
-            <span>See It In Action</span>
+            <span>Scroll to Explore</span>
             <svg
-              className="w-5 h-5 group-hover:translate-x-1 transition-transform"
+              className="w-6 h-6"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -224,10 +224,10 @@ export function HowItWorks() {
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth={2}
-                d="M14 5l7 7m0 0l-7 7m7-7H3"
+                d="M19 14l-7 7m0 0l-7-7m7 7V3"
               />
             </svg>
-          </a>
+          </p>
         </motion.div>
       </div>
     </section>
