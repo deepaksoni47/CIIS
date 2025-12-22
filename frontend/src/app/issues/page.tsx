@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
@@ -33,7 +33,6 @@ interface UserData {
 
 export default function IssuesPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   // --- State ---
   const [user, setUser] = useState<UserData | null>(null);
@@ -52,7 +51,10 @@ export default function IssuesPage() {
 
   // --- Initialization ---
   useEffect(() => {
-    const userStr = typeof window !== "undefined" ? window.localStorage.getItem("ciis_user") : null;
+    const userStr =
+      typeof window !== "undefined"
+        ? window.localStorage.getItem("ciis_user")
+        : null;
     if (userStr) {
       const userData = JSON.parse(userStr);
       setUser(userData);
@@ -66,68 +68,81 @@ export default function IssuesPage() {
   }, [router]);
 
   // --- Data Fetching ---
-  const fetchIssues = useCallback(async (isLoadMore = false) => {
-    if (!user) return;
-    
-    try {
-      setIsLoading(true);
-      const token = window.localStorage.getItem("ciis_token");
-      
-      // Build Query String
-      const offset = isLoadMore ? issues.length : 0;
-      const queryParams = new URLSearchParams({
-        organizationId: user.organizationId,
-        limit: ITEMS_PER_PAGE.toString(),
-        offset: offset.toString(),
-      });
+  const fetchIssues = useCallback(
+    async (isLoadMore = false) => {
+      if (!user) return;
 
-      if (filterStatus !== "all") queryParams.append("status", filterStatus.toUpperCase());
-      if (filterPriority !== "all") queryParams.append("priority", filterPriority.toUpperCase());
-      if (showMyIssuesOnly) queryParams.append("reportedBy", user.id);
-      
-      // Note: Backend might need a specific 'search' param implementation or we filter client-side for text
-      // For now, let's assume we filter text client-side or backend has basic support
-      
-      const response = await fetch(`${API_BASE_URL}/api/issues?${queryParams.toString()}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
+      try {
+        setIsLoading(true);
+        const token = window.localStorage.getItem("ciis_token");
 
-      if (response.ok) {
-        const result = await response.json();
-        const newIssues = result.data || [];
-        
-        if (isLoadMore) {
-          setIssues(prev => [...prev, ...newIssues]);
-        } else {
-          setIssues(newIssues);
+        // Build Query String
+        const offset = isLoadMore ? issues.length : 0;
+        const queryParams = new URLSearchParams({
+          organizationId: user.organizationId,
+          limit: ITEMS_PER_PAGE.toString(),
+          offset: offset.toString(),
+        });
+
+        if (filterStatus !== "all")
+          queryParams.append("status", filterStatus.toUpperCase());
+        if (filterPriority !== "all")
+          queryParams.append("priority", filterPriority.toUpperCase());
+        if (showMyIssuesOnly) queryParams.append("reportedBy", user.id);
+
+        // Note: Backend might need a specific 'search' param implementation or we filter client-side for text
+        // For now, let's assume we filter text client-side or backend has basic support
+
+        const response = await fetch(
+          `${API_BASE_URL}/api/issues?${queryParams.toString()}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (response.ok) {
+          const result = await response.json();
+          const newIssues = result.data || [];
+
+          if (isLoadMore) {
+            setIssues((prev) => [...prev, ...newIssues]);
+          } else {
+            setIssues(newIssues);
+          }
+
+          setHasMore(newIssues.length === ITEMS_PER_PAGE);
         }
-        
-        setHasMore(newIssues.length === ITEMS_PER_PAGE);
+      } catch (error) {
+        console.error("Error fetching issues:", error);
+        toast.error("Failed to load issues");
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error("Error fetching issues:", error);
-      toast.error("Failed to load issues");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [user, filterStatus, filterPriority, showMyIssuesOnly, issues.length]);
+    },
+    [user, filterStatus, filterPriority, showMyIssuesOnly, issues.length]
+  );
 
   // Initial Fetch & Filter Changes
   useEffect(() => {
     if (user) {
-        // Reset pagination when filters change
-        setIssues([]); 
-        setPage(1);
-        fetchIssues(false);
+      // Reset pagination when filters change
+      setIssues([]);
+      setPage(1);
+      fetchIssues(false);
     }
   }, [user, filterStatus, filterPriority, showMyIssuesOnly]);
 
   // --- Actions ---
   const handleDelete = async (issueId: string) => {
-    if (!confirm("Are you sure you want to delete this issue? This cannot be undone.")) return;
+    if (
+      !confirm(
+        "Are you sure you want to delete this issue? This cannot be undone."
+      )
+    )
+      return;
 
     setIsDeleting(issueId);
     const token = window.localStorage.getItem("ciis_token");
@@ -140,7 +155,7 @@ export default function IssuesPage() {
 
       if (response.ok) {
         toast.success("Issue deleted successfully");
-        setIssues(prev => prev.filter(i => i.id !== issueId));
+        setIssues((prev) => prev.filter((i) => i.id !== issueId));
       } else {
         const error = await response.json();
         toast.error(error.message || "Failed to delete");
@@ -153,10 +168,11 @@ export default function IssuesPage() {
   };
 
   // Helper for Search (Client-side filtering for responsiveness)
-  const filteredIssues = issues.filter(issue => 
-    issue.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    issue.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    issue.category.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredIssues = issues.filter(
+    (issue) =>
+      issue.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      issue.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      issue.category.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -170,7 +186,10 @@ export default function IssuesPage() {
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
-          <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
             <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-white via-white to-white/70 bg-clip-text text-transparent">
               Issue Tracker
             </h1>
@@ -178,7 +197,7 @@ export default function IssuesPage() {
               Manage and track campus infrastructure reports
             </p>
           </motion.div>
-          
+
           <Link href="/report">
             <motion.button
               whileHover={{ scale: 1.05 }}
@@ -191,7 +210,7 @@ export default function IssuesPage() {
         </div>
 
         {/* Controls Bar */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
@@ -199,7 +218,9 @@ export default function IssuesPage() {
         >
           {/* Search */}
           <div className="flex-1 relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40">🔍</span>
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40">
+              🔍
+            </span>
             <input
               type="text"
               placeholder="Search issues..."
@@ -257,20 +278,23 @@ export default function IssuesPage() {
             {isLoading && issues.length === 0 ? (
               // Loading Skeleton
               [...Array(3)].map((_, i) => (
-                <div key={i} className="h-24 bg-white/5 rounded-xl animate-pulse" />
+                <div
+                  key={i}
+                  className="h-24 bg-white/5 rounded-xl animate-pulse"
+                />
               ))
             ) : filteredIssues.length > 0 ? (
               filteredIssues.map((issue) => (
-                <IssueListItem 
-                  key={issue.id} 
-                  issue={issue} 
+                <IssueListItem
+                  key={issue.id}
+                  issue={issue}
                   userId={user?.id}
                   onDelete={handleDelete}
                   isDeleting={isDeleting === issue.id}
                 />
               ))
             ) : (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 className="text-center py-20 bg-white/5 rounded-2xl border border-white/10 border-dashed"
@@ -278,7 +302,8 @@ export default function IssuesPage() {
                 <div className="text-4xl mb-4">📭</div>
                 <h3 className="text-xl font-semibold mb-2">No issues found</h3>
                 <p className="text-white/40 max-w-md mx-auto">
-                  We couldn't find any issues matching your filters. Try adjusting your search or report a new issue.
+                  We couldn't find any issues matching your filters. Try
+                  adjusting your search or report a new issue.
                 </p>
               </motion.div>
             )}
@@ -309,19 +334,27 @@ function IssueListItem({ issue, userId, onDelete, isDeleting }: any) {
 
   const getPriorityColor = (p: string) => {
     switch (p?.toLowerCase()) {
-      case "critical": return "text-rose-400 bg-rose-950/30 border-rose-500/30";
-      case "high": return "text-orange-400 bg-orange-950/30 border-orange-500/30";
-      case "medium": return "text-yellow-400 bg-yellow-950/30 border-yellow-500/30";
-      default: return "text-green-400 bg-green-950/30 border-green-500/30";
+      case "critical":
+        return "text-rose-400 bg-rose-950/30 border-rose-500/30";
+      case "high":
+        return "text-orange-400 bg-orange-950/30 border-orange-500/30";
+      case "medium":
+        return "text-yellow-400 bg-yellow-950/30 border-yellow-500/30";
+      default:
+        return "text-green-400 bg-green-950/30 border-green-500/30";
     }
   };
 
   const getStatusColor = (s: string) => {
     switch (s?.toLowerCase()) {
-      case "open": return "bg-blue-500/20 text-blue-300";
-      case "in_progress": return "bg-violet-500/20 text-violet-300";
-      case "resolved": return "bg-green-500/20 text-green-300";
-      default: return "bg-gray-500/20 text-gray-300";
+      case "open":
+        return "bg-blue-500/20 text-blue-300";
+      case "in_progress":
+        return "bg-violet-500/20 text-violet-300";
+      case "resolved":
+        return "bg-green-500/20 text-green-300";
+      default:
+        return "bg-gray-500/20 text-gray-300";
     }
   };
 
@@ -334,36 +367,50 @@ function IssueListItem({ issue, userId, onDelete, isDeleting }: any) {
       className="group relative bg-black/40 backdrop-blur-sm border border-white/10 rounded-xl p-5 hover:border-violet-500/30 transition-all hover:bg-white/5"
     >
       <div className="flex flex-col md:flex-row gap-4 md:items-center justify-between">
-        
         {/* Left: Info */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-3 mb-2">
-            <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${getPriorityColor(issue.priority)}`}>
+            <span
+              className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${getPriorityColor(issue.priority)}`}
+            >
               {issue.priority}
             </span>
-            <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${getStatusColor(issue.status)}`}>
+            <span
+              className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${getStatusColor(issue.status)}`}
+            >
               {issue.status.replace("_", " ")}
             </span>
-            <span className="text-white/40 text-xs">• {new Date(issue.createdAt._seconds * 1000 || issue.createdAt).toLocaleDateString()}</span>
-          </div>
-          
-          <Link href={`/issues/${issue.id}`} className="block group-hover:text-violet-300 transition-colors">
-            <h3 className="text-lg font-semibold truncate pr-8">{issue.title}</h3>
-          </Link>
-          <p className="text-white/60 text-sm line-clamp-1 mt-1">{issue.description}</p>
-          
-          <div className="flex items-center gap-4 mt-3 text-xs text-white/40">
-            <span className="flex items-center gap-1">
-              🏢 {issue.category}
+            <span className="text-white/40 text-xs">
+              •{" "}
+              {new Date(
+                issue.createdAt._seconds * 1000 || issue.createdAt
+              ).toLocaleDateString()}
             </span>
+          </div>
+
+          <Link
+            href={`/issues/${issue.id}`}
+            className="block group-hover:text-violet-300 transition-colors"
+          >
+            <h3 className="text-lg font-semibold truncate pr-8">
+              {issue.title}
+            </h3>
+          </Link>
+          <p className="text-white/60 text-sm line-clamp-1 mt-1">
+            {issue.description}
+          </p>
+
+          <div className="flex items-center gap-4 mt-3 text-xs text-white/40">
+            <span className="flex items-center gap-1">🏢 {issue.category}</span>
             {issue.location && (
               <span className="flex items-center gap-1">
                 📍 {issue.buildingId || "Campus Map"}
               </span>
             )}
-             {issue.images?.length > 0 && (
+            {issue.images?.length > 0 && (
               <span className="flex items-center gap-1">
-                📷 {issue.images.length} Image{issue.images.length > 1 ? 's' : ''}
+                📷 {issue.images.length} Image
+                {issue.images.length > 1 ? "s" : ""}
               </span>
             )}
           </div>
@@ -371,26 +418,40 @@ function IssueListItem({ issue, userId, onDelete, isDeleting }: any) {
 
         {/* Right: Actions */}
         <div className="flex items-center gap-3 md:border-l md:border-white/10 md:pl-6">
-            <Link href={`/issues/${issue.id}`}>
-                <button className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition-colors">
-                    View Details
-                </button>
-            </Link>
-            
-            {isOwner && (
-                <button 
-                    onClick={() => onDelete(issue.id)}
-                    disabled={isDeleting}
-                    className="p-2 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 transition-colors disabled:opacity-50"
-                    title="Delete Issue"
+          <Link href={`/issues/${issue.id}`}>
+            <button className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition-colors">
+              View Details
+            </button>
+          </Link>
+
+          {isOwner && (
+            <button
+              onClick={() => onDelete(issue.id)}
+              disabled={isDeleting}
+              className="p-2 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 transition-colors disabled:opacity-50"
+              title="Delete Issue"
+            >
+              {isDeleting ? (
+                <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                 >
-                    {isDeleting ? (
-                        <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                    ) : (
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
-                    )}
-                </button>
-            )}
+                  <path d="M3 6h18" />
+                  <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                  <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                </svg>
+              )}
+            </button>
+          )}
         </div>
       </div>
     </motion.div>

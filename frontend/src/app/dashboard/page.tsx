@@ -50,7 +50,7 @@ interface UserData {
 
 export default function DashboardPage() {
   const router = useRouter();
-  
+
   // State
   const [user, setUser] = useState<UserData | null>(null);
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -82,13 +82,15 @@ export default function DashboardPage() {
     try {
       const userData: UserData = JSON.parse(userStr);
       setUser(userData);
-      
-      const isManagerOrAdmin = ["facility_manager", "admin"].includes(userData.role);
+
+      const isManagerOrAdmin = ["facility_manager", "admin"].includes(
+        userData.role
+      );
 
       await Promise.all([
         // Only load global stats for Managers/Admins to avoid 403 errors
         isManagerOrAdmin ? loadStats(userData) : Promise.resolve(),
-        
+
         loadRecentIssues(userData),
         loadHighPriorityIssues(userData),
         loadAIInsights(userData),
@@ -138,29 +140,28 @@ export default function DashboardPage() {
   const loadRecentIssues = async (userData: UserData) => {
     try {
       const token = window.localStorage.getItem("ciis_token");
-      
+
       // Filter logic: Students see only their issues, Managers see all
       let query = `organizationId=${userData.organizationId || "ggv-bilaspur"}&limit=5`;
-      
+
       if (userData.role === "student") {
         query += `&reportedBy=${userData.id}`;
       }
 
-      const response = await fetch(
-        `${API_BASE_URL}/api/issues?${query}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await fetch(`${API_BASE_URL}/api/issues?${query}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
 
       if (response.ok) {
         const result = await response.json();
         if (result.success && result.data) {
           // Verify data structure (some backends return array directly, some inside .issues)
-          const issuesData = Array.isArray(result.data) ? result.data : result.data.issues;
+          const issuesData = Array.isArray(result.data)
+            ? result.data
+            : result.data.issues;
           setRecentIssues(issuesData || []);
         }
       }
@@ -211,31 +212,46 @@ export default function DashboardPage() {
   // --- UI Helpers ---
   const getRoleBadgeColor = (role?: string) => {
     switch (role?.toLowerCase()) {
-      case "admin": return "bg-rose-500/20 text-rose-300 border-rose-500/50";
-      case "facility_manager": return "bg-violet-500/20 text-violet-300 border-violet-500/50";
-      case "staff": return "bg-blue-500/20 text-blue-300 border-blue-500/50";
-      case "faculty": return "bg-cyan-500/20 text-cyan-300 border-cyan-500/50";
-      default: return "bg-emerald-500/20 text-emerald-300 border-emerald-500/50"; // Student
+      case "admin":
+        return "bg-rose-500/20 text-rose-300 border-rose-500/50";
+      case "facility_manager":
+        return "bg-violet-500/20 text-violet-300 border-violet-500/50";
+      case "staff":
+        return "bg-blue-500/20 text-blue-300 border-blue-500/50";
+      case "faculty":
+        return "bg-cyan-500/20 text-cyan-300 border-cyan-500/50";
+      default:
+        return "bg-emerald-500/20 text-emerald-300 border-emerald-500/50"; // Student
     }
   };
 
   const getPriorityColor = (priority: string) => {
     switch (priority?.toLowerCase()) {
-      case "critical": return "text-rose-400 bg-rose-950/40 border-rose-500/30";
-      case "high": return "text-orange-400 bg-orange-950/40 border-orange-500/30";
-      case "medium": return "text-yellow-400 bg-yellow-950/40 border-yellow-500/30";
-      case "low": return "text-green-400 bg-green-950/40 border-green-500/30";
-      default: return "text-white/60 bg-white/5 border-white/10";
+      case "critical":
+        return "text-rose-400 bg-rose-950/40 border-rose-500/30";
+      case "high":
+        return "text-orange-400 bg-orange-950/40 border-orange-500/30";
+      case "medium":
+        return "text-yellow-400 bg-yellow-950/40 border-yellow-500/30";
+      case "low":
+        return "text-green-400 bg-green-950/40 border-green-500/30";
+      default:
+        return "text-white/60 bg-white/5 border-white/10";
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status?.toLowerCase()) {
-      case "open": return "text-blue-400 bg-blue-950/40";
-      case "in_progress": return "text-violet-400 bg-violet-950/40";
-      case "resolved": return "text-green-400 bg-green-950/40";
-      case "closed": return "text-gray-400 bg-gray-950/40";
-      default: return "text-white/60 bg-white/5";
+      case "open":
+        return "text-blue-400 bg-blue-950/40";
+      case "in_progress":
+        return "text-violet-400 bg-violet-950/40";
+      case "resolved":
+        return "text-green-400 bg-green-950/40";
+      case "closed":
+        return "text-gray-400 bg-gray-950/40";
+      default:
+        return "text-white/60 bg-white/5";
     }
   };
 
@@ -244,9 +260,14 @@ export default function DashboardPage() {
     try {
       const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
       return new Intl.DateTimeFormat("en-US", {
-        month: "short", day: "numeric", hour: "2-digit", minute: "2-digit",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
       }).format(date);
-    } catch { return "Unknown"; }
+    } catch {
+      return "Unknown";
+    }
   };
 
   // --- Render Loading ---
@@ -275,7 +296,6 @@ export default function DashboardPage() {
       </div>
 
       <main className="pt-24 pb-12 px-4 md:px-6 lg:px-8 max-w-7xl mx-auto">
-        
         {/* Header with Role Badge */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -290,12 +310,14 @@ export default function DashboardPage() {
               </span>
             </h1>
             <div className="flex items-center gap-3 mt-2">
-                <span className={`px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider border ${getRoleBadgeColor(user?.role)}`}>
-                    {user?.role?.replace('_', ' ') || "Student"}
-                </span>
-                <p className="text-white/60 text-lg">
-                    Campus Infrastructure Intelligence
-                </p>
+              <span
+                className={`px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider border ${getRoleBadgeColor(user?.role)}`}
+              >
+                {user?.role?.replace("_", " ") || "Student"}
+              </span>
+              <p className="text-white/60 text-lg">
+                Campus Infrastructure Intelligence
+              </p>
             </div>
           </div>
         </motion.div>
@@ -308,21 +330,43 @@ export default function DashboardPage() {
             transition={{ delay: 0.1 }}
             className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"
           >
-            <StatCard label="Total Issues" value={stats.total} icon="📊" gradient="from-blue-500 to-cyan-500" />
-            <StatCard label="Open" value={stats.open} icon="🔴" gradient="from-rose-500 to-pink-500" />
-            <StatCard label="In Progress" value={stats.inProgress} icon="🟡" gradient="from-yellow-500 to-orange-500" />
-            <StatCard label="Resolved" value={stats.resolved} icon="🟢" gradient="from-green-500 to-emerald-500" />
+            <StatCard
+              label="Total Issues"
+              value={stats.total}
+              icon="📊"
+              gradient="from-blue-500 to-cyan-500"
+            />
+            <StatCard
+              label="Open"
+              value={stats.open}
+              icon="🔴"
+              gradient="from-rose-500 to-pink-500"
+            />
+            <StatCard
+              label="In Progress"
+              value={stats.inProgress}
+              icon="🟡"
+              gradient="from-yellow-500 to-orange-500"
+            />
+            <StatCard
+              label="Resolved"
+              value={stats.resolved}
+              icon="🟢"
+              gradient="from-green-500 to-emerald-500"
+            />
           </motion.div>
         ) : (
           /* Simplified Welcome Stats for Students */
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="mb-8 p-6 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-between"
           >
             <div>
-                <h3 className="text-xl font-semibold mb-1">My Activity</h3>
-                <p className="text-white/60 text-sm">You have reported {recentIssues.length} active issues recently.</p>
+              <h3 className="text-xl font-semibold mb-1">My Activity</h3>
+              <p className="text-white/60 text-sm">
+                You have reported {recentIssues.length} active issues recently.
+              </p>
             </div>
             {/* <Link href="/issues">
                 <button className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm transition-colors">
@@ -341,7 +385,6 @@ export default function DashboardPage() {
         >
           <h2 className="text-2xl font-semibold mb-4">Quick Actions</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            
             {/* Action 1: Report (Everyone) */}
             <QuickActionCard
               title="Heatmap View"
@@ -367,15 +410,15 @@ export default function DashboardPage() {
 
             {/* Action 2: Role Based */}
             {isManager ? (
-               <QuickActionCard
-               title="Priorities"
-               description="View critical issues requiring attention"
-               icon="⚡"
-               href="/priorities"
-               gradient="from-orange-600 to-red-600"
-             />
+              <QuickActionCard
+                title="Priorities"
+                description="View critical issues requiring attention"
+                icon="⚡"
+                href="/priorities"
+                gradient="from-orange-600 to-red-600"
+              />
             ) : (
-                <QuickActionCard
+              <QuickActionCard
                 title="My Issues"
                 description="Track status of your reported issues"
                 icon="📋"
@@ -397,7 +440,6 @@ export default function DashboardPage() {
 
         {/* Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          
           {/* High Priority Issues (Visible to everyone, but content might differ) */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
@@ -409,8 +451,6 @@ export default function DashboardPage() {
               <h2 className="text-xl font-semibold">
                 {isManager ? "High Priority Issues" : "Campus Alerts"}
               </h2>
-              <Link href="/priority" className="text-sm text-violet-400 hover:text-violet-300 transition-colors">
-              <h2 className="text-xl font-semibold">High Priority Issues</h2>
               <Link
                 href="/priority"
                 className="text-sm text-violet-400 hover:text-violet-300 transition-colors"
@@ -420,9 +460,13 @@ export default function DashboardPage() {
             </div>
             <div className="space-y-3">
               {highPriorityIssues.length > 0 ? (
-                highPriorityIssues.slice(0, 5).map((issue) => <IssueCard key={issue.id} issue={issue} />)
+                highPriorityIssues
+                  .slice(0, 5)
+                  .map((issue) => <IssueCard key={issue.id} issue={issue} />)
               ) : (
-                <p className="text-white/40 text-sm py-4 text-center">No high-priority alerts</p>
+                <p className="text-white/40 text-sm py-4 text-center">
+                  No high-priority alerts
+                </p>
               )}
             </div>
           </motion.div>
@@ -438,16 +482,23 @@ export default function DashboardPage() {
               <h2 className="text-xl font-semibold">
                 {isManager ? "Recent Reports" : "My Recent Reports"}
               </h2>
-              <Link href="/issues" className="text-sm text-violet-400 hover:text-violet-300 transition-colors">
+              <Link
+                href="/issues"
+                className="text-sm text-violet-400 hover:text-violet-300 transition-colors"
+              >
                 View all →
               </Link>
             </div>
             <div className="space-y-3">
               {recentIssues.length > 0 ? (
-                recentIssues.map((issue) => <IssueCard key={issue.id} issue={issue} />)
+                recentIssues.map((issue) => (
+                  <IssueCard key={issue.id} issue={issue} />
+                ))
               ) : (
                 <p className="text-white/40 text-sm py-4 text-center">
-                    {isManager ? "No recent issues reported" : "You haven't reported any issues yet"}
+                  {isManager
+                    ? "No recent issues reported"
+                    : "You haven't reported any issues yet"}
                 </p>
               )}
             </div>
@@ -468,9 +519,12 @@ export default function DashboardPage() {
               </div>
               <div className="flex-1">
                 <h3 className="text-lg font-semibold mb-2">AI Insights</h3>
-                <p className="text-white/80 text-sm leading-relaxed mb-3">{aiInsight.insights}</p>
+                <p className="text-white/80 text-sm leading-relaxed mb-3">
+                  {aiInsight.insights}
+                </p>
                 <p className="text-xs text-white/40">
-                  Analyzed {aiInsight.analyzedIssues} issues • {new Date(aiInsight.timestamp).toLocaleDateString()}
+                  Analyzed {aiInsight.analyzedIssues} issues •{" "}
+                  {new Date(aiInsight.timestamp).toLocaleDateString()}
                 </p>
               </div>
             </div>
@@ -486,7 +540,9 @@ export default function DashboardPage() {
       <div className="bg-black/40 backdrop-blur-xl border border-white/10 rounded-xl p-4">
         <div className="flex items-center justify-between mb-2">
           <span className="text-2xl">{icon}</span>
-          <span className={`text-2xl font-bold bg-gradient-to-r ${gradient} bg-clip-text text-transparent`}>
+          <span
+            className={`text-2xl font-bold bg-gradient-to-r ${gradient} bg-clip-text text-transparent`}
+          >
             {value}
           </span>
         </div>
@@ -519,21 +575,29 @@ export default function DashboardPage() {
           className="bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl p-4 transition-all cursor-pointer"
         >
           <div className="flex items-start justify-between mb-2">
-            <h4 className="font-medium text-white text-sm flex-1 line-clamp-1">{issue.title}</h4>
-            <span className={`ml-2 px-2 py-0.5 rounded-lg text-xs font-medium border ${getPriorityColor(issue.priority)}`}>
+            <h4 className="font-medium text-white text-sm flex-1 line-clamp-1">
+              {issue.title}
+            </h4>
+            <span
+              className={`ml-2 px-2 py-0.5 rounded-lg text-xs font-medium border ${getPriorityColor(issue.priority)}`}
+            >
               {issue.priority}
             </span>
           </div>
           <div className="flex items-center gap-3 text-xs text-white/60">
             <span className="capitalize">{issue.category}</span>
             <span>•</span>
-            <span className={`px-2 py-0.5 rounded ${getStatusColor(issue.status)}`}>
+            <span
+              className={`px-2 py-0.5 rounded ${getStatusColor(issue.status)}`}
+            >
               {issue.status.replace("_", " ")}
             </span>
             <span>•</span>
             <span>Severity: {issue.severity}/10</span>
           </div>
-          <p className="text-xs text-white/40 mt-2">{formatDate(issue.createdAt)}</p>
+          <p className="text-xs text-white/40 mt-2">
+            {formatDate(issue.createdAt)}
+          </p>
         </motion.div>
       </Link>
     );
