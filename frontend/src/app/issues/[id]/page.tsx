@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import { auth } from "@/lib/firebase";
+import { VoteButton, VoteCount } from "@/components/voting/VoteButton";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
@@ -43,6 +44,8 @@ interface Issue {
   resolvedAt?: any;
   createdAt: any;
   updatedAt: any;
+  voteCount?: number;
+  votedBy?: string[];
 }
 
 interface HistoryEntry {
@@ -482,6 +485,10 @@ export default function IssueDetailPage() {
                     👤 Your Issue
                   </span>
                 )}
+                {/* Vote Count Display */}
+                <div className="ml-2">
+                  <VoteCount count={issue.voteCount || 0} size="md" />
+                </div>
               </div>
               <h1 className="text-3xl md:text-4xl font-bold mb-2">
                 {issue.title}
@@ -495,7 +502,20 @@ export default function IssueDetailPage() {
             </div>
 
             {/* Actions */}
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
+              {/* Vote Button */}
+              <VoteButton
+                issueId={issue.id}
+                initialVoteCount={issue.voteCount || 0}
+                size="md"
+                showCount={false}
+                onVoteChange={(newCount) => {
+                  if (issue) {
+                    setIssue({ ...issue, voteCount: newCount });
+                  }
+                }}
+              />
+
               <button
                 onClick={() => setShowHistory(!showHistory)}
                 className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-sm transition"

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
+import { VoteButton } from "@/components/voting/VoteButton";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
@@ -22,6 +23,8 @@ interface Issue {
   images?: string[];
   reportedBy: string;
   createdAt: any;
+  voteCount?: number;
+  votedBy?: string[];
 }
 
 interface UserData {
@@ -418,6 +421,14 @@ function IssueListItem({ issue, userId, onDelete, isDeleting }: any) {
 
         {/* Right: Actions */}
         <div className="flex items-center gap-3 md:border-l md:border-white/10 md:pl-6">
+          {/* Vote Button */}
+          <VoteButton
+            issueId={issue.id}
+            initialVoteCount={issue.voteCount || 0}
+            size="sm"
+            showCount={true}
+          />
+
           <Link href={`/issues/${issue.id}`}>
             <button className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition-colors">
               View Details

@@ -38,6 +38,9 @@ export interface PriorityInput {
   avgResolutionTime?: number; // hours for this category
   historicalCostAvg?: number;
   escalationRate?: number; // % of similar issues that escalated
+
+  // Voting system (NEW)
+  voteCount?: number; // Number of upvotes
 }
 
 /**
@@ -54,6 +57,7 @@ export interface PriorityScore {
     urgencyScore: number;
     contextScore: number;
     historicalScore: number;
+    voteScore: number; // NEW: Community voting influence
   };
   reasoning: string[];
   recommendedSLA: number; // hours
@@ -138,18 +142,20 @@ export class PriorityEngine {
       urgencyScore: this.calculateUrgencyScore(input),
       contextScore: this.calculateContextScore(input),
       historicalScore: this.calculateHistoricalScore(input),
+      voteScore: this.calculateVoteScore(input), // NEW
     };
 
-    // Weighted combination
+    // Weighted combination (adjusted to include votes)
     const score = Math.min(
       100,
       Math.round(
-        breakdown.categoryScore * 0.25 +
-          breakdown.severityScore * 0.2 +
-          breakdown.impactScore * 0.25 +
-          breakdown.urgencyScore * 0.15 +
+        breakdown.categoryScore * 0.22 +
+          breakdown.severityScore * 0.18 +
+          breakdown.impactScore * 0.22 +
+          breakdown.urgencyScore * 0.13 +
           breakdown.contextScore * 0.1 +
-          breakdown.historicalScore * 0.05
+          breakdown.historicalScore * 0.05 +
+          breakdown.voteScore * 0.1 // NEW: 10% weight for community votes
       )
     );
 
@@ -343,6 +349,35 @@ export class PriorityEngine {
   }
 
   /**
+   * NEW: Vote score based on community voting
+   * Reflects the collective urgency perceived by the community
+   */
+  private calculateVoteScore(input: PriorityInput): number {
+    const voteCount = input.voteCount || 0;
+
+    if (voteCount === 0) {
+      return 0; // No votes, no boost
+    }
+
+    // Logarithmic scale - first votes matter more
+    // 1 vote = 10 points
+    // 5 votes = 23 points
+    // 10 votes = 33 points
+    // 20 votes = 43 points
+    // 50 votes = 57 points
+    // 100+ votes = 67 points
+    let score = Math.log10(voteCount + 1) * 33;
+
+    // Cap at 70 points so votes don't override critical infrastructure issues
+    score = Math.min(70, score);
+
+    // Bonus for trending issues (high votes in short time)
+    // This could be enhanced with vote velocity data in the future
+
+    return Math.round(score);
+  }
+
+  /**
    * Convert score to priority enum
    */
   private scoreToPriority(score: number): IssuePriority {
@@ -444,6 +479,27 @@ export class PriorityEngine {
       reasons.push(
         `High escalation rate (${(input.escalationRate * 100).toFixed(0)}% of similar issues escalated)`
       );
+    }
+
+    // NEW: Vote reasoning
+    if (input.voteCount && input.voteCount > 0) {
+      if (input.voteCount >= 20) {
+        reasons.push(
+          `🔥 Strong community support (${input.voteCount} votes) - Widely recognized issue`
+        );
+      } else if (input.voteCount >= 10) {
+        reasons.push(
+          `📈 Community voted (${input.voteCount} votes) - Significant concern`
+        );
+      } else if (input.voteCount >= 5) {
+        reasons.push(
+          `✋ Community support (${input.voteCount} votes) - Validated concern`
+        );
+      } else {
+        reasons.push(
+          `👍 Community support (${input.voteCount} vote${input.voteCount === 1 ? "" : "s"})`
+        );
+      }
     }
 
     // Score summary

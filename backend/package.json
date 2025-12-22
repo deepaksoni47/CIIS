@@ -9,6 +9,8 @@
     "start": "node dist/index.js",
     "seed": "tsx src/scripts/seed-data.ts",
     "seed:ggv": "tsx src/scripts/seed-ggv-data.ts",
+    "seed:badges": "tsx src/scripts/seed-badges.ts",
+    "migrate:voting-rewards": "tsx src/scripts/migrate-voting-rewards.ts",
     "test:auth": "tsx src/scripts/test-auth.ts",
     "test:priority": "tsx src/scripts/test-priority-engine.ts",
     "test:heatmap": "tsx src/scripts/test-heatmap.ts",
