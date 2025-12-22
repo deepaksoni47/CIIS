@@ -7,6 +7,7 @@ import cors from "cors";
 import helmet from "helmet";
 import compression from "compression";
 import { initializeFirebase } from "./config/firebase";
+import { initializeCloudinary } from "./config/cloudinary";
 import { WebSocketService } from "./services/websocket.service";
 import { SSEService } from "./services/sse.service";
 import {
@@ -29,6 +30,16 @@ try {
 } catch (error) {
   console.error("Failed to initialize Firebase. Server cannot start.");
   process.exit(1);
+}
+
+// Initialize Cloudinary
+try {
+  initializeCloudinary();
+} catch (error) {
+  console.error("Failed to initialize Cloudinary:", error);
+  console.warn(
+    "⚠️ Image uploads will not work without Cloudinary configuration"
+  );
 }
 
 // Initialize WebSocket service

@@ -62,6 +62,9 @@ export function initializeFirebase(): admin.app.App {
       firebaseApp = admin.initializeApp({
         credential: admin.credential.cert(serviceAccount),
         projectId: process.env.FIREBASE_PROJECT_ID,
+        storageBucket:
+          process.env.FIREBASE_STORAGE_BUCKET ||
+          `${process.env.FIREBASE_PROJECT_ID}.appspot.com`,
       });
       console.log("✅ Firebase initialized with Service Account JSON");
     }
@@ -78,6 +81,9 @@ export function initializeFirebase(): admin.app.App {
           clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
         }),
         projectId: process.env.FIREBASE_PROJECT_ID,
+        storageBucket:
+          process.env.FIREBASE_STORAGE_BUCKET ||
+          `${process.env.FIREBASE_PROJECT_ID}.appspot.com`,
       });
       console.log("✅ Firebase initialized with individual credentials");
     }

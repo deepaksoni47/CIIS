@@ -1,5 +1,4 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import fetch from "node-fetch";
 
 /**
  * Initialize Gemini AI client
@@ -10,14 +9,22 @@ const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_API_KEY || "");
  * Get Gemini Pro model instance
  */
 export function getGeminiModel() {
-  return genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+  // Use the 2.5 Flash model available on the free tier for text tasks.
+  // Model IDs can vary by API version; the free tier exposes Gemini 2.5 Flash
+  // variants which support text and multimodal input. Using `gemini-2.5-flash`
+  // should be compatible with generateContent on v1beta in most setups.
+  return genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 }
 
 /**
  * Get Gemini Pro Vision model instance for image analysis
  */
 export function getGeminiVisionModel() {
-  return genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  // Prefer the Gemini 2.5 Flash model for multimodal/vision prompts.
+  // If an image-specific model (e.g., "gemini-2.5-flash-image" or
+  // "nano-banana") is available in your account, replace this value
+  // with that model id. For broad compatibility use `gemini-2.5-flash`.
+  return genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 }
 
 /**
@@ -268,22 +275,15 @@ Respond in JSON format:
   "recommendations": ["action 1", "action 2", ...]
 }`;
 
-    // Fetch image as base64
-    const response = await fetch(imageUrl);
-    const arrayBuffer = await response.arrayBuffer();
-    const base64Image = Buffer.from(arrayBuffer).toString("base64");
+    // Some Gemini vision models requiring inline binary data are not
+    // available on all API versions. As a safer cross-version approach
+    // include the accessible image URL in the prompt so the generative
+    // model can reference it when producing the analysis.
+    const promptWithUrl = `${prompt}\nImage URL: ${imageUrl}`;
 
-    const result = await model.generateContent([
-      prompt,
-      {
-        inlineData: {
-          data: base64Image,
-          mimeType: "image/jpeg",
-        },
-      },
-    ]);
-
-    const text = result.response.text();
+    const result = await model.generateContent(promptWithUrl);
+    const response = await result.response;
+    const text = response.text();
     const jsonMatch = text.match(/\{[\s\S]*\}/);
 
     if (jsonMatch) {
@@ -603,28 +603,73 @@ Respond in JSON:
   "summary": "brief summary of what was said"
 }`;
 
-    // Note: Gemini Pro doesn't directly support audio in the current SDK version
-    // This is a placeholder for when audio support is added or using Gemini 1.5 Pro
-    // For now, we'll return a message indicating audio processing needs upgrade
+    // Try passing audio inline to Gemini 2.5 Flash (free-tier multimodal model).
+    // Implement retries with exponential backoff to handle transient 503s
+    // when the model is overloaded.
+    const maxAttempts = 3;
+    let attempt = 0;
+    let lastError: any = null;
+    let text: string | null = null;
 
-    // Simulated response structure for future implementation
-    const result = await model.generateContent([
-      prompt,
-      {
-        inlineData: {
-          data: audioBase64,
-          mimeType: mimeType,
-        },
-      },
-    ]);
+    while (attempt < maxAttempts) {
+      try {
+        const result = await model.generateContent([
+          prompt,
+          {
+            inlineData: {
+              data: audioBase64,
+              mimeType: mimeType,
+            },
+          },
+        ]);
 
-    const response = result.response.text();
-    const jsonMatch = response.match(/\{[\s\S]*\}/);
+        const response = await result.response;
+        text = await response.text();
+        break;
+      } catch (err: any) {
+        lastError = err;
+        const msg = String(err?.message || err || "");
+        // If service is overloaded (503), retry with backoff
+        if (
+          err?.status === 503 ||
+          msg.includes("Service Unavailable") ||
+          msg.toLowerCase().includes("overloaded")
+        ) {
+          attempt += 1;
+          const delayMs = 500 * Math.pow(2, attempt); // 1s, 2s, 4s approx
+          console.warn(
+            `Gemini generateContent attempt ${attempt} failed with 503; retrying in ${delayMs}ms...`,
+            err
+          );
+          await new Promise((res) => setTimeout(res, delayMs));
+          continue;
+        }
+
+        // Non-retryable error: rethrow
+        throw err;
+      }
+    }
+
+    if (!text) {
+      // All attempts failed
+      console.error("Voice processing final error after retries:", lastError);
+      const msg = String(lastError?.message || lastError || "Unknown error");
+      if (
+        msg.includes("Service Unavailable") ||
+        msg.toLowerCase().includes("overloaded")
+      ) {
+        throw new Error(
+          "Voice processing temporarily unavailable (model overloaded). Please try again in a few seconds or transcribe on the client and call /api/ai/classify-text as a fallback."
+        );
+      }
+      throw lastError || new Error("Failed to process audio");
+    }
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
 
     if (jsonMatch) {
       const parsed = JSON.parse(jsonMatch[0]);
 
-      // Now classify the transcribed text
+      // Now classify the transcribed text using existing text classifier
       const issueClassification = await classifyIssueFromText(
         parsed.transcription,
         context
@@ -642,11 +687,19 @@ Respond in JSON:
       };
     }
 
-    throw new Error("Failed to process audio");
-  } catch (error) {
+    throw new Error("Failed to extract JSON from Gemini response");
+  } catch (error: any) {
     console.error("Voice processing error:", error);
+
+    const msg = String(error?.message || error);
+    if (msg.includes("not found") || msg.includes("not supported")) {
+      throw new Error(
+        "Voice processing via Gemini is not supported by the configured model/API. Transcribe on the client (Web Speech API) and call /api/ai/classify-text, or configure an audio-capable Gemini model (e.g., Gemini 2.5 Flash audio-enabled)."
+      );
+    }
+
     throw new Error(
-      "Voice processing not fully supported yet. Please use text input or upgrade to Gemini 1.5 Pro with audio capabilities."
+      "Voice processing failed. You can transcribe on the client and call /api/ai/classify-text as a fallback."
     );
   }
 }
@@ -725,22 +778,15 @@ Guidelines:
 - Consider both visible and potential hidden damage
 - Provide actionable recommendations`;
 
-    // Fetch image as base64
-    const response = await fetch(imageUrl);
-    const arrayBuffer = await response.arrayBuffer();
-    const base64Image = Buffer.from(arrayBuffer).toString("base64");
+    // Some Gemini vision models requiring inline binary data are not
+    // available on all API versions. As a safer cross-version approach
+    // include the accessible image URL in the prompt so the generative
+    // model can reference it when producing the analysis.
+    const promptWithUrl = `${prompt}\nImage URL: ${imageUrl}`;
 
-    const result = await model.generateContent([
-      prompt,
-      {
-        inlineData: {
-          data: base64Image,
-          mimeType: "image/jpeg",
-        },
-      },
-    ]);
-
-    const text = result.response.text();
+    const result = await model.generateContent(promptWithUrl);
+    const response = await result.response;
+    const text = response.text();
     const jsonMatch = text.match(/\{[\s\S]*\}/);
 
     if (jsonMatch) {

@@ -65,6 +65,18 @@ export default function ReportPage() {
     roomId: "",
   });
   const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [aiImageAnalysis, setAiImageAnalysis] = useState<string>("");
+  const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
+
+  // Voice recording state
+  const [isRecording, setIsRecording] = useState(false);
+  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const [voiceTranscript, setVoiceTranscript] = useState<string>("");
+  const [isProcessingVoice, setIsProcessingVoice] = useState(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const recognitionRef = useRef<any>(null);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -167,11 +179,429 @@ export default function ReportPage() {
       // Limit to 5 images
       const selectedFiles = files.slice(0, 5);
       setImageFiles(selectedFiles);
+
+      // Automatically analyze the first image with AI
+      if (selectedFiles.length > 0) {
+        analyzeImageWithAI(selectedFiles[0]);
+      }
+    }
+  };
+
+  const analyzeImageWithAI = async (imageFile: File) => {
+    setIsAnalyzingImage(true);
+    try {
+      const token = window.localStorage.getItem("ciis_token");
+
+      // First upload the image to get a URL
+      const uploadFormData = new FormData();
+      uploadFormData.append("images", imageFile);
+      uploadFormData.append(
+        "organizationId",
+        user?.organizationId || "ggv-bilaspur"
+      );
+
+      const uploadResponse = await fetch(
+        `${API_BASE_URL}/api/issues/upload-image`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: uploadFormData,
+        }
+      );
+
+      if (!uploadResponse.ok) {
+        const errorData = await uploadResponse.json().catch(() => ({}));
+        console.error("Image upload failed:", errorData);
+        toast.error(
+          "Image upload failed. You can still submit the issue without AI analysis.",
+          { duration: 5000 }
+        );
+        return;
+      }
+
+      const uploadResult = await uploadResponse.json();
+      const imageUrl = uploadResult.data?.url || uploadResult.data?.urls?.[0];
+
+      if (!imageUrl) {
+        toast.info("Image uploaded but AI analysis skipped.");
+        return;
+      }
+
+      // Now analyze the image with AI
+      const analyzeResponse = await fetch(
+        `${API_BASE_URL}/api/ai/analyze-image`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            imageUrl,
+            buildingName: BUILDINGS.find((b) => b.id === formData.buildingId)
+              ?.name,
+          }),
+        }
+      );
+
+      if (!analyzeResponse.ok) {
+        const err = await analyzeResponse.json().catch(() => ({}));
+        console.error("AI analysis failed:", err);
+        toast.error(
+          "AI analysis failed. You can still submit the issue without AI suggestions."
+        );
+        return;
+      }
+
+      const analyzeResult = await analyzeResponse.json();
+      const analysis = analyzeResult.data?.analysis;
+
+      if (analysis) {
+        setAiImageAnalysis(analysis.description || "");
+
+        // Auto-fill form fields based on AI analysis
+        if (analysis.suggestedCategory) {
+          setFormData((prev) => ({
+            ...prev,
+            category: analysis.suggestedCategory,
+          }));
+        }
+
+        // Append AI description to user's description if empty
+        if (analysis.description && !formData.description) {
+          setFormData((prev) => ({
+            ...prev,
+            description: analysis.description,
+          }));
+        }
+
+        toast.success("🤖 AI analyzed the image successfully!");
+      }
+    } catch (error) {
+      console.error("Error analyzing image with AI:", error);
+      toast.error("AI analysis failed, but you can still submit the issue");
+    } finally {
+      setIsAnalyzingImage(false);
     }
   };
 
   const removeImage = (index: number) => {
     setImageFiles((prev) => prev.filter((_, i) => i !== index));
+    // Clear AI analysis if removing all images
+    if (imageFiles.length === 1) {
+      setAiImageAnalysis("");
+    }
+  };
+
+  // Voice recording functions using Web Speech API
+  const startRecording = async () => {
+    try {
+      // Check if browser supports Speech Recognition
+      const SpeechRecognition =
+        (window as any).SpeechRecognition ||
+        (window as any).webkitSpeechRecognition;
+
+      if (!SpeechRecognition) {
+        toast.error(
+          "Speech recognition is not supported in your browser. Please type your issue instead.",
+          { duration: 5000 }
+        );
+        return;
+      }
+
+      const recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = "en-US";
+
+      let finalTranscript = "";
+      let hasShownError = false; // Prevent duplicate error messages
+
+      recognition.onresult = (event: any) => {
+        let interimTranscript = "";
+
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            finalTranscript += transcript + " ";
+          } else {
+            interimTranscript += transcript;
+          }
+        }
+
+        setVoiceTranscript(finalTranscript + interimTranscript);
+      };
+
+      recognition.onerror = (event: any) => {
+        // Prevent duplicate error messages
+        if (hasShownError) return;
+        hasShownError = true;
+
+        // Only log non-network/aborted errors to reduce console noise
+        if (event.error !== "network" && event.error !== "aborted") {
+          console.warn("Speech recognition error:", event.error);
+        }
+
+        // Only stop recording and cleanup on fatal errors
+        const fatalErrors = [
+          "not-allowed",
+          "permission-denied",
+          "audio-capture",
+        ];
+
+        if (fatalErrors.includes(event.error)) {
+          setIsRecording(false);
+
+          // Clean up media recorder if active
+          if (
+            mediaRecorderRef.current &&
+            mediaRecorderRef.current.state !== "inactive"
+          ) {
+            try {
+              mediaRecorderRef.current.stop();
+            } catch (e) {
+              console.warn("Failed to stop media recorder on fatal error:", e);
+            }
+          }
+        }
+
+        // Show user-facing toasts for specific cases, but do not stop on transient errors
+        if (event.error === "network") {
+          // Suppress network error toast to avoid alarming users; recording will continue.
+          console.info(
+            "Speech recognition network error (suppressed):",
+            event.error
+          );
+        } else if (
+          event.error === "not-allowed" ||
+          event.error === "permission-denied"
+        ) {
+          toast.error(
+            "Microphone permission denied. Please allow microphone access or type your issue.",
+            { duration: 5000 }
+          );
+        } else if (event.error === "no-speech") {
+          // Inform user but keep recording running so they can speak again
+          toast.info("No speech detected. Listening...", { duration: 2000 });
+        } else if (event.error === "audio-capture") {
+          toast.error("No microphone found. Please use text input instead.", {
+            duration: 5000,
+          });
+        }
+        // Don't show toast for 'aborted' or other minor errors
+      };
+
+      recognition.onend = () => {
+        if (isRecording) {
+          // SpeechRecognition sessions can end after short pauses even when
+          // `continuous` is true. Restart recognition automatically to allow
+          // longer recordings until the user explicitly stops.
+          console.log("Recognition ended unexpectedly, attempting restart");
+          try {
+            // Small delay before restart to avoid rapid loops
+            setTimeout(() => {
+              try {
+                recognition.start();
+              } catch (e) {
+                console.warn("Recognition restart failed:", e);
+              }
+            }, 250);
+          } catch (e) {
+            console.warn("Error while restarting recognition:", e);
+          }
+        }
+      };
+
+      recognitionRef.current = recognition;
+      recognition.start();
+      setIsRecording(true);
+      toast.success("🎤 Recording started - speak now");
+
+      // Also record audio for playback
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = async () => {
+        const audioBlobLocal = new Blob(audioChunksRef.current, {
+          type: "audio/webm",
+        });
+        setAudioBlob(audioBlobLocal);
+        stream.getTracks().forEach((track) => track.stop());
+
+        // Try server-side analysis when recording stops. If it fails,
+        // fall back to client-side transcript processing in stopRecording().
+        try {
+          await sendAudioToServer(audioBlobLocal);
+        } catch (err) {
+          console.warn("Server-side voice analysis failed inside onstop:", err);
+        }
+      };
+
+      mediaRecorder.start();
+    } catch (error) {
+      console.error("Error starting recording:", error);
+      toast.error("Could not access microphone. Please check permissions.");
+    }
+  };
+
+  const stopRecording = async () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+      recognitionRef.current = null;
+    }
+
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+    }
+
+    setIsRecording(false);
+    toast.info("🎤 Recording stopped");
+
+    // Process the transcript with AI to extract issue details
+    // Server-side analysis is triggered from mediaRecorder.onstop; if that
+    // didn't produce a transcription, fall back to client-side transcript.
+    // Small delay to allow onstop handlers to run and populate `voiceTranscript`.
+    await new Promise((r) => setTimeout(r, 200));
+
+    if (voiceTranscript.trim()) {
+      await processTranscriptWithAI(voiceTranscript);
+    }
+  };
+
+  const processTranscriptWithAI = async (transcript: string) => {
+    setIsProcessingVoice(true);
+    try {
+      const token = window.localStorage.getItem("ciis_token");
+
+      // Use the classify-text endpoint instead of process-voice
+      const response = await fetch(`${API_BASE_URL}/api/ai/classify-text`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          text: transcript,
+          buildingName: BUILDINGS.find((b) => b.id === formData.buildingId)
+            ?.name,
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        const classification = result.data?.classification;
+
+        if (classification) {
+          // Auto-fill form with AI-extracted data
+          setFormData((prev) => ({
+            ...prev,
+            title: classification.suggestedTitle || prev.title,
+            description: classification.structuredDescription || transcript,
+            category: classification.category || prev.category,
+          }));
+
+          toast.success("🤖 AI analyzed your voice input!");
+        }
+      } else {
+        // If AI classification fails, just use the transcript
+        toast.info("Using transcription as description");
+        setFormData((prev) => ({
+          ...prev,
+          description: transcript,
+        }));
+      }
+    } catch (error) {
+      console.error("Error processing transcript with AI:", error);
+      toast.error("AI processing failed, but transcript is saved");
+    } finally {
+      setIsProcessingVoice(false);
+    }
+  };
+
+  // Send recorded audio to backend for server-side voice analysis
+  const sendAudioToServer = async (blob: Blob) => {
+    setIsProcessingVoice(true);
+    try {
+      const token = window.localStorage.getItem("ciis_token");
+      // Convert blob to base64
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const result = reader.result as string | null;
+          if (!result) return resolve("");
+          // Data URL format: data:<mime>;base64,<data>
+          const parts = result.split(",");
+          resolve(parts[1] || "");
+        };
+        reader.onerror = (e) => reject(e);
+        reader.readAsDataURL(blob);
+      });
+
+      const mimeType = blob.type || "audio/webm";
+
+      const resp = await fetch(`${API_BASE_URL}/api/ai/process-voice`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          audioBase64: base64,
+          mimeType,
+          buildingName: BUILDINGS.find((b) => b.id === formData.buildingId)
+            ?.name,
+        }),
+      });
+
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        console.error("Server voice analysis failed:", err);
+        throw new Error(err.message || "Voice analysis failed");
+      }
+
+      const result = await resp.json();
+      const data = result.data;
+
+      // Update UI with transcription and AI classification
+      if (data?.transcription) {
+        setVoiceTranscript(data.transcription);
+      }
+
+      if (data?.issueClassification) {
+        const classification = data.issueClassification;
+        setFormData((prev) => ({
+          ...prev,
+          title: classification.suggestedTitle || prev.title,
+          description: classification.structuredDescription || prev.description,
+          category: classification.category || prev.category,
+        }));
+
+        toast.success("🤖 AI analyzed your voice input (server-side)!");
+      } else {
+        // Fallback: if no structured classification, use transcription as description
+        if (data?.transcription) {
+          setFormData((prev) => ({ ...prev, description: data.transcription }));
+          toast.info("Using transcription as description");
+        }
+      }
+    } finally {
+      setIsProcessingVoice(false);
+    }
+  };
+
+  const clearVoiceRecording = () => {
+    setAudioBlob(null);
+    setVoiceTranscript("");
   };
 
   const uploadImages = async (): Promise<string[]> => {
@@ -281,8 +711,16 @@ export default function ReportPage() {
         category: formData.category,
         latitude: location.latitude.toString(),
         longitude: location.longitude.toString(),
-        submissionType: imageUrls.length > 0 ? "mixed" : "text",
+        submissionType: voiceTranscript
+          ? imageUrls.length > 0
+            ? "mixed"
+            : "voice"
+          : imageUrls.length > 0
+            ? "image"
+            : "text",
         images: imageUrls,
+        voiceTranscript: voiceTranscript || undefined,
+        aiImageAnalysis: aiImageAnalysis || undefined,
       };
 
       // Submit issue
@@ -309,6 +747,9 @@ export default function ReportPage() {
           roomId: "",
         });
         setImageFiles([]);
+        setAiImageAnalysis("");
+        setVoiceTranscript("");
+        setAudioBlob(null);
         // Redirect to dashboard after a short delay
         setTimeout(() => {
           router.push("/dashboard");
@@ -502,6 +943,169 @@ export default function ReportPage() {
             </p>
           </div>
 
+          {/* Voice Recording */}
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Voice Recording{" "}
+              <span className="text-white/40 text-xs">
+                (Optional - AI will transcribe)
+              </span>
+            </label>
+            <div className="space-y-3">
+              {/* Info banner */}
+              <div className="p-3 rounded-lg bg-amber-950/40 border border-amber-500/30 flex items-start gap-2">
+                <svg
+                  className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
+                </svg>
+                <div className="flex-1">
+                  <p className="text-xs text-amber-300">
+                    <strong>⚠️ Note:</strong> Voice recognition is subject to
+                    rate limiting.
+                    <strong className="block mt-1">
+                      Recommended: Just type your issue above instead.
+                    </strong>
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                {!isRecording && !audioBlob && (
+                  <button
+                    type="button"
+                    onClick={startRecording}
+                    disabled={isProcessingVoice}
+                    className="flex-1 px-4 py-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-white flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
+                      />
+                    </svg>
+                    Start Recording
+                  </button>
+                )}
+
+                {isRecording && (
+                  <button
+                    type="button"
+                    onClick={stopRecording}
+                    className="flex-1 px-4 py-3 rounded-xl bg-rose-600 hover:bg-rose-700 border border-rose-500/30 transition-all text-white flex items-center justify-center gap-2 animate-pulse"
+                  >
+                    <div className="w-3 h-3 bg-white rounded-full animate-ping"></div>
+                    Stop Recording
+                  </button>
+                )}
+
+                {audioBlob && !isRecording && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const url = URL.createObjectURL(audioBlob);
+                        const audio = new Audio(url);
+                        audio.play();
+                      }}
+                      className="flex-1 px-4 py-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-white flex items-center justify-center gap-2"
+                    >
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+                        />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                      Play Recording
+                    </button>
+                    <button
+                      type="button"
+                      onClick={clearVoiceRecording}
+                      className="px-4 py-3 rounded-xl bg-rose-600/20 hover:bg-rose-600/30 border border-rose-500/30 transition-all text-rose-400 flex items-center justify-center"
+                    >
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                        />
+                      </svg>
+                    </button>
+                  </>
+                )}
+              </div>
+
+              {isProcessingVoice && (
+                <div className="p-3 rounded-lg bg-violet-950/40 border border-violet-500/30 flex items-center gap-3">
+                  <div className="w-5 h-5 border-2 border-violet-400/30 border-t-violet-400 rounded-full animate-spin"></div>
+                  <span className="text-sm text-violet-300">
+                    AI is transcribing your voice...
+                  </span>
+                </div>
+              )}
+
+              {voiceTranscript && (
+                <div className="p-4 rounded-lg bg-green-950/40 border border-green-500/30">
+                  <div className="flex items-start gap-2">
+                    <svg
+                      className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-green-300 mb-1">
+                        Voice Transcription:
+                      </p>
+                      <p className="text-sm text-white/80">{voiceTranscript}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* Category */}
           <div>
             <label
@@ -598,7 +1202,9 @@ export default function ReportPage() {
           <div>
             <label className="block text-sm font-medium mb-2">
               Images{" "}
-              <span className="text-white/40 text-xs">(Optional, max 5)</span>
+              <span className="text-white/40 text-xs">
+                (Optional, max 5 - AI will analyze)
+              </span>
             </label>
             <div className="space-y-3">
               <input
@@ -612,7 +1218,8 @@ export default function ReportPage() {
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-white flex items-center justify-center gap-2"
+                disabled={isAnalyzingImage}
+                className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-white flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <svg
                   className="w-5 h-5"
@@ -631,6 +1238,42 @@ export default function ReportPage() {
                   ? `${imageFiles.length} image(s) selected`
                   : "Add Images"}
               </button>
+
+              {isAnalyzingImage && (
+                <div className="p-3 rounded-lg bg-violet-950/40 border border-violet-500/30 flex items-center gap-3">
+                  <div className="w-5 h-5 border-2 border-violet-400/30 border-t-violet-400 rounded-full animate-spin"></div>
+                  <span className="text-sm text-violet-300">
+                    🤖 AI is analyzing the image...
+                  </span>
+                </div>
+              )}
+
+              {aiImageAnalysis && (
+                <div className="p-4 rounded-lg bg-blue-950/40 border border-blue-500/30">
+                  <div className="flex items-start gap-2">
+                    <svg
+                      className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-blue-300 mb-1">
+                        🤖 AI Image Analysis:
+                      </p>
+                      <p className="text-sm text-white/80">{aiImageAnalysis}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {imageFiles.length > 0 && (
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   {imageFiles.map((file, index) => (

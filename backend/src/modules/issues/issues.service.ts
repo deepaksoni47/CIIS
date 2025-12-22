@@ -1,5 +1,6 @@
 import { firestore } from "firebase-admin";
-import { getFirestore, getStorage } from "../../config/firebase";
+import { getFirestore } from "../../config/firebase";
+import { uploadImageToCloudinary } from "../../config/cloudinary";
 import {
   Issue,
   IssueHistory,
@@ -13,7 +14,6 @@ import { WebSocketService } from "../../services/websocket.service";
 import { SSEService } from "../../services/sse.service";
 
 const db = getFirestore();
-const storage = getStorage();
 
 /**
  * Create a new issue
@@ -542,7 +542,7 @@ export async function getIssueHistory(
 }
 
 /**
- * Upload image for issue
+ * Upload image for issue using Cloudinary
  */
 export async function uploadIssueImage(
   file: Buffer,
@@ -550,23 +550,24 @@ export async function uploadIssueImage(
   organizationId: string,
   issueId?: string
 ): Promise<string> {
-  const bucket = storage.bucket();
-  const path = issueId
-    ? `issues/${organizationId}/${issueId}/${fileName}`
-    : `issues/${organizationId}/temp/${fileName}`;
+  try {
+    // Create folder path in Cloudinary
+    const folder = issueId
+      ? `ciis/issues/${organizationId}/${issueId}`
+      : `ciis/issues/${organizationId}/temp`;
 
-  const fileRef = bucket.file(path);
+    // Remove file extension and timestamp for cleaner public_id
+    const cleanFileName = fileName.replace(/\.[^/.]+$/, "");
 
-  await fileRef.save(file, {
-    metadata: {
-      contentType: "image/jpeg",
-    },
-  });
+    // Upload to Cloudinary
+    const imageUrl = await uploadImageToCloudinary(file, folder, cleanFileName);
 
-  // Make file publicly accessible
-  await fileRef.makePublic();
-
-  return fileRef.publicUrl();
+    console.log(`✅ Image uploaded to Cloudinary: ${imageUrl}`);
+    return imageUrl;
+  } catch (error) {
+    console.error("Error uploading image to Cloudinary:", error);
+    throw new Error("Failed to upload image to Cloudinary");
+  }
 }
 
 /**
