@@ -7,7 +7,8 @@ import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  "https://ciis-production-ebbd.up.railway.app";
 
 export function FloatingNav() {
   const router = useRouter();
@@ -301,7 +302,7 @@ export function FloatingNav() {
             Heatmap
           </motion.a>
           <motion.a
-            href="/priorities"
+            href="/priority"
             className="px-5 py-3 rounded-xl text-white/70 hover:text-white hover:bg-white/5 text-sm font-medium transition-all text-center"
             whileTap={{ scale: 0.95 }}
             onClick={() => setIsMobileMenuOpen(false)}

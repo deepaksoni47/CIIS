@@ -1,0 +1,20 @@
+# Railway configuration for CIIS Backend
+# This file tells Railway to build and run the backend folder
+
+[build]
+builder = "nixpacks"
+
+[build.nixpacksPlan]
+providers = ["node"]
+
+[build.nixpacksPlan.phases.setup]
+nixPkgs = ["nodejs_20"]
+
+[build.nixpacksPlan.phases.install]
+cmds = ["cd backend && npm install --prefer-offline --no-audit"]
+
+[build.nixpacksPlan.phases.build]
+cmds = ["cd backend && npm run build"]
+
+[build.nixpacksPlan.start]
+cmd = "cd backend && npm start"

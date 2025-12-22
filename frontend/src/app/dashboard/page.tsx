@@ -7,7 +7,8 @@ import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  "https://ciis-production-ebbd.up.railway.app";
 
 // --- Types ---
 interface Issue {
@@ -343,6 +344,20 @@ export default function DashboardPage() {
             
             {/* Action 1: Report (Everyone) */}
             <QuickActionCard
+              title="Heatmap View"
+              description="Visualize infrastructure issues on campus map"
+              icon="🗺️"
+              href="/heatmap"
+              gradient="from-violet-600 to-fuchsia-600"
+            />
+            <QuickActionCard
+              title="Priorities"
+              description="View high-priority issues requiring attention"
+              icon="⚡"
+              href="/priority"
+              gradient="from-orange-600 to-red-600"
+            />
+            <QuickActionCard
               title="Report Issue"
               description="Report a new infrastructure issue"
               icon="📝"
@@ -394,7 +409,12 @@ export default function DashboardPage() {
               <h2 className="text-xl font-semibold">
                 {isManager ? "High Priority Issues" : "Campus Alerts"}
               </h2>
-              <Link href="/priorities" className="text-sm text-violet-400 hover:text-violet-300 transition-colors">
+              <Link href="/priority" className="text-sm text-violet-400 hover:text-violet-300 transition-colors">
+              <h2 className="text-xl font-semibold">High Priority Issues</h2>
+              <Link
+                href="/priority"
+                className="text-sm text-violet-400 hover:text-violet-300 transition-colors"
+              >
                 View all →
               </Link>
             </div>

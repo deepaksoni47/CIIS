@@ -77,7 +77,9 @@ export class WebSocketService {
   private constructor(httpServer: HTTPServer) {
     this.io = new SocketIOServer(httpServer, {
       cors: {
-        origin: process.env.FRONTEND_URL || "http://localhost:3000",
+        origin: process.env.ALLOWED_ORIGINS?.split(",").map((o) =>
+          o.trim()
+        ) || ["http://localhost:3000", "https://ciis-innovex.vercel.app"],
         methods: ["GET", "POST"],
         credentials: true,
       },

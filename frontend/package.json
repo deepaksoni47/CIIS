@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Campus Infrastructure Intelligence System - Frontend Application",
   "private": true,
+  "npmConfig": {
+    "legacy-peer-deps": "true"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -13,7 +16,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@headlessui/react": "^1.7.17",
+    "@headlessui/react": "^2.2.0",
     "@heroicons/react": "^2.1.1",
     "axios": "^1.6.5",
     "chart.js": "^4.4.1",

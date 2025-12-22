@@ -448,8 +448,8 @@ export async function getIncidentReport(req: Request, res: Response) {
 
     const relatedSnapshot = await db
       .collection("issues")
-      .where("buildingId", "==", issue.buildingId)
-      .where("category", "==", issue.category)
+      .where("buildingId", "==", (issue as any).buildingId)
+      .where("category", "==", (issue as any).category)
       .where("createdAt", ">=", ninetyDaysAgo)
       .get();
 

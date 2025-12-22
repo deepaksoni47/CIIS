@@ -7,7 +7,8 @@ import toast from "react-hot-toast";
 import { auth } from "@/lib/firebase";
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  "https://ciis-production-ebbd.up.railway.app";
 
 // Category configurations from Priority Engine
 const CATEGORIES = [

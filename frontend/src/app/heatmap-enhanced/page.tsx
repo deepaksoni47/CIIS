@@ -21,7 +21,9 @@ const DynamicHeatmapContainer = dynamic(
   { ssr: false }
 );
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  "https://ciis-production-ebbd.up.railway.app";
 
 interface HeatmapPoint {
   lat: number;

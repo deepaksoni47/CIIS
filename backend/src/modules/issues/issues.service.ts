@@ -202,8 +202,8 @@ export async function getIssues(filters: {
 
   // Sort by createdAt descending
   issues.sort((a, b) => {
-    const aTime = a.createdAt?._seconds || 0;
-    const bTime = b.createdAt?._seconds || 0;
+    const aTime = (a.createdAt as any)?.seconds || 0;
+    const bTime = (b.createdAt as any)?.seconds || 0;
     return bTime - aTime;
   });
 
