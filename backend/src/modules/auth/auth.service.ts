@@ -362,3 +362,71 @@ export async function hasPermission(
   }
   return user.permissions[permission] === true;
 }
+
+/**
+ * Change user password
+ */
+export async function changePassword(
+  userId: string,
+  currentPassword: string,
+  newPassword: string
+): Promise<void> {
+  const auth = getAuth();
+  const db = getFirestore();
+
+  try {
+    // Get user email from Firestore
+    const userDoc = await db.collection("users").doc(userId).get();
+    if (!userDoc.exists) {
+      throw new Error("User not found");
+    }
+
+    const userData = userDoc.data() as User;
+    const email = userData.email;
+
+    // Verify current password by attempting sign-in
+    const firebaseApiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
+    if (!firebaseApiKey) {
+      throw new Error("Firebase API key not configured");
+    }
+
+    const authResponse = await fetch(
+      `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${firebaseApiKey}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password: currentPassword,
+          returnSecureToken: true,
+        }),
+      }
+    );
+
+    if (!authResponse.ok) {
+      throw new Error("Current password is incorrect");
+    }
+
+    // Update password in Firebase Auth
+    await auth.updateUser(userId, {
+      password: newPassword,
+    });
+
+    // Update timestamp in Firestore
+    await db.collection("users").doc(userId).update({
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      if (error.message.includes("Current password is incorrect")) {
+        throw error;
+      }
+      if (error.message.includes("INVALID_PASSWORD")) {
+        throw new Error("Current password is incorrect");
+      }
+    }
+    throw new Error("Failed to change password");
+  }
+}

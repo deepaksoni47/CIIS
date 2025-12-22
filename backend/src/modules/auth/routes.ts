@@ -119,6 +119,25 @@ router.patch(
 );
 
 /**
+ * @route   POST /api/auth/change-password
+ * @desc    Change user password
+ * @access  Private
+ */
+router.post(
+  "/change-password",
+  authenticate,
+  apiRateLimiter,
+  body("currentPassword")
+    .notEmpty()
+    .withMessage("Current password is required"),
+  body("newPassword")
+    .isLength({ min: 6 })
+    .withMessage("New password must be at least 6 characters long"),
+  handleValidationErrors,
+  authController.changePassword
+);
+
+/**
  * @route   GET /api/auth/users/:organizationId
  * @desc    Get users by organization
  * @access  Private (Admin/Facility Manager only)

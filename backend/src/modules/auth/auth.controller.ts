@@ -395,3 +395,51 @@ export async function logout(_req: Request, res: Response) {
     });
   }
 }
+
+/**
+ * Change password
+ * POST /api/auth/change-password
+ */
+export async function changePassword(req: Request, res: Response) {
+  try {
+    const userId = req.user?.uid;
+
+    if (!userId) {
+      return res.status(401).json({
+        error: "Unauthorized",
+        message: "User not authenticated",
+      });
+    }
+
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        error: "Missing parameters",
+        message: "currentPassword and newPassword are required",
+      });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({
+        error: "Weak password",
+        message: "New password must be at least 6 characters long",
+      });
+    }
+
+    await authService.changePassword(userId, currentPassword, newPassword);
+
+    res.json({
+      success: true,
+      message: "Password changed successfully",
+    });
+  } catch (error: unknown) {
+    console.error("Change password error:", error);
+    const errorMessage =
+      error instanceof Error ? error.message : "Failed to change password";
+    res.status(400).json({
+      error: "Password change failed",
+      message: errorMessage,
+    });
+  }
+}
