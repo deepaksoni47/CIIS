@@ -277,8 +277,12 @@ export async function resolveIssue(req: Request, res: Response) {
       });
     }
 
-    // Only facility managers and admins can resolve issues
-    if (userRole !== UserRole.FACILITY_MANAGER && userRole !== UserRole.ADMIN) {
+    // Only staff, facility managers and admins can resolve issues
+    if (
+      userRole !== UserRole.STAFF &&
+      userRole !== UserRole.FACILITY_MANAGER &&
+      userRole !== UserRole.ADMIN
+    ) {
       return res.status(403).json({
         error: "Forbidden",
         message: "You don't have permission to resolve issues",
@@ -380,15 +384,32 @@ export async function deleteIssue(req: Request, res: Response) {
       });
     }
 
-    // Only admins can delete issues
-    if (userRole !== UserRole.ADMIN) {
-      return res.status(403).json({
-        error: "Forbidden",
-        message: "You don't have permission to delete issues",
-      });
-    }
-
     const { id } = req.params;
+
+    // Check permissions:
+    // - Admins and Facility Managers can delete any issue
+    // - Students, Faculty, Staff can only delete their own issues
+    const isAdmin = userRole === UserRole.ADMIN;
+    const isFacilityManager = userRole === UserRole.FACILITY_MANAGER;
+
+    if (!isAdmin && !isFacilityManager) {
+      // Need to check ownership for non-admin/facility-manager users
+      const issue = await issuesService.getIssueById(id);
+
+      if (!issue) {
+        return res.status(404).json({
+          error: "Not found",
+          message: "Issue not found",
+        });
+      }
+
+      if (issue.reportedBy !== userId) {
+        return res.status(403).json({
+          error: "Forbidden",
+          message: "You can only delete your own issues",
+        });
+      }
+    }
 
     await issuesService.deleteIssue(id, userId);
 

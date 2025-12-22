@@ -128,12 +128,12 @@ router.patch(
 /**
  * @route   PATCH /api/issues/:id/resolve
  * @desc    Resolve issue
- * @access  Private (Facility Manager, Admin only)
+ * @access  Private (Staff, Facility Manager, Admin only)
  */
 router.patch(
   "/:id/resolve",
   authenticate,
-  authorize(UserRole.FACILITY_MANAGER, UserRole.ADMIN),
+  authorize(UserRole.STAFF, UserRole.FACILITY_MANAGER, UserRole.ADMIN),
   issuesController.resolveIssue
 );
 
@@ -159,12 +159,12 @@ router.get("/:id/history", authenticate, issuesController.getIssueHistory);
 /**
  * @route   DELETE /api/issues/:id
  * @desc    Close/Delete issue
- * @access  Private (Admin only)
+ * @access  Private (All authenticated users - can delete own issues; Admins/Facility Managers can delete any)
  */
 router.delete(
   "/:id",
   authenticate,
-  authorize(UserRole.ADMIN),
+  apiRateLimiter,
   issuesController.deleteIssue
 );
 
