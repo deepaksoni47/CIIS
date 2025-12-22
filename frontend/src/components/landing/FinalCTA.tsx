@@ -9,27 +9,23 @@ export function FinalCTA() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
   
-  // Get auth state from hook
-  const { user, loading } = useAuth();
+  // Get auth methods from hook
+  const { getUser, isAuthenticated } = useAuth();
   
-  // Local state to force check immediately on mount
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  // Local state to track authentication
+  const [isAuth, setIsAuth] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // 1. Check Hook User
-    if (user) {
-        setIsAuthenticated(true);
-    } 
-    // 2. Fallback: Check LocalStorage directly (in case hook is slow)
-    else if (typeof window !== "undefined") {
-        const token = window.localStorage.getItem("ciis_token");
-        if (token) setIsAuthenticated(true);
-    }
-  }, [user]);
+    // Check if user is authenticated
+    const authenticated = isAuthenticated();
+    setIsAuth(authenticated);
+    setIsLoading(false);
+  }, [isAuthenticated]);
 
   // Determine Button Logic
-  const buttonText = isAuthenticated ? "Go to Dashboard" : "Login to Get Started";
-  const buttonLink = isAuthenticated ? "/dashboard" : "/login";
+  const buttonText = isAuth ? "Go to Dashboard" : "Login to Get Started";
+  const buttonLink = isAuth ? "/dashboard" : "/login";
 
   return (
     <section ref={ref} className="relative py-40 px-6 overflow-hidden">
@@ -104,7 +100,7 @@ export function FinalCTA() {
                 />
 
                 <span className="relative z-10">
-                    {loading ? "Checking..." : buttonText}
+                    {isLoading ? "Checking..." : buttonText}
                 </span>
 
                 <motion.svg
