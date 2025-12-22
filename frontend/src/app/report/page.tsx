@@ -225,7 +225,7 @@ export default function ReportPage() {
       const imageUrl = uploadResult.data?.url || uploadResult.data?.urls?.[0];
 
       if (!imageUrl) {
-        toast.info("Image uploaded but AI analysis skipped.");
+        toast("Image uploaded but AI analysis skipped.");
         return;
       }
 
@@ -384,7 +384,7 @@ export default function ReportPage() {
           );
         } else if (event.error === "no-speech") {
           // Inform user but keep recording running so they can speak again
-          toast.info("No speech detected. Listening...", { duration: 2000 });
+          toast("No speech detected. Listening...", { duration: 2000 });
         } else if (event.error === "audio-capture") {
           toast.error("No microphone found. Please use text input instead.", {
             duration: 5000,
@@ -465,7 +465,7 @@ export default function ReportPage() {
     }
 
     setIsRecording(false);
-    toast.info("🎤 Recording stopped");
+    toast("🎤 Recording stopped");
 
     // Process the transcript with AI to extract issue details
     // Server-side analysis is triggered from mediaRecorder.onstop; if that
@@ -514,7 +514,7 @@ export default function ReportPage() {
         }
       } else {
         // If AI classification fails, just use the transcript
-        toast.info("Using transcription as description");
+        toast("Using transcription as description");
         setFormData((prev) => ({
           ...prev,
           description: transcript,
@@ -591,7 +591,7 @@ export default function ReportPage() {
         // Fallback: if no structured classification, use transcription as description
         if (data?.transcription) {
           setFormData((prev) => ({ ...prev, description: data.transcription }));
-          toast.info("Using transcription as description");
+          toast("Using transcription as description");
         }
       }
     } finally {
