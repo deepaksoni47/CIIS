@@ -191,8 +191,8 @@ export function TrustAccess() {
                     whileHover={{ x: 5 }}
                     className="inline-flex items-center gap-2 text-cyan-400 hover:text-cyan-300 font-medium transition-colors group/link"
                   >
-                    <span>Learn more</span>
-                    <svg
+                    {/* <span>Learn more</span> */}
+                    {/* <svg
                       className="w-4 h-4 group-hover/link:translate-x-1 transition-transform"
                       fill="none"
                       viewBox="0 0 24 24"
@@ -204,7 +204,7 @@ export function TrustAccess() {
                         strokeWidth={2}
                         d="M13 7l5 5m0 0l-5 5m5-5H6"
                       />
-                    </svg>
+                    </svg> */}
                   </motion.a>
                 </div>
 
