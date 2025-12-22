@@ -33,7 +33,7 @@ export function FinalCTA() {
 
   return (
     <section ref={ref} className="relative py-40 px-6 overflow-hidden">
-      {/* ... (Keep background animations same as before) ... */}
+      {/* Background animations */}
       
       <div className="absolute inset-0 -z-10">
         <motion.div
@@ -50,7 +50,7 @@ export function FinalCTA() {
           transition={{ duration: 0.8 }}
           className="space-y-12"
         >
-          {/* ... (Keep Headline & Text same as before) ... */}
+          {/* Headline & Text */}
           <div className="space-y-6">
             <motion.h2
               initial={{ opacity: 0, y: 20 }}
@@ -87,8 +87,8 @@ export function FinalCTA() {
               className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 blur-2xl"
             />
 
-            <Link href={buttonLink} passHref legacyBehavior>
-                <motion.a
+            <Link href={buttonLink}>
+                <motion.div
                 whileHover={{ scale: 1.05, boxShadow: "0 0 40px rgba(217, 70, 239, 0.5)" }}
                 whileTap={{ scale: 0.95 }}
                 className="relative inline-flex items-center gap-3 px-12 py-6 rounded-full bg-gradient-to-r from-violet-600 via-fuchsia-600 to-violet-600 bg-size-200 hover:bg-pos-100 text-white text-xl font-bold shadow-2xl shadow-fuchsia-500/30 transition-all duration-300 group cursor-pointer"
@@ -117,11 +117,11 @@ export function FinalCTA() {
                 >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                 </motion.svg>
-                </motion.a>
+                </motion.div>
             </Link>
           </motion.div>
 
-          {/* ... (Keep Trust Indicators same as before) ... */}
+          {/* Trust Indicators */}
            <motion.div
             initial={{ opacity: 0 }}
             animate={isInView ? { opacity: 1 } : {}}
@@ -134,10 +134,10 @@ export function FinalCTA() {
 
             <div className="flex flex-wrap justify-center items-center gap-8 pt-8">
               {[
-                { icon: "🔒", label: "Enterprise Security" },
-                { icon: "⚡", label: "Real-Time Updates" },
-                { icon: "🎯", label: "AI-Powered" },
-                { icon: "📊", label: "Advanced Analytics" },
+                { icon: "L", label: "Enterprise Security" },
+                { icon: "Z", label: "Real-Time Updates" },
+                { icon: "T", label: "AI-Powered" },
+                { icon: "D", label: "Advanced Analytics" },
               ].map((item, index) => (
                 <motion.div
                   key={item.label}
@@ -156,7 +156,7 @@ export function FinalCTA() {
           </motion.div>
         </motion.div>
         
-        {/* ... (Keep Decorative dots same as before) ... */}
+        {/* Decorative dots */}
          <motion.div
           initial={{ opacity: 0 }}
           animate={isInView ? { opacity: 1 } : {}}
