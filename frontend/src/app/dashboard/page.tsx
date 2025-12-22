@@ -83,6 +83,17 @@ export default function DashboardPage() {
       const userData: UserData = JSON.parse(userStr);
       setUser(userData);
 
+      // Debug: show whether a token exists and the user's role (do not print token)
+      if (typeof window !== "undefined") {
+        const t = window.localStorage.getItem("ciis_token");
+        console.debug(
+          "Dashboard: token present=",
+          !!t,
+          "userRole=",
+          userData.role
+        );
+      }
+
       const isManagerOrAdmin = ["facility_manager", "admin"].includes(
         userData.role
       );
@@ -155,6 +166,17 @@ export default function DashboardPage() {
         },
       });
 
+      if (response.status === 401) {
+        console.warn("Dashboard: received 401 when fetching recent issues");
+        if (typeof window !== "undefined") {
+          window.localStorage.removeItem("ciis_token");
+          window.localStorage.removeItem("ciis_user");
+        }
+        toast.error("Session expired — please sign in again");
+        router.push("/login");
+        return;
+      }
+
       if (response.ok) {
         const result = await response.json();
         if (result.success && result.data) {
@@ -180,6 +202,17 @@ export default function DashboardPage() {
         }
       );
 
+      if (response.status === 401) {
+        console.warn("Dashboard: received 401 when fetching priority issues");
+        if (typeof window !== "undefined") {
+          window.localStorage.removeItem("ciis_token");
+          window.localStorage.removeItem("ciis_user");
+        }
+        toast.error("Session expired — please sign in again");
+        router.push("/login");
+        return;
+      }
+
       if (response.ok) {
         const result = await response.json();
         if (result.success && result.data) {
@@ -197,6 +230,17 @@ export default function DashboardPage() {
       const response = await fetch(`${API_BASE_URL}/api/ai/insights`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+
+      if (response.status === 401) {
+        console.warn("Dashboard: received 401 when fetching AI insights");
+        if (typeof window !== "undefined") {
+          window.localStorage.removeItem("ciis_token");
+          window.localStorage.removeItem("ciis_user");
+        }
+        toast.error("Session expired — please sign in again");
+        router.push("/login");
+        return;
+      }
 
       if (response.ok) {
         const result = await response.json();

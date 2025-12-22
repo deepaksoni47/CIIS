@@ -612,19 +612,32 @@ export async function getHighPriorityIssues(
   organizationId: string,
   limit: number = 20
 ): Promise<Issue[]> {
-  const snapshot = await db
-    .collection("issues")
-    .where("organizationId", "==", organizationId)
-    .where("status", "in", [IssueStatus.OPEN, IssueStatus.IN_PROGRESS])
-    .where("priority", "in", [IssuePriority.HIGH, IssuePriority.CRITICAL])
-    .orderBy("aiRiskScore", "desc")
-    .limit(limit)
-    .get();
+  // Avoid Firestore composite index requirement by using the generic getIssues
+  // path which queries by organizationId only and then applying the
+  // priority/status filters + sorting in-memory. This is slightly less
+  // efficient for very large datasets but prevents FAILED_PRECONDITION
+  // errors during development and when indexes are not present.
+  const { issues } = await getIssues({ organizationId });
 
-  return snapshot.docs.map((doc) => ({
-    id: doc.id,
-    ...doc.data(),
-  })) as Issue[];
+  const filtered = issues
+    .filter((i) =>
+      [IssueStatus.OPEN, IssueStatus.IN_PROGRESS].includes(
+        i.status as IssueStatus
+      )
+    )
+    .filter((i) =>
+      [IssuePriority.HIGH, IssuePriority.CRITICAL].includes(
+        i.priority as IssuePriority
+      )
+    )
+    .sort((a, b) => {
+      const aScore = (a.aiRiskScore as number) || 0;
+      const bScore = (b.aiRiskScore as number) || 0;
+      return bScore - aScore;
+    })
+    .slice(0, limit);
+
+  return filtered as Issue[];
 }
 
 /**
