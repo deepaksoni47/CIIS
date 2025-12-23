@@ -424,7 +424,8 @@ export function HeatmapContainer({
           whileTap={{ scale: 0.95 }}
           onClick={handleAIInsight}
           disabled={isLoading}
-          className="fixed top-24 right-6 z-[1000] px-6 py-3 bg-gradient-to-r from-violet-600 via-fuchsia-600 to-pink-600 text-white font-medium rounded-xl shadow-lg shadow-violet-500/25 hover:shadow-xl hover:shadow-fuchsia-500/30 transition-all disabled:opacity-70 disabled:cursor-not-allowed flex items-center gap-2"
+          // className="fixed top-24 right-6 z-[1000] px-6 py-3 bg-gradient-to-r from-violet-600 via-fuchsia-600 to-pink-600 text-white font-medium rounded-xl shadow-lg shadow-violet-500/25 hover:shadow-xl hover:shadow-fuchsia-500/30 transition-all disabled:opacity-70 disabled:cursor-not-allowed flex items-center gap-2"
+          className="fixed top-24 right-6 z-[1000] px-6 py-3 bg-gradient-to-r from-violet-600 to-fuchsia-600 border-2 text-white font-medium rounded-xl shadow-lg shadow-violet-500/25 hover:shadow-xl hover:shadow-fuchsia-500/30 transition-all disabled:opacity-70 disabled:cursor-not-allowed flex items-center gap-2"
         >
           {isLoading ? (
             <>

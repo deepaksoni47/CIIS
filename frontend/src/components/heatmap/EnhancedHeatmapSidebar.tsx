@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { ShieldAlert,Wrench,University,Building,Droplet,Zap,Wifi,Search,Settings } from "lucide-react";
 
 export type PresetMode =
   | "emergency"
@@ -73,28 +74,28 @@ export function EnhancedHeatmapSidebar({
     {
       id: "emergency" as PresetMode,
       name: "Emergency Response",
-      icon: "🚨",
+      icon: <ShieldAlert />,
       description: "Critical issues, fast decay",
       color: "from-red-600 to-rose-600",
     },
     {
       id: "maintenance" as PresetMode,
       name: "Maintenance Planning",
-      icon: "🔧",
+      icon: <Wrench />,
       description: "Persistent problems, slow decay",
       color: "from-blue-600 to-cyan-600",
     },
     {
       id: "overview" as PresetMode,
       name: "Campus Overview",
-      icon: "🏫",
+      icon: <University />,
       description: "Large-scale view, optimized",
       color: "from-violet-600 to-purple-600",
     },
     {
       id: "building" as PresetMode,
       name: "Building Analysis",
-      icon: "🏢",
+      icon: <Building />,
       description: "High detail, building focus",
       color: "from-green-600 to-emerald-600",
     },
@@ -159,26 +160,27 @@ export function EnhancedHeatmapSidebar({
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-white/10 flex-shrink-0">
-        {[
-          { id: "presets", label: "Presets", icon: "⚡" },
-          { id: "filters", label: "Filters", icon: "🔍" },
-          { id: "config", label: "Config", icon: "⚙️" },
-        ].map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id as any)}
-            className={`flex-1 px-4 py-3 text-sm font-medium transition-all ${
-              activeTab === tab.id
-                ? "text-white bg-white/10 border-b-2 border-violet-500"
-                : "text-white/60 hover:text-white/80 hover:bg-white/5"
-            }`}
-          >
-            <span className="mr-2">{tab.icon}</span>
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      <div className="flex border-b border-white/10 flex-shrink-0 flex-row justify-center">
+  {[
+    { id: "presets", label: "Presets", icon: <Zap /> },
+    { id: "filters", label: "Filters", icon: <Search /> },
+    { id: "config", label: "Config", icon: <Settings /> },
+  ].map((tab) => (
+    <button
+      key={tab.id}
+      onClick={() => setActiveTab(tab.id as any)}
+      // Added: flex, items-center, justify-center
+      className={`flex-1 px-4 py-3 text-sm font-medium transition-all flex items-center justify-center ${
+        activeTab === tab.id
+          ? "text-white bg-white/10 border-b-2 border-violet-500"
+          : "text-white/60 hover:text-white/80 hover:bg-white/5"
+      }`}
+    >
+      <span className="mr-2 flex items-center">{tab.icon}</span>
+      {tab.label}
+    </button>
+  ))}
+</div>
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4 space-y-6">
@@ -225,17 +227,17 @@ export function EnhancedHeatmapSidebar({
                   {
                     key: "water" as const,
                     label: "Water Systems",
-                    icon: "💧",
+                    icon: <Droplet />,
                   },
                   {
                     key: "power" as const,
                     label: "Power & Electrical",
-                    icon: "⚡",
+                    icon: <Zap />,
                   },
                   {
                     key: "wifi" as const,
                     label: "Wi-Fi & Network",
-                    icon: "📶",
+                    icon: <Wifi />,
                   },
                 ].map((layer) => (
                   <label
