@@ -123,7 +123,7 @@ export function Hero() {
             className="flex items-center gap-8 pt-8 border-t border-white/10"
           >
             <div>
-              <div className="text-3xl font-bold text-white">10K+</div>
+              <div className="text-3xl font-bold text-white">100+</div>
               <div className="text-sm text-white/40">Issues Tracked</div>
             </div>
             <div>

@@ -7,6 +7,22 @@ import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 import { auth } from "@/lib/firebase";
 import { VoteButton } from "@/components/voting/VoteButton";
+import {
+  Calculator,
+  ListCheck,
+  ChartNoAxesColumn,
+  BrainCircuit,
+  Shield,
+  Building,
+  Plug2,
+  Droplets,
+  AirVent,
+  WifiPen, // Use <Wifi /> in your code instead of <WifiPen />
+  Brush,
+  RockingChair,
+  Dice1,
+  Wrench,
+} from "lucide-react";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
@@ -14,24 +30,44 @@ const API_BASE_URL =
 
 // Category configurations from Priority Engine
 const CATEGORIES = [
-  { value: "Safety", emoji: "⚠️", color: "from-red-600 to-rose-600" },
-  { value: "Structural", emoji: "🏗️", color: "from-orange-600 to-amber-600" },
-  { value: "Electrical", emoji: "⚡", color: "from-yellow-600 to-amber-600" },
-  { value: "Plumbing", emoji: "💧", color: "from-blue-600 to-cyan-600" },
-  { value: "HVAC", emoji: "🌡️", color: "from-cyan-600 to-teal-600" },
-  { value: "Network", emoji: "📶", color: "from-violet-600 to-purple-600" },
+  { value: "Safety", emoji: <Shield />, color: "from-red-600 to-rose-600" },
+  {
+    value: "Structural",
+    emoji: <Building />,
+    color: "from-orange-600 to-amber-600",
+  },
+  {
+    value: "Electrical",
+    emoji: <Plug2 />,
+    color: "from-yellow-600 to-amber-600",
+  },
+  {
+    value: "Plumbing",
+    emoji: <Droplets />,
+    color: "from-blue-600 to-cyan-600",
+  },
+  { value: "HVAC", emoji: <AirVent />, color: "from-cyan-600 to-teal-600" },
+  {
+    value: "Network",
+    emoji: <WifiPen />,
+    color: "from-violet-600 to-purple-600",
+  },
   {
     value: "Maintenance",
-    emoji: "🔧",
+    emoji: <Wrench />,
     color: "from-slate-600 to-gray-600",
   },
   {
     value: "Cleanliness",
-    emoji: "🧹",
+    emoji: <Brush />,
     color: "from-green-600 to-emerald-600",
   },
-  { value: "Furniture", emoji: "🪑", color: "from-pink-600 to-rose-600" },
-  { value: "Other", emoji: "📋", color: "from-gray-600 to-slate-600" },
+  {
+    value: "Furniture",
+    emoji: <RockingChair />,
+    color: "from-pink-600 to-rose-600",
+  },
+  { value: "Other", emoji: <Dice1 />, color: "from-gray-600 to-slate-600" },
 ] as const;
 
 interface PriorityScore {
@@ -365,21 +401,29 @@ export default function PriorityPage() {
             className="flex flex-wrap justify-center gap-2 md:gap-4 mb-8"
           >
             {[
-              { mode: "calculator", label: "Calculator", icon: "🧮" },
-              { mode: "priority-list", label: "Priority List", icon: "📋" },
-              { mode: "scenarios", label: "Scenarios", icon: "📊" },
-              { mode: "explain", label: "Algorithm", icon: "🔍" },
+              { mode: "calculator", label: "Calculator", icon: <Calculator /> },
+              {
+                mode: "priority-list",
+                label: "Priority List",
+                icon: <ListCheck />,
+              },
+              {
+                mode: "scenarios",
+                label: "Scenarios",
+                icon: <ChartNoAxesColumn />,
+              },
+              { mode: "explain", label: "Algorithm", icon: <BrainCircuit /> },
             ].map(({ mode, label, icon }) => (
               <button
                 key={mode}
                 onClick={() => setViewMode(mode as ViewMode)}
-                className={`px-4 md:px-6 py-2 md:py-3 rounded-xl font-medium transition-all text-sm md:text-base ${
+                className={`px-4 md:px-6 py-2 md:py-3 rounded-xl font-medium transition-all text-sm md:text-base flex items-center justify-center gap-2 ${
                   viewMode === mode
                     ? "bg-gradient-to-r from-violet-600 to-sky-600 text-white shadow-lg"
                     : "bg-white/5 text-white/70 hover:bg-white/10"
                 }`}
               >
-                <span className="mr-2">{icon}</span>
+                {icon}
                 {label}
               </button>
             ))}
@@ -415,14 +459,18 @@ export default function PriorityPage() {
                             onClick={() =>
                               setFormData({ ...formData, category: cat.value })
                             }
-                            className={`p-3 rounded-xl border transition-all text-sm ${
+                            // Added: flex, items-center, justify-center, gap-2
+                            className={`p-3 rounded-xl border transition-all text-sm flex  justify-center gap-2 ${
                               formData.category === cat.value
                                 ? `bg-gradient-to-r ${cat.color} border-transparent text-white shadow-lg`
                                 : "bg-white/5 border-white/10 text-white/70 hover:bg-white/10"
                             }`}
                           >
-                            <span className="text-lg mr-2">{cat.emoji}</span>
-                            {cat.value}
+                            {/* Icon */}
+                            <span className="w-4 h-4">{cat.emoji}</span>
+                            {/* Text */}
+                            <span> </span>
+                            <span>{cat.value}</span>
                           </button>
                         ))}
                       </div>

@@ -2,6 +2,7 @@
 
 import { motion, useInView } from "framer-motion";
 import { useRef, useState } from "react";
+import { GraduationCap } from "lucide-react";
 
 const steps = [
   {
@@ -9,7 +10,7 @@ const steps = [
     title: "Campus Selection",
     description: "Users enter a verified campus environment",
     detail: "Example: Guru Ghasidas University, Bilaspur",
-    icon: "🎓",
+    icon: <GraduationCap />,
     color: "blue",
   },
   {
