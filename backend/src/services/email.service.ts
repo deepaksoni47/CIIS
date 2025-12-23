@@ -1,10 +1,9 @@
-import { Resend } from "resend";
+import * as brevo from "@getbrevo/brevo";
 import { User, Issue } from "../types";
 
 /**
  * Email Service for sending transactional emails
- * Uses Resend (HTTP-based, Railway-compatible)
- * Fallback to Nodemailer for local development
+ * Uses Brevo (formerly Sendinblue) - Free 300 emails/day, no domain verification needed
  */
 
 interface EmailOptions {
@@ -13,46 +12,45 @@ interface EmailOptions {
   html: string;
 }
 
-// Initialize Resend client
-const resend = process.env.RESEND_API_KEY
-  ? new Resend(process.env.RESEND_API_KEY)
-  : null;
+// Initialize Brevo API client
+const apiInstance = new brevo.TransactionalEmailsApi();
+if (process.env.BREVO_API_KEY) {
+  apiInstance.setApiKey(
+    brevo.TransactionalEmailsApiApiKeys.apiKey,
+    process.env.BREVO_API_KEY
+  );
+}
 
 /**
- * Send a generic email using Resend (HTTP) or fallback to console log
+ * Send a generic email using Brevo
  */
 export async function sendEmail(options: EmailOptions): Promise<void> {
   try {
-    // Check if Resend is configured
-    if (!resend) {
-      console.warn("⚠️ RESEND_API_KEY not set - email skipped");
+    // Check if Brevo is configured
+    if (!process.env.BREVO_API_KEY) {
+      console.warn("⚠️ BREVO_API_KEY not set - email skipped");
       console.log(`📧 Would send to: ${options.to}`);
       console.log(`   Subject: ${options.subject}`);
       return;
     }
 
-    console.log(`📧 Sending email via Resend to: ${options.to}`);
+    console.log(`📧 Sending email via Brevo to: ${options.to}`);
     console.log(`   Subject: ${options.subject}`);
 
-    // Use custom domain if set, otherwise use Resend's test domain
-    const fromEmail = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
+    const fromEmail = process.env.BREVO_FROM_EMAIL || "ciis.innovex@gmail.com";
     const fromName =
-      process.env.RESEND_FROM_NAME || "Campus Infrastructure System";
+      process.env.BREVO_FROM_NAME || "Campus Infrastructure System";
 
-    const { data, error } = await resend.emails.send({
-      from: `${fromName} <${fromEmail}>`,
-      to: [options.to],
-      subject: options.subject,
-      html: options.html,
-    });
+    const sendSmtpEmail = new brevo.SendSmtpEmail();
+    sendSmtpEmail.sender = { name: fromName, email: fromEmail };
+    sendSmtpEmail.to = [{ email: options.to }];
+    sendSmtpEmail.subject = options.subject;
+    sendSmtpEmail.htmlContent = options.html;
 
-    if (error) {
-      console.error("❌ Resend error:", error);
-      return;
-    }
+    const result = await apiInstance.sendTransacEmail(sendSmtpEmail);
 
     console.log(`✅ Email sent successfully to ${options.to}`);
-    console.log(`   Email ID: ${data?.id}`);
+    console.log(`   Message ID: ${result.response.body.messageId}`);
   } catch (error) {
     console.error("❌ Error sending email:", error);
     if (error instanceof Error) {

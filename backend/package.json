@@ -30,6 +30,7 @@
   "author": "CIIS Team",
   "license": "MIT",
   "dependencies": {
+    "@getbrevo/brevo": "^3.0.1",
     "@google/generative-ai": "^0.24.1",
     "@types/nodemailer": "^7.0.4",
     "axios": "^1.13.2",
