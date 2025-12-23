@@ -17,21 +17,23 @@ const createTransporter = () => {
   // Use Gmail's free SMTP service with explicit configuration
   // Support both EMAIL_PASSWORD and EMAIL_PASS env variables
   const emailPassword = process.env.EMAIL_PASSWORD || process.env.EMAIL_PASS;
-  
+
+  // Try port 465 with SSL for better Railway compatibility
   const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
-    port: 587,
-    secure: false, // Use TLS
+    port: 465,
+    secure: true, // Use SSL
     auth: {
       user: process.env.EMAIL_USER,
       pass: emailPassword,
     },
-    tls: {
-      rejectUnauthorized: false // For Railway/production environments
-    },
-    connectionTimeout: 10000, // 10 seconds
-    greetingTimeout: 10000,
-    socketTimeout: 10000,
+    connectionTimeout: 15000, // 15 seconds
+    greetingTimeout: 15000,
+    socketTimeout: 15000,
+    pool: true, // Use connection pooling
+    maxConnections: 1,
+    rateDelta: 1000,
+    rateLimit: 1,
   });
 
   return transporter;
