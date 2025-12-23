@@ -17,6 +17,7 @@ export function FloatingNav() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const { scrollY } = useScroll();
   // Always show navbar, just adjust styling based on scroll
   const backgroundBlur = useTransform(scrollY, [0, 100], [0.3, 0.5]);
@@ -33,14 +34,17 @@ export function FloatingNav() {
           if (userStr) {
             try {
               const user = JSON.parse(userStr);
-              setUserName(user.name || user.email || null);
+              setUserName(user.name || user.displayName || user.email || null);
+              setUserRole(user.role || null);
             } catch {
               setUserName(null);
+              setUserRole(null);
             }
           }
         } else {
           setIsLoggedIn(false);
           setUserName(null);
+          setUserRole(null);
         }
       }
     };
@@ -181,6 +185,16 @@ export function FloatingNav() {
                 >
                   Report Issue
                 </motion.a>
+                {userRole === "admin" && (
+                  <motion.a
+                    href="/admin"
+                    className="px-5 py-2 rounded-full text-purple-400 hover:text-purple-300 hover:bg-purple-900/20 text-sm font-medium transition-all"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    Admin
+                  </motion.a>
+                )}
               </>
             )}
 
@@ -294,6 +308,16 @@ export function FloatingNav() {
               >
                 Report Issue
               </motion.a>
+              {userRole === "admin" && (
+                <motion.a
+                  href="/admin"
+                  className="px-5 py-3 rounded-xl text-purple-400 hover:text-purple-300 hover:bg-purple-900/20 text-sm font-medium transition-all text-center"
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Admin Panel
+                </motion.a>
+              )}
             </>
           )}
           <motion.a

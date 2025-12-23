@@ -147,6 +147,7 @@ app.get("/api", (_req: Request, res: Response) => {
       rewards: "/api/rewards",
       badges: "/api/badges",
       leaderboard: "/api/leaderboard",
+      admin: "/api/admin",
     },
   });
 });
@@ -161,6 +162,7 @@ import realtimeRoutes from "./modules/realtime/routes";
 import analyticsRoutes from "./modules/analytics/routes";
 import votingRoutes from "./modules/voting/routes";
 import rewardsRoutes from "./modules/rewards/routes";
+import adminRoutes from "./modules/admin/routes";
 
 app.use("/api/auth", authRoutes);
 app.use("/api/ai", aiRoutes);
@@ -170,7 +172,8 @@ app.use("/api/priority", priorityRoutes);
 app.use("/api/heatmap", heatmapRoutes);
 app.use("/api/realtime", realtimeRoutes);
 app.use("/api/analytics", analyticsRoutes);
-app.use("/api", rewardsRoutes); // Rewards, badges, leaderboard, and admin routes
+app.use("/api", rewardsRoutes); // Rewards, badges, leaderboard routes
+app.use("/api/admin", adminRoutes); // Admin dashboard routes
 
 // 404 handler
 app.use((req: Request, res: Response) => {
