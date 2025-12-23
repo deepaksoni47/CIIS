@@ -10,6 +10,7 @@ import ChangePassword from "@/components/profile/ChangePassword";
 import { RewardsProfile } from "@/components/rewards/RewardsProfile";
 import { BadgesGrid } from "@/components/rewards/BadgeCard";
 import { Leaderboard } from "@/components/leaderboard/Leaderboard";
+import { ChartNoAxesColumn, Key, User, Trophy, Award } from "lucide-react";
 
 interface User {
   id: string;
@@ -136,16 +137,20 @@ export default function ProfilePage() {
             className="flex flex-wrap gap-2 md:gap-4 mb-8"
           >
             {[
-              { id: "profile", label: "Profile Info", icon: "👤" },
-              { id: "rewards", label: "Rewards", icon: "🏆" },
-              { id: "badges", label: "Badges", icon: "🎖️" },
-              { id: "leaderboard", label: "Leaderboard", icon: "📊" },
-              { id: "password", label: "Password", icon: "🔒" },
+              { id: "profile", label: "Profile Info", icon: <User /> },
+              { id: "rewards", label: "Rewards", icon: <Trophy /> },
+              { id: "badges", label: "Badges", icon: <Award /> },
+              {
+                id: "leaderboard",
+                label: "Leaderboard",
+                icon: <ChartNoAxesColumn />,
+              },
+              { id: "password", label: "Password", icon: <Key /> },
             ].map(({ id, label, icon }) => (
               <button
                 key={id}
                 onClick={() => setActiveTab(id as any)}
-                className={`px-4 md:px-6 py-2 md:py-3 rounded-xl font-medium transition-all text-sm md:text-base ${
+                className={`px-4 md:px-6 py-2 md:py-3 rounded-xl font-medium transition-all text-sm md:text-base flex flex-row justify-center ${
                   activeTab === id
                     ? "bg-gradient-to-r from-violet-600 to-sky-600 text-white shadow-lg"
                     : "bg-white/5 text-white/70 hover:bg-white/10"
