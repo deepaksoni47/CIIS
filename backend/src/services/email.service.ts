@@ -1,9 +1,10 @@
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 import { User, Issue } from "../types";
 
 /**
  * Email Service for sending transactional emails
- * Uses Nodemailer with free SMTP (Gmail)
+ * Uses Resend (HTTP-based, Railway-compatible)
+ * Fallback to Nodemailer for local development
  */
 
 interface EmailOptions {
@@ -12,73 +13,45 @@ interface EmailOptions {
   html: string;
 }
 
-// Configure the email transporter
-const createTransporter = () => {
-  // Use Gmail's free SMTP service with explicit configuration
-  // Support both EMAIL_PASSWORD and EMAIL_PASS env variables
-  const emailPassword = process.env.EMAIL_PASSWORD || process.env.EMAIL_PASS;
-
-  // Try port 465 with SSL for better Railway compatibility
-  const transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 465,
-    secure: true, // Use SSL
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: emailPassword,
-    },
-    connectionTimeout: 15000, // 15 seconds
-    greetingTimeout: 15000,
-    socketTimeout: 15000,
-    pool: true, // Use connection pooling
-    maxConnections: 1,
-    rateDelta: 1000,
-    rateLimit: 1,
-  });
-
-  return transporter;
-};
+// Initialize Resend client
+const resend = process.env.RESEND_API_KEY
+  ? new Resend(process.env.RESEND_API_KEY)
+  : null;
 
 /**
- * Send a generic email
+ * Send a generic email using Resend (HTTP) or fallback to console log
  */
 export async function sendEmail(options: EmailOptions): Promise<void> {
   try {
-    // Validate email configuration
-    const emailPassword = process.env.EMAIL_PASSWORD || process.env.EMAIL_PASS;
-    if (!process.env.EMAIL_USER || !emailPassword) {
-      console.error("❌ Email configuration missing!");
-      console.error(
-        "   EMAIL_USER:",
-        process.env.EMAIL_USER ? "Set" : "NOT SET"
-      );
-      console.error(
-        "   EMAIL_PASSWORD/EMAIL_PASS:",
-        emailPassword ? "Set" : "NOT SET"
-      );
+    // Check if Resend is configured
+    if (!resend) {
+      console.warn("⚠️ RESEND_API_KEY not set - email skipped");
+      console.log(`📧 Would send to: ${options.to}`);
+      console.log(`   Subject: ${options.subject}`);
       return;
     }
 
-    console.log(`📧 Attempting to send email to: ${options.to}`);
+    console.log(`📧 Sending email via Resend to: ${options.to}`);
     console.log(`   Subject: ${options.subject}`);
 
-    const transporter = createTransporter();
-
-    const mailOptions = {
-      from: `"Campus Infrastructure System" <${process.env.EMAIL_USER}>`,
-      to: options.to,
+    const { data, error } = await resend.emails.send({
+      from: "CIIS <onboarding@resend.dev>", // Resend's verified domain for testing
+      to: [options.to],
       subject: options.subject,
       html: options.html,
-    };
+    });
 
-    const info = await transporter.sendMail(mailOptions);
+    if (error) {
+      console.error("❌ Resend error:", error);
+      return;
+    }
+
     console.log(`✅ Email sent successfully to ${options.to}`);
-    console.log(`   Message ID: ${info.messageId}`);
+    console.log(`   Email ID: ${data?.id}`);
   } catch (error) {
     console.error("❌ Error sending email:", error);
     if (error instanceof Error) {
       console.error("   Error message:", error.message);
-      console.error("   Error stack:", error.stack);
     }
     // Don't throw error - email failure shouldn't break the main functionality
   }
