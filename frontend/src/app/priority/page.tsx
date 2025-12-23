@@ -17,7 +17,7 @@ import {
   Plug2,
   Droplets,
   AirVent,
-  WifiPen, // Use <Wifi /> in your code instead of <WifiPen />
+  WifiPen,
   Brush,
   RockingChair,
   Dice1,

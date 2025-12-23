@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { LeaderboardEntry, getLeaderboard } from "@/lib/api/rewards";
+import { Trophy,CalendarDays,ChartColumnIncreasing  } from "lucide-react";
 
 type Period = "all_time" | "monthly" | "weekly";
 
@@ -36,24 +37,26 @@ export function Leaderboard({ organizationId }: { organizationId: string }) {
   return (
     <div className="space-y-6">
       {/* Period Tabs */}
-      <div className="flex gap-2 border-b border-gray-200">
+      <div className="flex gap-2 border-b border-gray-200 ">
         <TabButton
           active={period === "all_time"}
           onClick={() => setPeriod("all_time")}
         >
-          🏆 All Time
+          <span className="flex flex-row justify-center"><Trophy /> All Time</span>
         </TabButton>
         <TabButton
           active={period === "monthly"}
           onClick={() => setPeriod("monthly")}
         >
-          📅 This Month
+          <span className="flex flex-row justify-center"><CalendarDays />This Month</span>
+          
         </TabButton>
         <TabButton
           active={period === "weekly"}
           onClick={() => setPeriod("weekly")}
         >
-          📊 This Week
+          <span className="flex flex-row justify-center"><ChartColumnIncreasing />This Week</span>
+          
         </TabButton>
       </div>
 
