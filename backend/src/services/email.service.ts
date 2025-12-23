@@ -50,7 +50,7 @@ export async function sendEmail(options: EmailOptions): Promise<void> {
     const result = await apiInstance.sendTransacEmail(sendSmtpEmail);
 
     console.log(`✅ Email sent successfully to ${options.to}`);
-    console.log(`   Message ID: ${result.response.body.messageId}`);
+    console.log(`   Message ID: ${result.body?.messageId || "N/A"}`);
   } catch (error) {
     console.error("❌ Error sending email:", error);
     if (error instanceof Error) {
