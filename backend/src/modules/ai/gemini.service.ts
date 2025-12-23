@@ -6,13 +6,56 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_API_KEY || "");
 
 /**
+ * Request cache to prevent duplicate API calls
+ * Cache expires after 5 minutes
+ */
+interface CacheEntry {
+  data: any;
+  timestamp: number;
+}
+
+const requestCache = new Map<string, CacheEntry>();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+function getCacheKey(prompt: string): string {
+  // Create a simple hash of the prompt
+  return prompt.substring(0, 100); // Use first 100 chars as key
+}
+
+function getCachedResponse(prompt: string): any | null {
+  const key = getCacheKey(prompt);
+  const cached = requestCache.get(key);
+
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    console.log("📦 Using cached Gemini response");
+    return cached.data;
+  }
+
+  // Clean expired cache entries
+  if (cached) {
+    requestCache.delete(key);
+  }
+
+  return null;
+}
+
+function setCachedResponse(prompt: string, data: any): void {
+  const key = getCacheKey(prompt);
+  requestCache.set(key, { data, timestamp: Date.now() });
+
+  // Limit cache size to 100 entries
+  if (requestCache.size > 100) {
+    const firstKey = requestCache.keys().next().value;
+    requestCache.delete(firstKey);
+  }
+}
+
+/**
  * Get Gemini Pro model instance
  */
 export function getGeminiModel() {
-  // Use the 2.5 Flash model available on the free tier for text tasks.
-  // Model IDs can vary by API version; the free tier exposes Gemini 2.5 Flash
-  // variants which support text and multimodal input. Using `gemini-2.5-flash`
-  // should be compatible with generateContent on v1beta in most setups.
+  // Use gemini-2.5-flash for all AI tasks
+  // Stable multimodal model supporting text and images
   return genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 }
 
@@ -20,10 +63,8 @@ export function getGeminiModel() {
  * Get Gemini Pro Vision model instance for image analysis
  */
 export function getGeminiVisionModel() {
-  // Prefer the Gemini 2.5 Flash model for multimodal/vision prompts.
-  // If an image-specific model (e.g., "gemini-2.5-flash-image" or
-  // "nano-banana") is available in your account, replace this value
-  // with that model id. For broad compatibility use `gemini-2.5-flash`.
+  // Use gemini-2.5-flash for all AI tasks including vision
+  // Same model handles both text and images (multimodal)
   return genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 }
 
@@ -43,10 +84,21 @@ export async function generateInsights(prompt: string): Promise<string> {
       return generateFallbackInsight(prompt);
     }
 
+    // Check cache first
+    const cached = getCachedResponse(prompt);
+    if (cached) {
+      return cached;
+    }
+
     const model = getGeminiModel();
     const result = await model.generateContent(prompt);
     const response = await result.response;
-    return response.text();
+    const text = response.text();
+
+    // Cache the response
+    setCachedResponse(prompt, text);
+
+    return text;
   } catch (error) {
     console.error("Gemini API error:", error);
     console.warn("⚠️ Falling back to mock insights due to API error");
@@ -822,9 +874,20 @@ Guidelines:
     }
 
     throw new Error("Failed to parse image analysis");
-  } catch (error) {
+  } catch (error: any) {
     console.error("Image analysis error:", error);
-    throw new Error("Failed to analyze infrastructure image");
+
+    // Preserve rate limit error information
+    const errorMessage = error.message || String(error);
+    if (
+      errorMessage.includes("quota") ||
+      errorMessage.includes("429") ||
+      errorMessage.includes("Too Many Requests")
+    ) {
+      throw new Error(`Rate limit exceeded: ${errorMessage}`);
+    }
+
+    throw new Error(`Failed to analyze infrastructure image: ${errorMessage}`);
   }
 }
 

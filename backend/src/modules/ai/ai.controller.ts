@@ -346,6 +346,22 @@ export async function analyzeImage(req: Request, res: Response) {
     });
   } catch (error: any) {
     console.error("Error analyzing image:", error);
+
+    // Handle Google API rate limit errors
+    const errorMessage = error.message || "";
+    if (
+      errorMessage.includes("quota") ||
+      errorMessage.includes("429") ||
+      errorMessage.includes("Too Many Requests")
+    ) {
+      return res.status(429).json({
+        error: "Rate limit exceeded",
+        message:
+          "Google Gemini API rate limit reached. Please wait a moment and try again. The free tier allows 20 requests per minute.",
+        retryAfter: 60, // seconds
+      });
+    }
+
     res.status(500).json({
       error: "Failed to analyze image",
       message: error.message,

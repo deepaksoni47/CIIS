@@ -78,6 +78,8 @@ export default function ReportPage() {
   const recognitionRef = useRef<any>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const analyzingImageRef = useRef<boolean>(false); // Track if analysis is in progress
+  const analyzedImageRef = useRef<string | null>(null); // Track last analyzed image name
 
   useEffect(() => {
     checkAuth();
@@ -180,9 +182,22 @@ export default function ReportPage() {
       const selectedFiles = files.slice(0, 5);
       setImageFiles(selectedFiles);
 
-      // Automatically analyze the first image with AI
+      // Automatically analyze the first image with AI (with deduplication)
       if (selectedFiles.length > 0) {
-        analyzeImageWithAI(selectedFiles[0]);
+        const firstFile = selectedFiles[0];
+        const fileKey = `${firstFile.name}-${firstFile.size}-${firstFile.lastModified}`;
+
+        // Only analyze if we haven't analyzed this exact file yet and no analysis in progress
+        if (
+          !analyzingImageRef.current &&
+          analyzedImageRef.current !== fileKey
+        ) {
+          analyzingImageRef.current = true;
+          analyzedImageRef.current = fileKey;
+          analyzeImageWithAI(firstFile).finally(() => {
+            analyzingImageRef.current = false;
+          });
+        }
       }
     }
   };
@@ -249,9 +264,18 @@ export default function ReportPage() {
       if (!analyzeResponse.ok) {
         const err = await analyzeResponse.json().catch(() => ({}));
         console.error("AI analysis failed:", err);
-        toast.error(
-          "AI analysis failed. You can still submit the issue without AI suggestions."
-        );
+
+        // Handle rate limiting specifically
+        if (analyzeResponse.status === 429) {
+          toast.error(
+            "AI service rate limit reached. Please wait a moment before trying again.",
+            { duration: 6000 }
+          );
+        } else {
+          toast.error(
+            "AI analysis failed. You can still submit the issue without AI suggestions."
+          );
+        }
         return;
       }
 
