@@ -8,10 +8,12 @@ import {
   IssuePriority,
   IssueCategory,
   UserRole,
+  User,
 } from "../../types";
 import { priorityEngine, PriorityInput } from "../priority/priority-engine";
 import { WebSocketService } from "../../services/websocket.service";
 import { SSEService } from "../../services/sse.service";
+import * as emailService from "../../services/email.service";
 
 const db = getFirestore();
 
@@ -379,6 +381,23 @@ export async function resolveIssue(
     console.error("Error emitting resolution events:", error);
   }
 
+  // Send email notification to the user who reported the issue (non-blocking)
+  try {
+    const reporterRef = db.collection("users").doc(resolvedIssue.reportedBy);
+    const reporterDoc = await reporterRef.get();
+
+    if (reporterDoc.exists) {
+      const reporter = { id: reporterDoc.id, ...reporterDoc.data() } as User;
+      emailService
+        .sendIssueResolvedEmail(reporter, resolvedIssue, resolutionComment)
+        .catch((error) => {
+          console.error("Failed to send issue resolution email:", error);
+        });
+    }
+  } catch (error) {
+    console.error("Error sending resolution email:", error);
+  }
+
   return resolvedIssue;
 }
 
@@ -488,6 +507,23 @@ export async function deleteIssue(
   });
 
   const issue = issueDoc.data() as Issue;
+
+  // Send email notification to the user who reported the issue (non-blocking)
+  try {
+    const reporterRef = db.collection("users").doc(issue.reportedBy);
+    const reporterDoc = await reporterRef.get();
+
+    if (reporterDoc.exists) {
+      const reporter = { id: reporterDoc.id, ...reporterDoc.data() } as User;
+      emailService
+        .sendIssueDeletedEmail(reporter, { ...issue, id: issueId })
+        .catch((error) => {
+          console.error("Failed to send issue deletion email:", error);
+        });
+    }
+  } catch (error) {
+    console.error("Error sending deletion email:", error);
+  }
 
   // Emit real-time events
   try {
