@@ -667,7 +667,7 @@ export default function PriorityPage() {
                             }
                             className="rounded border-white/20 bg-transparent text-violet-500"
                           />
-                          📝 Exam Period
+                          🗒️ Exam Period
                         </label>
                       </div>
                     </div>
