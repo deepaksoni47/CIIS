@@ -14,14 +14,24 @@ interface EmailOptions {
 
 // Configure the email transporter
 const createTransporter = () => {
-  // Use Gmail's free SMTP service
-  // For production, you can use Gmail App Passwords
+  // Use Gmail's free SMTP service with explicit configuration
+  // Support both EMAIL_PASSWORD and EMAIL_PASS env variables
+  const emailPassword = process.env.EMAIL_PASSWORD || process.env.EMAIL_PASS;
+  
   const transporter = nodemailer.createTransport({
-    service: "gmail",
+    host: "smtp.gmail.com",
+    port: 587,
+    secure: false, // Use TLS
     auth: {
-      user: process.env.EMAIL_USER, // Your Gmail address
-      pass: process.env.EMAIL_PASSWORD, // Your Gmail App Password
+      user: process.env.EMAIL_USER,
+      pass: emailPassword,
     },
+    tls: {
+      rejectUnauthorized: false // For Railway/production environments
+    },
+    connectionTimeout: 10000, // 10 seconds
+    greetingTimeout: 10000,
+    socketTimeout: 10000,
   });
 
   return transporter;
@@ -33,15 +43,16 @@ const createTransporter = () => {
 export async function sendEmail(options: EmailOptions): Promise<void> {
   try {
     // Validate email configuration
-    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
+    const emailPassword = process.env.EMAIL_PASSWORD || process.env.EMAIL_PASS;
+    if (!process.env.EMAIL_USER || !emailPassword) {
       console.error("❌ Email configuration missing!");
       console.error(
         "   EMAIL_USER:",
         process.env.EMAIL_USER ? "Set" : "NOT SET"
       );
       console.error(
-        "   EMAIL_PASSWORD:",
-        process.env.EMAIL_PASSWORD ? "Set" : "NOT SET"
+        "   EMAIL_PASSWORD/EMAIL_PASS:",
+        emailPassword ? "Set" : "NOT SET"
       );
       return;
     }
