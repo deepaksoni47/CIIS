@@ -34,8 +34,13 @@ export async function sendEmail(options: EmailOptions): Promise<void> {
     console.log(`📧 Sending email via Resend to: ${options.to}`);
     console.log(`   Subject: ${options.subject}`);
 
+    // Use custom domain if set, otherwise use Resend's test domain
+    const fromEmail = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
+    const fromName =
+      process.env.RESEND_FROM_NAME || "Campus Infrastructure System";
+
     const { data, error } = await resend.emails.send({
-      from: "CIIS <onboarding@resend.dev>", // Resend's verified domain for testing
+      from: `${fromName} <${fromEmail}>`,
       to: [options.to],
       subject: options.subject,
       html: options.html,
