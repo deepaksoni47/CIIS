@@ -30,7 +30,7 @@ export async function getOrCreateUser(
   firebaseUser: admin.auth.DecodedIdToken,
   organizationId: string,
   role?: UserRole
-): Promise<User> {
+): Promise<{ user: User; isNewUser: boolean }> {
   const db = getFirestore();
   const userRef = db.collection("users").doc(firebaseUser.uid);
   const userDoc = await userRef.get();
@@ -40,7 +40,10 @@ export async function getOrCreateUser(
     await userRef.update({
       lastLogin: admin.firestore.FieldValue.serverTimestamp(),
     });
-    return { id: userDoc.id, ...userDoc.data() } as User;
+    return {
+      user: { id: userDoc.id, ...userDoc.data() } as User,
+      isNewUser: false,
+    };
   }
 
   // Create new user
@@ -70,7 +73,10 @@ export async function getOrCreateUser(
   };
 
   await userRef.set(newUser);
-  return { id: firebaseUser.uid, ...newUser } as User;
+  return {
+    user: { id: firebaseUser.uid, ...newUser } as User,
+    isNewUser: true,
+  };
 }
 
 /**

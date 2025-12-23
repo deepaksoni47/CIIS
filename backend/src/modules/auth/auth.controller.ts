@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import * as authService from "./auth.service";
 import { UserRole } from "../../types";
+import * as emailService from "../../services/email.service";
 
 /**
  * Login/Register with Google OAuth
@@ -28,11 +29,18 @@ export async function loginWithGoogle(req: Request, res: Response) {
     const decodedToken = await authService.verifyIdToken(idToken);
 
     // Get or create user in Firestore
-    const user = await authService.getOrCreateUser(
+    const { user, isNewUser } = await authService.getOrCreateUser(
       decodedToken,
       organizationId,
       role as UserRole
     );
+
+    // Send welcome email for new users (non-blocking)
+    if (isNewUser) {
+      emailService.sendWelcomeEmail(user).catch((error) => {
+        console.error("Failed to send welcome email:", error);
+      });
+    }
 
     res.json({
       success: true,
@@ -48,7 +56,7 @@ export async function loginWithGoogle(req: Request, res: Response) {
         },
         token: idToken, // Client can reuse this token
       },
-      message: "Login successful",
+      message: isNewUser ? "Registration successful" : "Login successful",
     });
   } catch (error: unknown) {
     console.error("Login error:", error);
@@ -93,6 +101,11 @@ export async function registerWithEmail(req: Request, res: Response) {
       organizationId,
       role as UserRole
     );
+
+    // Send welcome email (non-blocking)
+    emailService.sendWelcomeEmail(user).catch((error) => {
+      console.error("Failed to send welcome email:", error);
+    });
 
     res.status(201).json({
       success: true,
