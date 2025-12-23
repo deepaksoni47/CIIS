@@ -147,7 +147,7 @@ function MetricCard({
 
 const metrics = [
   {
-    value: 10847,
+    value: 100,
     suffix: "+",
     label: "Issues Tracked",
     description: "Real-time monitoring across all campus infrastructure",

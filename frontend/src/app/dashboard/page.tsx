@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
+import { BadgeAlert,SquareArrowOutUpRight,MapPinCheck,Workflow  } from "lucide-react";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
@@ -377,25 +378,25 @@ export default function DashboardPage() {
             <StatCard
               label="Total Issues"
               value={stats.total}
-              icon="📊"
+              icon=<BadgeAlert />
               gradient="from-blue-500 to-cyan-500"
             />
             <StatCard
               label="Open"
               value={stats.open}
-              icon="🔴"
+              icon=<SquareArrowOutUpRight />
               gradient="from-rose-500 to-pink-500"
             />
             <StatCard
               label="In Progress"
               value={stats.inProgress}
-              icon="🟡"
+              icon=<Workflow />
               gradient="from-yellow-500 to-orange-500"
             />
             <StatCard
               label="Resolved"
               value={stats.resolved}
-              icon="🟢"
+              icon=<MapPinCheck />
               gradient="from-green-500 to-emerald-500"
             />
           </motion.div>
@@ -437,13 +438,13 @@ export default function DashboardPage() {
               href="/heatmap"
               gradient="from-violet-600 to-fuchsia-600"
             />
-            <QuickActionCard
+            {/* <QuickActionCard
               title="Priorities"
               description="View high-priority issues requiring attention"
               icon="⚡"
               href="/priority"
               gradient="from-orange-600 to-red-600"
-            />
+            /> */}
             <QuickActionCard
               title="Report Issue"
               description="Report a new infrastructure issue"
@@ -472,13 +473,13 @@ export default function DashboardPage() {
             )}
 
             {/* Action 3: Heatmap (Everyone) */}
-            <QuickActionCard
+            {/* <QuickActionCard
               title="Campus Map"
               description="Visualize infrastructure health"
               icon="🗺️"
               href="/heatmap"
               gradient="from-violet-600 to-fuchsia-600"
-            />
+            /> */}
           </div>
         </motion.div>
 

@@ -4,6 +4,7 @@ import { motion, useInView } from "framer-motion";
 import { useRef, useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
+import { GlobeLock,Radio,Bot,ChartNoAxesCombined  } from "lucide-react";
 
 export function FinalCTA() {
   const ref = useRef(null);
@@ -124,16 +125,16 @@ export function FinalCTA() {
             transition={{ duration: 0.8, delay: 0.8 }}
             className="space-y-4"
           >
-            <p className="text-white/40 text-sm">
+            {/* <p className="text-white/40 text-sm">
               No credit card required. Instant access. Cancel anytime.
-            </p>
+            </p> */}
 
             <div className="flex flex-wrap justify-center items-center gap-8 pt-8">
               {[
-                { icon: "L", label: "Enterprise Security" },
-                { icon: "Z", label: "Real-Time Updates" },
-                { icon: "T", label: "AI-Powered" },
-                { icon: "D", label: "Advanced Analytics" },
+                { icon: <GlobeLock />, label: "Enterprise Security" },
+                { icon: <Radio />, label: "Real-Time Updates" },
+                { icon: <Bot />, label: "AI-Powered" },
+                { icon: <ChartNoAxesCombined />, label: "Advanced Analytics" },
               ].map((item, index) => (
                 <motion.div
                   key={item.label}
