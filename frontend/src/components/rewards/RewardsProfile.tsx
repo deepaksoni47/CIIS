@@ -54,7 +54,7 @@ export function RewardsProfile() {
   return (
     <div className="space-y-6">
       {/* Level & Points Card */}
-      <div className="bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl p-6 text-white shadow-lg">
+      <div className="bg-gradient-to-br from-blue-500 to-lavender-400 rounded-xl p-6 text-white shadow-lg">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h2 className="text-3xl font-bold">Level {rewards.level}</h2>
@@ -167,10 +167,10 @@ function StatCard({ icon, label, value, color }: StatCardProps) {
   const colorClasses = {
     blue: "from-blue-50 to-blue-100 border-blue-200",
     green: "from-green-50 to-green-100 border-green-200",
-    purple: "from-purple-50 to-purple-100 border-purple-200",
+    purple: "from-lavender-50 to-lavender-100 border-lavender-200",
     orange: "from-orange-50 to-orange-100 border-orange-200",
     yellow: "from-yellow-50 to-yellow-100 border-yellow-200",
-    pink: "from-pink-50 to-pink-100 border-pink-200",
+    pink: "from-lavender-50 to-lavender-100 border-lavender-200",
   };
 
   return (

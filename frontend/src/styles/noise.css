@@ -1,0 +1,16 @@
+/* Subtle monochrome noise texture (SVG, base64-encoded) */
+/* This SVG is a tiny, seamless, low-opacity noise pattern */
+.noise-overlay {
+  pointer-events: none;
+  position: fixed;
+  z-index: 9999;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  opacity: 0.045;
+  mix-blend-mode: soft-light;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"><filter id="noise" x="0" y="0"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" stitchTiles="stitch"/></filter><rect width="120" height="120" fill="white" filter="url(%23noise)" opacity="0.55"/></svg>');
+  background-repeat: repeat;
+  background-size: 220px 220px;
+}

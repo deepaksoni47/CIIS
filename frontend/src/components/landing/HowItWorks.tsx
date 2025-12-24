@@ -45,181 +45,193 @@ export function HowItWorks() {
   const isInView = useInView(ref, { once: true, margin: "-100px" });
   const [activeStep, setActiveStep] = useState(0);
 
-  const getColorClasses = (color: string) => {
-    const colors = {
-      blue: "from-violet-500 to-purple-500",
-      cyan: "from-fuchsia-500 to-pink-500",
-      amber: "from-amber-500 to-orange-500",
-      emerald: "from-emerald-500 to-green-500",
-    };
-    return colors[color as keyof typeof colors];
-  };
+  // Subdued accent color for doc headings and anchors
+  const accent = "#aeb6c2"; // neutral doc gray
+
+  // Muted background for icon anchors
+  const iconBg = "bg-[#191a20]";
+
+  // Step label as doc heading
+  const labelColor = "text-[#b2b7c2] tracking-widest uppercase";
 
   return (
     <section
       id="how-it-works"
       ref={ref}
-      className="relative py-32 px-6 overflow-hidden"
+      className="relative py-20 px-6 overflow-hidden"
     >
       {/* Background Grid */}
       <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:100px_100px] -z-10" />
 
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8 }}
-          className="text-center mb-20"
-        >
-          <h2 className="text-4xl md:text-6xl font-bold text-white mb-6">
-            How It{" "}
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-violet-400 via-fuchsia-400 to-pink-400">
+        <div className="text-center mb-20">
+          <h2 className="text-4xl md:text-6xl font-bold mb-6">
+            <span className="text-[#f5f6fa]">How It </span>
+            <span
+              className="bg-clip-text text-transparent"
+              style={{
+                background: "linear-gradient(90deg, #bcb8ff 0%, #a18aff 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                filter: "none",
+              }}
+            >
               Actually Works
             </span>
           </h2>
-          <p className="text-lg text-white/50 max-w-2xl mx-auto">
+          <p className="text-lg max-w-2xl mx-auto" style={{ color: "#aeb6c2" }}>
             From incident to insight. Four steps. Zero confusion.
           </p>
-        </motion.div>
+        </div>
 
         {/* Steps Timeline */}
         <div className="grid md:grid-cols-4 gap-8 relative">
-          {/* Connecting Line */}
-          <div className="hidden md:block absolute top-24 left-0 right-0 h-0.5 bg-gradient-to-r from-violet-500 via-fuchsia-500 via-rose-500 to-emerald-500 opacity-20" />
-
+          {/* Subtle Linear Connector */}
+          <div
+            className="hidden md:block absolute top-24 left-0 right-0 h-px"
+            style={{
+              background:
+                "linear-gradient(90deg, #bcb8ff11 0%, #a18aff11 100%)",
+            }}
+          />
           {steps.map((step, index) => {
-            const isActive = index === activeStep;
-
+            // Editorial, system-driven, embedded process cards
+            // Slight tonal progression by step index
+            const baseBg = ["#191a20", "#1a1b22", "#1b1c24", "#1c1d26"][index];
+            const insetShadow =
+              "inset 0 1.5px 8px 0 rgba(10,12,20,0.13), inset 0 0.5px 0 0 #23242a";
+            const accentEdge =
+              index === 0
+                ? ""
+                : `linear-gradient(180deg, #aeb6c2 0%, transparent 100%)`;
             return (
-              <motion.div
+              <div
                 key={step.number}
-                initial={{ opacity: 0, y: 50 }}
-                animate={isInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.8, delay: index * 0.15 }}
-                onMouseEnter={() => setActiveStep(index)}
-                className="relative group cursor-pointer"
+                className="relative group cursor-default"
+                style={{
+                  zIndex: 1,
+                  background: baseBg,
+                  boxShadow: insetShadow,
+                  borderRadius: 18,
+                  minHeight: 220,
+                  padding: "2.1rem 2rem 2rem 2.5rem",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "flex-start",
+                  position: "relative",
+                  overflow: "hidden",
+                  marginTop: index > 0 ? -8 : 0,
+                }}
               >
-                {/* Step Number Circle */}
-                <motion.div
-                  animate={{
-                    scale: isActive ? 1.1 : 1,
-                  }}
-                  className="relative z-10 mx-auto w-20 h-20 mb-6 flex items-center justify-center"
-                >
-                  {/* Pulsing Ring */}
-                  {isActive && (
-                    <motion.div
-                      animate={{
-                        scale: [1, 1.4, 1],
-                        opacity: [0.5, 0, 0.5],
-                      }}
-                      transition={{
-                        duration: 2,
-                        repeat: Infinity,
-                        ease: "easeInOut",
-                      }}
-                      className={`absolute inset-0 rounded-full bg-gradient-to-r ${getColorClasses(step.color)}`}
-                    />
-                  )}
-
-                  {/* Main Circle */}
+                {/* Structural accent: thin left edge for all but first */}
+                {index > 0 && (
                   <div
-                    className={`
-                      relative w-full h-full rounded-full 
-                      flex items-center justify-center
-                      text-3xl
-                      border-2 transition-all duration-300
-                      ${
-                        isActive
-                          ? `bg-gradient-to-br ${getColorClasses(step.color)} border-white/40 shadow-2xl`
-                          : "bg-white/5 border-white/20 group-hover:border-white/40"
-                      }
-                    `}
-                  >
-                    {step.icon}
-                  </div>
-                </motion.div>
-
-                {/* Card Content */}
-                <motion.div
-                  animate={{
-                    y: isActive ? -10 : 0,
-                  }}
-                  className={`
-                    p-6 rounded-2xl backdrop-blur-sm transition-all duration-300
-                    ${
-                      isActive
-                        ? "bg-white/10 border border-white/20 shadow-2xl"
-                        : "bg-white/5 border border-white/5 group-hover:bg-white/10 group-hover:border-white/20"
-                    }
-                  `}
-                >
-                  {/* Step Number */}
-                  <div
-                    className={`text-sm font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r ${getColorClasses(step.color)}`}
-                  >
-                    STEP {step.number}
-                  </div>
-
-                  {/* Title */}
-                  <h3 className="text-xl font-bold text-white mb-3">
-                    {step.title}
-                  </h3>
-
-                  {/* Description */}
-                  <p className="text-sm text-white/60 mb-4 leading-relaxed">
-                    {step.description}
-                  </p>
-
-                  {/* Detail */}
-                  <div className="px-3 py-2 rounded-lg bg-black/30 border border-white/10">
-                    <p className="text-xs text-white/80 italic">
-                      {step.detail}
-                    </p>
-                  </div>
-                </motion.div>
-
-                {/* Arrow */}
-                {index < steps.length - 1 && (
-                  <div className="hidden md:block absolute top-24 -right-4 z-20">
-                    <svg
-                      className="w-8 h-8 text-white/20"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M13 7l5 5m0 0l-5 5m5-5H6"
-                      />
-                    </svg>
-                  </div>
+                    style={{
+                      position: "absolute",
+                      left: 0,
+                      top: 0,
+                      bottom: 0,
+                      width: 3,
+                      borderRadius: 2,
+                      background: accentEdge,
+                      opacity: 0.18,
+                    }}
+                  />
                 )}
-              </motion.div>
+                {/* Step Icon Anchor (static, minimal) */}
+                <div
+                  className="w-10 h-10 mb-4 flex items-center justify-center rounded-full"
+                  style={{
+                    background: "#181a1f",
+                    opacity: 0.7,
+                    marginBottom: 18,
+                    alignSelf: "flex-start",
+                  }}
+                >
+                  <span
+                    style={{
+                      color: "#aeb6c2",
+                      fontSize: 20,
+                      opacity: 0.5,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    {typeof step.icon === "string" ? step.icon : step.icon}
+                  </span>
+                </div>
+                {/* Step Label as doc marker */}
+                <div
+                  className="text-[13px] font-semibold mb-2"
+                  style={{
+                    letterSpacing: "0.13em",
+                    fontWeight: 600,
+                    opacity: 0.38,
+                    textTransform: "uppercase",
+                    marginBottom: 2,
+                  }}
+                >
+                  STEP {step.number} / PROCESS
+                </div>
+                {/* Title */}
+                <h3
+                  className="text-lg font-bold mb-2"
+                  style={{
+                    color: "#f5f6fa",
+                    fontWeight: 700,
+                    letterSpacing: 0.01,
+                    marginBottom: 8,
+                  }}
+                >
+                  {step.title}
+                </h3>
+                {/* Description */}
+                <p
+                  className="text-[15px] mb-3"
+                  style={{
+                    color: "#b2b7c2",
+                    lineHeight: 1.75,
+                    fontWeight: 400,
+                    maxWidth: 340,
+                    marginBottom: 10,
+                  }}
+                >
+                  {step.description}
+                </p>
+                {/* Inline annotation for detail/example */}
+                <span
+                  className="inline-block text-xs italic px-2 py-1 rounded"
+                  style={{
+                    color: "#aeb6c2",
+                    opacity: 0.6,
+                    fontWeight: 400,
+                    marginTop: 2,
+                    background: "none",
+                    border: "none",
+                  }}
+                >
+                  {step.detail}
+                </span>
+              </div>
             );
           })}
         </div>
 
         {/* Bottom CTA */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8, delay: 0.8 }}
-          className="mt-16 text-center"
-        >
+        <div className="mt-16 text-center">
           <p
-            // href="/demo"
-            className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-semibold hover:shadow-2xl hover:shadow-fuchsia-500/30 transition-all duration-300 group"
+            className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-[#191a22] border border-[#23243a] text-[#f5f6fa] font-semibold transition-colors duration-200 hover:bg-[#23243a] hover:border-[#2a2b38]"
+            style={{ boxShadow: "none" }}
           >
             <span>Scroll to Explore</span>
             <svg
               className="w-6 h-6"
               fill="none"
               viewBox="0 0 24 24"
-              stroke="currentColor"
+              stroke="#aeb6c2"
+              style={{ opacity: 0.18 }}
             >
               <path
                 strokeLinecap="round"
@@ -229,7 +241,7 @@ export function HowItWorks() {
               />
             </svg>
           </p>
-        </motion.div>
+        </div>
       </div>
     </section>
   );

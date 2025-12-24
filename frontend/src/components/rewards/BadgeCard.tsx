@@ -19,7 +19,7 @@ export function BadgeCard({
   const rarityColors = {
     common: "from-gray-400 to-gray-600",
     rare: "from-blue-400 to-blue-600",
-    epic: "from-purple-400 to-purple-600",
+    epic: "from-lavender-400 to-lavender-300",
     legendary: "from-yellow-400 to-orange-600",
   };
 

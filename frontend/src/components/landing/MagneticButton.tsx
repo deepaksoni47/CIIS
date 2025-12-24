@@ -47,39 +47,17 @@ export function MagneticButton({
         transition-all duration-300
         ${
           isPrimary
-            ? "bg-gradient-to-r from-blue-600 via-cyan-600 to-blue-600 bg-size-200 hover:bg-pos-100"
+            ? "bg-[#3566b8] hover:bg-[#29518e]"
             : "border-2 border-white/20 hover:border-white/40"
         }
       `}
     >
-      {/* Animated Background */}
-      {isPrimary && (
-        <>
-          <div className="absolute inset-0 bg-gradient-to-r from-cyan-600 via-blue-600 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-          <motion.div
-            className="absolute inset-0 opacity-0 group-hover:opacity-30"
-            animate={{
-              backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
-            }}
-            transition={{
-              duration: 3,
-              repeat: Infinity,
-              ease: "linear",
-            }}
-            style={{
-              background:
-                "linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent)",
-              backgroundSize: "200% 100%",
-            }}
-          />
-        </>
-      )}
-
-      {/* Glow Effect */}
+      {/* No animated background or glow for primary */}
+      {isPrimary && null}
       <div
         className={`
-          absolute inset-0 rounded-full blur-xl opacity-0 group-hover:opacity-70 transition-opacity duration-300
-          ${isPrimary ? "bg-fuchsia-500/50" : "bg-white/20"}
+          absolute inset-0 rounded-full pointer-events-none
+          ${isPrimary ? "" : "bg-white/20"}
         `}
       />
 

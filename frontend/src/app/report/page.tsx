@@ -820,10 +820,7 @@ export default function ReportPage() {
           className="mb-8"
         >
           <h1 className="text-4xl md:text-5xl font-bold mb-2">
-            Report an
-            <span className="ml-3 bg-gradient-to-r from-violet-400 via-fuchsia-400 to-sky-400 bg-clip-text text-transparent">
-              Issue
-            </span>
+            <span className="gradient-heading">Report an Issue</span>
           </h1>
           <p className="text-white/60 text-lg">
             Help us maintain campus infrastructure by reporting issues

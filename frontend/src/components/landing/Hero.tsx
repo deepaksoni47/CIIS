@@ -35,52 +35,30 @@ export function Hero() {
           initial={{ opacity: 0, x: -50 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
-          className="space-y-8"
+          className="space-y-10"
         >
-          {/* Badge */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.6 }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-emerald-500/20 bg-emerald-500/5 backdrop-blur-sm"
-          >
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-            </span>
-            <span className="text-sm text-emerald-400 font-medium">
-              Currently Active: Guru Ghasidas University
-            </span>
-          </motion.div>
-
           {/* Main Headline */}
-          <div className="space-y-4">
+          <div className="space-y-6">
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.8 }}
-              className="text-5xl md:text-7xl font-bold leading-tight"
+              className="text-5xl md:text-7xl font-extrabold leading-[1.12] tracking-tight text-left"
             >
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-white via-purple-100 to-fuchsia-200">
-                Campus Infrastructure.
-              </span>
+              Campus Infrastructure
               <br />
-              <span className="text-white">Seen Clearly.</span>
-              <br />
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-violet-400 to-fuchsia-400">
-                Fixed Proactively.
-              </span>
+              <span className="gradient-heading">Seen Clearly</span>.<br />
+              <span className="gradient-heading">Fixed Proactively</span>.
             </motion.h1>
 
             <motion.p
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5, duration: 0.8 }}
-              className="text-lg md:text-xl text-white/60 max-w-xl leading-relaxed"
+              className="text-lg md:text-xl text-secondary max-w-xl leading-relaxed font-normal"
             >
-              A real-time infrastructure intelligence platform that maps,
-              prioritizes, and predicts campus issues before they escalate.
-              Built for universities. Designed for action.
+              Monitor, prioritize, and resolve campus issues fast. Built for
+              clarity and control.
             </motion.p>
           </div>
 
@@ -93,47 +71,13 @@ export function Hero() {
           >
             <MagneticButton href="/dashboard" variant="primary">
               <span className="relative z-10 flex items-center gap-2">
-                Enter Your Campus Dashboard
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M13 7l5 5m0 0l-5 5m5-5H6"
-                  />
-                </svg>
+                Enter Dashboard
               </span>
             </MagneticButton>
 
             <MagneticButton href="/report" variant="secondary">
               Report an Issue
             </MagneticButton>
-          </motion.div>
-
-          {/* Stats */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.9, duration: 0.8 }}
-            className="flex items-center gap-8 pt-8 border-t border-white/10"
-          >
-            <div>
-              <div className="text-3xl font-bold text-white">100+</div>
-              <div className="text-sm text-white/40">Issues Tracked</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-white">40%</div>
-              <div className="text-sm text-white/40">Faster Resolution</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-white">95%</div>
-              <div className="text-sm text-white/40">Accuracy</div>
-            </div>
           </motion.div>
         </motion.div>
 

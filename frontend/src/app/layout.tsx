@@ -1,9 +1,13 @@
+import * as React from "react";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { Toaster } from "react-hot-toast";
 import { FloatingNav } from "@/components/landing/FloatingNav";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { SmoothScrollProvider } from "@/components/landing/SmoothScrollProvider";
+import { CurtainLoader } from "@/components/landing/CurtainLoader";
 import "@/styles/globals.css";
+import "@/styles/noise.css";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -68,9 +72,13 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className} suppressHydrationWarning>
+        <CurtainLoader
+          logo={<img src="/logo.png" alt="CIIS" className="w-7 h-7" />}
+        />
+        <div className="noise-overlay" aria-hidden="true" />
         <AuthProvider>
           <FloatingNav />
-          {children}
+          <SmoothScrollProvider>{children}</SmoothScrollProvider>
           <Toaster
             position="top-right"
             toastOptions={{

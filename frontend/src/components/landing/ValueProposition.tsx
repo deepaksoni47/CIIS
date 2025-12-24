@@ -24,7 +24,7 @@ const features = [
         />
       </svg>
     ),
-    gradient: "from-indigo-500 to-purple-600",
+    gradient: "from-indigo-300 to-lavender-400",
   },
   {
     number: "02",
@@ -46,7 +46,7 @@ const features = [
         />
       </svg>
     ),
-    gradient: "from-purple-500 to-pink-500",
+    gradient: "from-lavender-400 to-lavender-300",
   },
   {
     number: "03",
@@ -80,12 +80,12 @@ export function ValueProposition() {
     <section
       id="features"
       ref={ref}
-      className="relative py-32 px-6 overflow-hidden"
+      className="relative py-20 px-6 overflow-hidden"
     >
       {/* Background Elements */}
       <div className="absolute inset-0 -z-10">
         <div className="absolute top-1/4 left-10 w-72 h-72 bg-blue-500/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-10 w-80 h-80 bg-purple-500/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 right-10 w-80 h-80 bg-lavender-400/10 rounded-full blur-3xl" />
       </div>
 
       <div className="max-w-7xl mx-auto">
@@ -102,17 +102,15 @@ export function ValueProposition() {
             transition={{ duration: 0.6 }}
             className="inline-block mb-4"
           >
-            <span className="px-4 py-2 rounded-full border border-cyan-500/20 bg-cyan-500/5 text-cyan-400 text-sm font-medium">
+            <span className="px-4 py-2 rounded-full border border-cyan-400/15 bg-cyan-900/10 text-cyan-300/80 text-sm font-medium">
               Why This System Exists
             </span>
           </motion.div>
-          <h2 className="text-4xl md:text-6xl font-bold text-white mb-6">
-            Built Different.{" "}
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-violet-400 to-fuchsia-400">
-              Built Better.
-            </span>
+          <h2 className="text-4xl md:text-6xl font-bold mb-6">
+            <span className="text-white">Built Different.</span>{" "}
+            <span className="gradient-heading">Built Better.</span>
           </h2>
-          <p className="text-lg text-white/50 max-w-2xl mx-auto">
+          <p className="text-lg text-[#aeb6c2] max-w-2xl mx-auto">
             Not another dashboard. A complete intelligence platform designed for
             the complexity of modern campus infrastructure.
           </p>
@@ -120,83 +118,139 @@ export function ValueProposition() {
 
         {/* Features Grid */}
         <div className="grid md:grid-cols-3 gap-8">
-          {features.map((feature, index) => (
-            <motion.div
-              key={feature.number}
-              initial={{ opacity: 0, y: 50 }}
-              animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.8, delay: index * 0.2 }}
-              className="group relative"
-            >
-              {/* Card */}
-              <div className="relative h-full p-8 rounded-3xl bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 backdrop-blur-sm overflow-hidden transition-all duration-500 hover:border-white/20">
-                {/* Animated Background Gradient */}
-                <motion.div
-                  className={`absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-500 bg-gradient-to-br ${feature.gradient}`}
-                  initial={false}
-                />
-
-                {/* Spotlight Effect */}
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                  <div
-                    className={`absolute top-0 right-0 w-64 h-64 bg-gradient-to-br ${feature.gradient} blur-3xl -translate-y-1/2 translate-x-1/2 opacity-20`}
-                  />
-                </div>
-
-                {/* Content */}
-                <div className="relative z-10 space-y-6">
-                  {/* Number */}
-                  <div className="flex items-start justify-between">
-                    <span
-                      className={`text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-br ${feature.gradient} opacity-30`}
-                    >
-                      {feature.number}
-                    </span>
-                    <motion.div
-                      whileHover={{ rotate: 360, scale: 1.1 }}
-                      transition={{ duration: 0.6 }}
-                      className={`p-4 rounded-2xl bg-gradient-to-br ${feature.gradient} shadow-lg`}
-                    >
-                      {feature.icon}
-                    </motion.div>
-                  </div>
-
-                  {/* Title */}
-                  <h3 className="text-2xl font-bold text-white leading-tight">
-                    {feature.title}
-                  </h3>
-
-                  {/* Description */}
-                  <p className="text-white/60 leading-relaxed">
-                    {feature.description}
-                  </p>
-
-                  {/* Decorative Line */}
-                  <motion.div
-                    className={`h-1 rounded-full bg-gradient-to-r ${feature.gradient}`}
-                    initial={{ width: "0%" }}
-                    animate={isInView ? { width: "30%" } : {}}
-                    transition={{ duration: 1, delay: index * 0.2 + 0.5 }}
-                  />
-                </div>
-
-                {/* Hover Border Animation */}
-                <motion.div
-                  className="absolute inset-0 rounded-3xl"
-                  initial={false}
-                  whileHover={{
-                    boxShadow: `0 0 0 2px rgba(6, 182, 212, 0.2)`,
+          {features.map((feature, index) => {
+            let accent = "";
+            let iconColor = "";
+            if (index === 0) {
+              accent = "#a18aff";
+              iconColor = "#a18aff";
+            }
+            if (index === 1) {
+              accent = "#e48fcf";
+              iconColor = "#e48fcf";
+            }
+            if (index === 2) {
+              accent = "#f7b955";
+              iconColor = "#f7b955";
+            }
+            return (
+              <motion.div
+                key={feature.number}
+                initial={{ opacity: 0, y: 50 }}
+                animate={isInView ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.8, delay: index * 0.2 }}
+                className="group relative"
+                style={{
+                  boxShadow:
+                    "0 1.5px 8px 0 rgba(10,12,20,0.13), 0 0.5px 0 0 #23242a inset",
+                  borderRadius: "1.5rem",
+                }}
+              >
+                <div
+                  className="relative h-full p-8 overflow-hidden"
+                  style={{
+                    background:
+                      "linear-gradient(180deg, #181a22 90%, #15161c 100%)",
+                    boxShadow: "inset 0 1.5px 8px 0 rgba(255,255,255,0.04)",
+                    borderRadius: "1.5rem",
                   }}
-                  transition={{ duration: 0.3 }}
-                />
-              </div>
-
-              {/* Connecting Lines */}
-              {index < features.length - 1 && (
-                <div className="hidden md:block absolute top-1/2 -right-4 w-8 h-px bg-gradient-to-r from-white/20 to-transparent z-20" />
-              )}
-            </motion.div>
-          ))}
+                >
+                  <div
+                    className="absolute inset-0 pointer-events-none"
+                    style={{
+                      borderRadius: "1.5rem",
+                      boxShadow:
+                        "inset 0 2px 8px 0 rgba(255,255,255,0.07), inset 0 -2px 8px 0 rgba(0,0,0,0.13)",
+                    }}
+                  />
+                  <div className="relative z-10 flex flex-col gap-6">
+                    <div className="flex items-start justify-between">
+                      <span
+                        className="text-6xl font-bold select-none"
+                        style={{
+                          color: accent,
+                          opacity: 0.25,
+                          letterSpacing: "-0.04em",
+                          fontWeight: 800,
+                          userSelect: "none",
+                        }}
+                        aria-hidden="true"
+                      >
+                        {feature.number}
+                      </span>
+                      <div
+                        className="p-4 rounded-xl flex items-center justify-center"
+                        style={{
+                          background: "none",
+                          boxShadow: "none",
+                          minWidth: 48,
+                          minHeight: 48,
+                        }}
+                        aria-hidden="true"
+                      >
+                        {feature.icon && (
+                          <span
+                            style={{
+                              color: iconColor,
+                              display: "inline-flex",
+                              filter: "saturate(0.7) brightness(0.93)",
+                            }}
+                          >
+                            {feature.icon.type === "svg"
+                              ? {
+                                  ...feature.icon,
+                                  props: {
+                                    ...feature.icon.props,
+                                    fill: iconColor,
+                                    stroke: iconColor,
+                                  },
+                                }
+                              : feature.icon}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <h3
+                      className="text-2xl font-extrabold text-white leading-tight tracking-tight"
+                      style={{ fontWeight: 800 }}
+                    >
+                      {feature.title}
+                    </h3>
+                    <p
+                      className="text-[#b2b7c2] text-base leading-relaxed"
+                      style={{
+                        lineHeight: 1.6,
+                        fontWeight: 400,
+                        marginBottom: 0,
+                      }}
+                    >
+                      {feature.description}
+                    </p>
+                    <div
+                      className="mt-2"
+                      style={{
+                        width: 32,
+                        height: 2,
+                        borderRadius: 2,
+                        background: `${accent}55`,
+                        marginLeft: 0,
+                        marginTop: 2,
+                      }}
+                    />
+                  </div>
+                </div>
+                {index < features.length - 1 && (
+                  <div
+                    className="hidden md:block absolute top-1/2 -right-4 w-8 h-px"
+                    style={{
+                      background:
+                        "linear-gradient(90deg, #fff2 0%, transparent 100%)",
+                    }}
+                  />
+                )}
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </section>

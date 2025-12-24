@@ -137,7 +137,7 @@ export function FloatingNav() {
         transform -translate-x-1/2
       `}
     >
-      <div className="flex items-center justify-center gap-2 px-4 md:px-6 py-3 rounded-full bg-black/40 backdrop-blur-xl border border-white/10 shadow-2xl">
+      <div className="flex items-center justify-center gap-2 px-4 md:px-6 py-3 rounded-full bg-[#0a0a12cc] backdrop-blur-xl border border-white/10 shadow-2xl">
         {/* Logo */}
         <motion.a
           href="/"
@@ -160,6 +160,7 @@ export function FloatingNav() {
               CIIS
             </span>
             <div className="w-px h-6 bg-white/10" />
+            <div className="w-px h-6 bg-white/7" />
           </div>
         </motion.a>
 
@@ -171,7 +172,7 @@ export function FloatingNav() {
               <>
                 <motion.a
                   href="/dashboard"
-                  className="px-5 py-2 rounded-full text-white/70 hover:text-white hover:bg-white/5 text-sm font-medium transition-all"
+                  className="px-5 py-2 rounded-full text-gray-200 hover:text-[#b7aaff] hover:bg-white/5 text-sm font-medium transition-all"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
@@ -179,7 +180,7 @@ export function FloatingNav() {
                 </motion.a>
                 <motion.a
                   href="/report"
-                  className="px-5 py-2 rounded-full text-white/70 hover:text-white hover:bg-white/5 text-sm font-medium transition-all"
+                  className="px-5 py-2 rounded-full text-gray-200 hover:text-[#b7aaff] hover:bg-white/5 text-sm font-medium transition-all"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
@@ -188,7 +189,7 @@ export function FloatingNav() {
                 {userRole === "admin" && (
                   <motion.a
                     href="/admin"
-                    className="px-5 py-2 rounded-full text-purple-400 hover:text-purple-300 hover:bg-purple-900/20 text-sm font-medium transition-all"
+                    className="px-5 py-2 rounded-full text-[#b7aaff] hover:text-[#a18aff] hover:bg-white/5 text-sm font-medium transition-all"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
@@ -200,7 +201,7 @@ export function FloatingNav() {
 
             <motion.a
               href="/heatmap"
-              className="px-5 py-2 rounded-full text-white/70 hover:text-white hover:bg-white/5 text-sm font-medium transition-all"
+              className="px-5 py-2 rounded-full text-gray-200 hover:text-[#b7aaff] hover:bg-white/5 text-sm font-medium transition-all"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
@@ -209,7 +210,7 @@ export function FloatingNav() {
 
             <motion.a
               href="/priority"
-              className="text-sm font-medium text-white/70 hover:text-white transition-colors"
+              className="text-sm font-medium text-gray-200 hover:text-[#b7aaff] transition-colors"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
@@ -223,9 +224,10 @@ export function FloatingNav() {
           {isLoggedIn && userName ? (
             <div className="hidden md:flex items-center">
               <div className="w-px h-6 bg-white/10 mr-4" />
+              <div className="w-px h-6 bg-white/7 mr-4" />
               <motion.a
                 href="/profile"
-                className="px-4 py-2 text-sm font-semibold text-violet-300 hover:text-violet-200 transition-colors rounded-full hover:bg-white/5"
+                className="px-4 py-2 text-sm font-semibold text-[#b7aaff] hover:text-[#a18aff] transition-colors rounded-full hover:bg-white/5"
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.98 }}
                 title="View Profile"
@@ -236,7 +238,7 @@ export function FloatingNav() {
           ) : (
             <motion.a
               href="/login"
-              className="px-6 py-2 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white text-sm font-medium shadow-lg shadow-violet-500/25"
+              className="px-6 py-2 rounded-full bg-[#5a5fcf] hover:bg-[#4346a1] text-white text-sm font-medium shadow-none"
               whileHover={{
                 scale: 1.05,
                 boxShadow: "0 0 20px rgba(167,139,250,0.4)",
@@ -289,12 +291,12 @@ export function FloatingNav() {
         transition={{ duration: 0.3, ease: "easeInOut" }}
         className="md:hidden overflow-hidden mt-2"
       >
-        <div className="flex flex-col gap-2 px-4 py-4 rounded-2xl bg-black/40 backdrop-blur-xl border border-white/10 shadow-2xl">
+        <div className="flex flex-col gap-2 px-4 py-4 rounded-2xl bg-[#0a0a12cc] backdrop-blur-xl border border-white/10 shadow-2xl">
           {isLoggedIn && (
             <>
               <motion.a
                 href="/dashboard"
-                className="px-5 py-3 rounded-xl text-white/70 hover:text-white hover:bg-white/5 text-sm font-medium transition-all text-center"
+                className="px-5 py-3 rounded-xl text-gray-200 hover:text-[#b7aaff] hover:bg-white/5 text-sm font-medium transition-all text-center"
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setIsMobileMenuOpen(false)}
               >
@@ -302,7 +304,7 @@ export function FloatingNav() {
               </motion.a>
               <motion.a
                 href="/report"
-                className="px-5 py-3 rounded-xl text-white/70 hover:text-white hover:bg-white/5 text-sm font-medium transition-all text-center"
+                className="px-5 py-3 rounded-xl text-gray-200 hover:text-[#b7aaff] hover:bg-white/5 text-sm font-medium transition-all text-center"
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setIsMobileMenuOpen(false)}
               >
@@ -311,7 +313,7 @@ export function FloatingNav() {
               {userRole === "admin" && (
                 <motion.a
                   href="/admin"
-                  className="px-5 py-3 rounded-xl text-purple-400 hover:text-purple-300 hover:bg-purple-900/20 text-sm font-medium transition-all text-center"
+                  className="px-5 py-3 rounded-xl text-[#b7aaff] hover:text-[#a18aff] hover:bg-white/5 text-sm font-medium transition-all text-center"
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
@@ -322,7 +324,7 @@ export function FloatingNav() {
           )}
           <motion.a
             href="/heatmap"
-            className="px-5 py-3 rounded-xl text-white/70 hover:text-white hover:bg-white/5 text-sm font-medium transition-all text-center"
+            className="px-5 py-3 rounded-xl text-gray-200 hover:text-[#b7aaff] hover:bg-white/5 text-sm font-medium transition-all text-center"
             whileTap={{ scale: 0.95 }}
             onClick={() => setIsMobileMenuOpen(false)}
           >
@@ -330,29 +332,29 @@ export function FloatingNav() {
           </motion.a>
           <motion.a
             href="/priority"
-            className="px-5 py-3 rounded-xl text-white/70 hover:text-white hover:bg-white/5 text-sm font-medium transition-all text-center"
+            className="px-5 py-3 rounded-xl text-gray-200 hover:text-[#b7aaff] hover:bg-white/5 text-sm font-medium transition-all text-center"
             whileTap={{ scale: 0.95 }}
             onClick={() => setIsMobileMenuOpen(false)}
           >
             Priorities
           </motion.a>
           {isLoggedIn ? (
-            <>
+            <div className="contents">
               {userName && (
                 <motion.a
                   href="/profile"
-                  className="px-5 py-3 rounded-xl text-white/80 hover:text-white hover:bg-white/5 text-sm font-medium transition-all text-center border-b border-white/10"
+                  className="px-5 py-3 rounded-xl text-gray-100 hover:text-[#b7aaff] hover:bg-white/5 text-sm font-medium transition-all text-center border-b border-white/7"
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   {userName}
                 </motion.a>
               )}
-            </>
+            </div>
           ) : (
             <motion.a
               href="/login"
-              className="px-5 py-3 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white text-sm font-medium shadow-lg shadow-violet-500/25 text-center"
+              className="px-5 py-3 rounded-xl bg-[#5a5fcf] hover:bg-[#4346a1] text-white text-sm font-medium shadow-none text-center"
               whileTap={{ scale: 0.95 }}
               onClick={() => setIsMobileMenuOpen(false)}
             >

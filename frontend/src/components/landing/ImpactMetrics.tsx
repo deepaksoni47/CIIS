@@ -151,7 +151,7 @@ const metrics = [
     suffix: "+",
     label: "Issues Tracked",
     description: "Real-time monitoring across all campus infrastructure",
-    gradient: "from-violet-500 to-purple-600",
+    gradient: "from-lavender-400 to-lavender-300",
   },
   {
     value: 42,
@@ -172,78 +172,230 @@ const metrics = [
     suffix: "%",
     label: "Prediction Accuracy",
     description: "Rolling model performance validated against actual failures",
-    gradient: "from-fuchsia-500 to-pink-600",
+    gradient: "from-lavender-400 to-lavender-300",
   },
 ];
 
 export function ImpactMetrics() {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
-
+  // System readout: no cards, no animation, no color reliance
   return (
-    <section
-      id="impact"
-      ref={ref}
-      className="relative py-32 px-6 overflow-hidden"
-    >
-      {/* Background */}
-      <div className="absolute inset-0 -z-10">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl" />
-      </div>
-
-      <div className="max-w-7xl mx-auto">
+    <section id="impact" className="relative py-20 px-6 overflow-hidden">
+      {/* Subtle background grid */}
+      <div className="absolute inset-0 -z-10 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:100px_100px]" />
+      <div className="max-w-6xl mx-auto">
         {/* Section Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8 }}
-          className="text-center mb-20"
-        >
-          <h2 className="text-4xl md:text-6xl font-bold text-white mb-6">
-            Numbers That{" "}
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-400 to-violet-400">
-              Actually Matter
-            </span>
+        <div className="text-center mb-10">
+          <h2 className="text-4xl md:text-6xl font-bold mb-3 text-[#f5f6fa]">
+            Numbers That <span className="text-[#bcb8ff]">Actually Matter</span>
           </h2>
-          <p className="text-lg text-white/50 max-w-2xl mx-auto">
+          <p className="text-lg max-w-2xl mx-auto text-[#aeb6c2] mb-2">
             Real impact. Measured daily. Verified continuously.
           </p>
-        </motion.div>
-
-        {/* Metrics Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {metrics.map((metric, index) => (
-            <MetricCard key={metric.label} {...metric} delay={index * 0.15} />
-          ))}
         </div>
-
-        {/* Bottom Note */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8, delay: 0.8 }}
-          className="mt-16 text-center"
+        {/* Subtle horizontal anchor */}
+        <div className="w-full h-px bg-[#bcb8ff11] mb-8" />
+        {/* System Metrics Readout */}
+        <div
+          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 relative"
+          style={{ minHeight: 180 }}
         >
-          <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/10 bg-white/5 backdrop-blur-sm">
-            <svg
-              className="w-5 h-5 text-cyan-400"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
+          {/* Metrics as floating cards */}
+          {/* Issues Tracked */}
+          <div
+            className="bg-[#181a22] border border-white/10 rounded-2xl shadow-xl p-8 flex flex-col items-start relative"
+            style={{
+              boxShadow: "0 4px 32px 0 rgba(20,22,30,0.13)",
+              minHeight: 240,
+            }}
+          >
+            <div className="flex items-center gap-2 mb-2">
+              <span className="inline-flex items-center justify-center w-10 h-10 rounded-full border-2 border-[#bcb8ff] mr-2">
+                <svg
+                  className="w-5 h-5 text-[#bcb8ff]"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13 10V3L4 14h7v7l9-11h-7z"
+                  />
+                </svg>
+              </span>
+              <span
+                className="text-7xl font-extrabold text-[#f5f6fa] tracking-tight"
+                style={{ fontVariantNumeric: "tabular-nums" }}
+              >
+                100
+              </span>
+              <span className="text-3xl font-bold text-[#bcb8ff]">+</span>
+            </div>
+            <div
+              className="text-xs text-[#b2b7c2] mt-1 tracking-wider uppercase"
+              style={{ letterSpacing: "0.09em", opacity: 0.7 }}
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
+              Issues Tracked
+            </div>
+            <div
+              className="text-[13px] text-[#aeb6c2] mt-0.5"
+              style={{ opacity: 0.7 }}
+            >
+              Real-time monitoring across all infrastructure
+            </div>
+            <div className="absolute left-0 top-full mt-2 w-20 h-px bg-[#bcb8ff22]" />
+            <div className="absolute left-0 top-full mt-4 text-[11px] text-[#b2b7c2]/60 tracking-tight">
+              Updated: Now
+            </div>
+          </div>
+          {/* Faster Resolution */}
+          <div
+            className="bg-[#181a22] border border-white/10 rounded-2xl shadow-xl p-8 flex flex-col items-center relative"
+            style={{
+              boxShadow: "0 4px 32px 0 rgba(20,22,30,0.13)",
+              minHeight: 240,
+            }}
+          >
+            <div className="flex items-center gap-2 mb-2">
+              <span className="inline-flex items-center justify-center w-10 h-10 rounded-full border-2 border-[#7be7c6] mr-2">
+                <svg
+                  className="w-5 h-5 text-[#7be7c6]"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13 10V3L4 14h7v7l9-11h-7z"
+                  />
+                </svg>
+              </span>
+              <span className="text-7xl font-extrabold text-[#f5f6fa] tracking-tight">
+                42
+              </span>
+              <span className="text-3xl font-bold text-[#7be7c6]">%</span>
+            </div>
+            <div
+              className="text-xs text-[#b2b7c2] mt-1 tracking-wider uppercase"
+              style={{ letterSpacing: "0.09em", opacity: 0.7 }}
+            >
+              Faster Resolution
+            </div>
+            <div
+              className="text-[13px] text-[#aeb6c2] mt-0.5"
+              style={{ opacity: 0.7 }}
+            >
+              Avg. time reduced through intelligent prioritization
+            </div>
+            <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-16 h-px bg-[#7be7c622]" />
+            <div className="absolute left-1/2 -translate-x-1/2 top-full mt-4 text-[11px] text-[#b2b7c2]/60 tracking-tight">
+              Updated: Now
+            </div>
+          </div>
+          {/* High-Risk Zones */}
+          <div
+            className="bg-[#181a22] border border-white/10 rounded-2xl shadow-xl p-8 flex flex-col items-end relative"
+            style={{
+              boxShadow: "0 4px 32px 0 rgba(20,22,30,0.13)",
+              minHeight: 240,
+            }}
+          >
+            <div className="flex items-center gap-2 mb-2">
+              <span className="inline-flex items-center justify-center w-10 h-10 rounded-full border-2 border-[#f7b955] mr-2">
+                <svg
+                  className="w-5 h-5 text-[#f7b955]"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13 10V3L4 14h7v7l9-11h-7z"
+                  />
+                </svg>
+              </span>
+              <span className="text-7xl font-extrabold text-[#f5f6fa] tracking-tight">
+                89
+              </span>
+            </div>
+            <div
+              className="text-xs text-[#b2b7c2] mt-1 tracking-wider uppercase"
+              style={{ letterSpacing: "0.09em", opacity: 0.7 }}
+            >
+              High-Risk Zones
+            </div>
+            <div
+              className="text-[13px] text-[#aeb6c2] mt-0.5"
+              style={{ opacity: 0.7 }}
+            >
+              Identified early through predictive pattern analysis
+            </div>
+            <div className="absolute right-0 top-full mt-2 w-14 h-px bg-[#f7b95522]" />
+            <div className="absolute right-0 top-full mt-4 text-[11px] text-[#b2b7c2]/60 tracking-tight">
+              Updated: Now
+            </div>
+          </div>
+          {/* Prediction Accuracy */}
+          <div
+            className="bg-[#181a22] border border-white/10 rounded-2xl shadow-xl p-8 flex flex-col items-end relative"
+            style={{
+              boxShadow: "0 4px 32px 0 rgba(20,22,30,0.13)",
+              minHeight: 240,
+            }}
+          >
+            <div className="flex items-center gap-2 mb-2">
+              <span className="inline-flex items-center justify-center w-10 h-10 rounded-full border-2 border-[#e48fcf] mr-2">
+                <svg
+                  className="w-5 h-5 text-[#e48fcf]"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13 10V3L4 14h7v7l9-11h-7z"
+                  />
+                </svg>
+              </span>
+              <span className="text-7xl font-extrabold text-[#f5f6fa] tracking-tight">
+                94
+              </span>
+              <span className="text-3xl font-bold text-[#e48fcf]">%</span>
+            </div>
+            <div
+              className="text-xs text-[#b2b7c2] mt-1 tracking-wider uppercase"
+              style={{ letterSpacing: "0.09em", opacity: 0.7 }}
+            >
+              Prediction Accuracy
+            </div>
+            <div
+              className="text-[13px] text-[#aeb6c2] mt-0.5"
+              style={{ opacity: 0.7 }}
+            >
+              Rolling model performance validated against actual failures
+            </div>
+            <div className="absolute right-0 top-full mt-2 w-14 h-px bg-[#e48fcf22]" />
+            <div className="absolute right-0 top-full mt-4 text-[11px] text-[#b2b7c2]/60 tracking-tight">
+              Updated: Now
+            </div>
+          </div>
+        </div>
+        {/* Bottom Note */}
+        <div className="mt-20 text-center">
+          <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/10 bg-white/5 backdrop-blur-sm">
+            <span className="w-2 h-2 rounded-full bg-[#bcb8ff] opacity-60 animate-pulse" />
             <span className="text-white/70 text-sm">
-              Metrics updated in real-time across all active campuses
+              Metrics updated in real-time across all active infrastructure
             </span>
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );

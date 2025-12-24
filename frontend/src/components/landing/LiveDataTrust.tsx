@@ -1,166 +1,129 @@
 "use client";
-
-import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
-
-const coordinates = [
-  { label: "Campus Center", coords: "22.1310°N, 82.1495°E", color: "cyan" },
-  { label: "North-West Bound", coords: "22.1515°N, 82.1340°E", color: "blue" },
-  {
-    label: "South-East Bound",
-    coords: "22.1150°N, 82.1655°E",
-    color: "purple",
-  },
-];
 
 export function LiveDataTrust() {
   const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
-
   return (
-    <section ref={ref} className="relative py-32 px-6 overflow-hidden">
-      {/* Background Elements */}
-      <div className="absolute inset-0 -z-10">
-        <motion.div
-          animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0.05, 0.1, 0.05],
-          }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-violet-500 to-fuchsia-500 rounded-full blur-3xl"
-        />
-      </div>
-
-      <div className="max-w-6xl mx-auto">
+    <section ref={ref} className="relative py-20 px-6 overflow-hidden">
+      {/* Subtle grid background */}
+      <div className="absolute inset-0 -z-10 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:100px_100px]" />
+      <div className="max-w-5xl mx-auto">
         {/* Section Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8 }}
-          className="text-center mb-16"
-        >
-          <h2 className="text-4xl md:text-6xl font-bold text-white mb-6">
-            Grounded in{" "}
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-violet-400 to-fuchsia-400">
-              Real Geography
+        <div className="text-center mb-16">
+          <h2 className="text-4xl md:text-6xl font-bold mb-6 text-[#f5f6fa]">
+            Built on{" "}
+            <span className="text-[#bcb8ff]">
+              Verified Spatial Intelligence
             </span>
           </h2>
-          <p className="text-lg text-white/50 max-w-2xl mx-auto">
-            The system operates on accurate campus boundaries and spatial
-            intelligence. Precision, not approximation.
+          <p className="text-lg max-w-2xl mx-auto text-[#aeb6c2]">
+            The system operates on precise spatial boundaries, hierarchies, and
+            real-world layouts. Accuracy, validation, and structure are
+            foundational—never optional.
           </p>
-        </motion.div>
-
-        {/* Main Content Card */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={isInView ? { opacity: 1, scale: 1 } : {}}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="relative p-12 rounded-3xl bg-gradient-to-br from-white/10 to-white/5 border border-white/20 backdrop-blur-xl overflow-hidden"
-        >
-          {/* Animated Grid Background */}
-          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:50px_50px] opacity-50" />
-
-          {/* Content */}
-          <div className="relative z-10">
-            {/* Title */}
-            <div className="flex items-center gap-3 mb-8">
-              <div className="p-3 rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-500">
-                <svg
-                  className="w-6 h-6 text-white"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
-                  />
-                </svg>
+        </div>
+        {/* System Spatial Layers */}
+        <div className="grid md:grid-cols-4 gap-6 mb-12">
+          {[
+            {
+              label: "Campus boundary layer",
+              desc: "Defines the outer perimeter for all spatial logic.",
+            },
+            {
+              label: "Building footprint layer",
+              desc: "Maps every structure as a discrete, validated entity.",
+            },
+            {
+              label: "Floor and room-level resolution",
+              desc: "Supports granular location mapping and navigation.",
+            },
+            {
+              label: "Issue-to-location binding",
+              desc: "Every report is anchored to a real, validated place.",
+            },
+          ].map((layer) => (
+            <div
+              key={layer.label}
+              className="p-7 rounded-2xl"
+              style={{
+                background:
+                  "linear-gradient(120deg, #20222a 80%, #23243a 100%)",
+                boxShadow:
+                  "inset 0 2px 10px 0 rgba(20,22,30,0.13), 0 0.5px 0 0 #23242a inset",
+                border: "1.5px solid #23243a",
+              }}
+            >
+              <div
+                className="text-xs font-semibold uppercase tracking-widest text-[#b2b7c2]/60 mb-2"
+                style={{ opacity: 0.6, letterSpacing: "0.13em" }}
+              >
+                {layer.label}
               </div>
-              <h3 className="text-2xl font-bold text-white">
-                GGV Main Campus Coverage
-              </h3>
+              <div
+                className="text-[15px] text-[#b2b7c2] leading-relaxed"
+                style={{ opacity: 0.88 }}
+              >
+                {layer.desc}
+              </div>
             </div>
-
-            {/* Coordinates Grid */}
-            <div className="grid md:grid-cols-3 gap-6 mb-8">
-              {coordinates.map((coord, index) => (
-                <motion.div
-                  key={coord.label}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={isInView ? { opacity: 1, y: 0 } : {}}
-                  transition={{ duration: 0.6, delay: 0.4 + index * 0.1 }}
-                  className="p-6 rounded-2xl bg-black/20 border border-white/10 backdrop-blur-sm"
-                >
-                  <div
-                    className={`inline-block px-3 py-1 rounded-full bg-${coord.color}-500/10 border border-${coord.color}-500/20 text-${coord.color}-400 text-xs font-medium mb-3`}
-                  >
-                    {coord.label}
-                  </div>
-                  <div className="font-mono text-lg text-white/90">
-                    {coord.coords}
-                  </div>
-                </motion.div>
-              ))}
+          ))}
+        </div>
+        {/* System Guarantees */}
+        <div className="grid md:grid-cols-4 gap-6">
+          {[
+            "Boundary-locked issue reporting",
+            "Location-aware validation",
+            "Hierarchical spatial mapping",
+            "Multi-campus ready architecture",
+          ].map((guarantee) => (
+            <div
+              key={guarantee}
+              className="p-5 rounded-xl"
+              style={{
+                background:
+                  "linear-gradient(120deg, #20222a 80%, #23243a 100%)",
+                boxShadow: "inset 0 1.5px 8px 0 rgba(20,22,30,0.10)",
+                border: "1.5px solid #23243a",
+              }}
+            >
+              <div
+                className="text-xs text-[#b2b7c2]/70 tracking-wide"
+                style={{ opacity: 0.7 }}
+              >
+                {guarantee}
+              </div>
             </div>
-
-            {/* Features List */}
-            <div className="grid md:grid-cols-2 gap-4">
-              {[
-                "Accurate building-level positioning",
-                "Real-time coordinate validation",
-                "Department-to-room mapping",
-                "Scalable multi-campus support",
-              ].map((feature, index) => (
-                <motion.div
-                  key={feature}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={isInView ? { opacity: 1, x: 0 } : {}}
-                  transition={{ duration: 0.6, delay: 0.6 + index * 0.1 }}
-                  className="flex items-center gap-3 p-4 rounded-xl bg-white/5 border border-white/10"
-                >
-                  <svg
-                    className="w-5 h-5 text-cyan-400 flex-shrink-0"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  <span className="text-white/80">{feature}</span>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-
-          {/* Decorative Corner Accents */}
-          <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-cyan-500/20 to-transparent blur-3xl" />
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-blue-500/20 to-transparent blur-3xl" />
-        </motion.div>
-
-        {/* Bottom Note */}
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={isInView ? { opacity: 1 } : {}}
-          transition={{ duration: 0.8, delay: 1 }}
-          className="text-center text-white/40 text-sm mt-8"
-        >
-          All coordinates verified against official campus maps. Updated
-          quarterly.
-        </motion.p>
+          ))}
+        </div>
       </div>
     </section>
   );
 }
+{
+  /* System Guarantees */
+}
+<div className="grid md:grid-cols-4 gap-6">
+  {[
+    "Boundary-locked issue reporting",
+    "Location-aware validation",
+    "Hierarchical spatial mapping",
+    "Multi-campus ready architecture",
+  ].map((guarantee) => (
+    <div
+      key={guarantee}
+      className="p-5 rounded-xl"
+      style={{
+        background: "linear-gradient(120deg, #20222a 80%, #23243a 100%)",
+        boxShadow: "inset 0 1.5px 8px 0 rgba(20,22,30,0.10)",
+        border: "1.5px solid #23243a",
+      }}
+    >
+      <div
+        className="text-xs text-[#b2b7c2]/70 tracking-wide"
+        style={{ opacity: 0.7 }}
+      >
+        {guarantee}
+      </div>
+    </div>
+  ))}
+</div>;
