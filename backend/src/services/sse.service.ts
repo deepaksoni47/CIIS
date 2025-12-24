@@ -439,9 +439,9 @@ export async function streamHeatmapUpdates(
   sseService.addHeatmapClient(client);
 
   // Use per-organization cached heatmap and a single updater to prevent duplicate reads
-  try {
-    const orgId = organizationId as string;
+  const orgId = organizationId as string;
 
+  try {
     // Clamp requested interval to a safe minimum to avoid very frequent reads
     const MIN_UPDATE_INTERVAL_MS = parseInt(
       process.env.HEATMAP_MIN_INTERVAL_MS || "60000",
@@ -462,7 +462,6 @@ export async function streamHeatmapUpdates(
         console.log(
           `📥 Serving cached heatmap for org ${orgId} (age=${Date.now() - cached.timestamp}ms)`
         );
-        // Optionally filter cached data per-campus/building on the client side
         sseService.sendEvent(
           res,
           "heatmap:initial",
@@ -475,7 +474,7 @@ export async function streamHeatmapUpdates(
     } else {
       // No cache yet - do a single initial fetch and populate cache
       const filters: HeatmapFilters = {
-        organizationId: organizationId as string,
+        organizationId: orgId,
       };
       if (campusId) filters.campusId = campusId as string;
       if (buildingIds) {
@@ -514,10 +513,8 @@ export async function streamHeatmapUpdates(
 
   // Cleanup on disconnect - stop updater if no clients left for the organization
   req.on("close", () => {
-    if (
-      sseService.getOrganizationClientsCount(organizationId as string) === 0
-    ) {
-      sseService.stopHeatmapUpdater(organizationId as string);
+    if (sseService.getOrganizationClientsCount(orgId) === 0) {
+      sseService.stopHeatmapUpdater(orgId);
     }
   });
 }
