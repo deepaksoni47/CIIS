@@ -14,6 +14,7 @@ import { priorityEngine, PriorityInput } from "../priority/priority-engine";
 import { WebSocketService } from "../../services/websocket.service";
 import { SSEService } from "../../services/sse.service";
 import * as emailService from "../../services/email.service";
+import * as rewardsService from "../rewards/rewards.service";
 
 const db = getFirestore();
 
@@ -113,6 +114,32 @@ export async function createIssue(
     );
   } catch (error) {
     console.error("Error emitting real-time events:", error);
+  }
+
+  // Award points for creating an issue and update user statistics (async, non-blocking)
+  try {
+    const pointsForIssue = 10; // configurable default for issue creation
+    rewardsService
+      .awardPoints(
+        userId,
+        issue.organizationId as string,
+        pointsForIssue,
+        "issue_created",
+        "Reported an issue",
+        issue.id,
+        "issue"
+      )
+      .catch((err) =>
+        console.error("Error awarding points for issue creation:", err)
+      );
+
+    rewardsService
+      .updateUserStatistics(userId, "issuesReported", 1)
+      .catch((err) =>
+        console.error("Error updating user statistics for issue creation:", err)
+      );
+  } catch (err) {
+    console.error("Failed to initiate reward actions for issue creation:", err);
   }
 
   return issue;
