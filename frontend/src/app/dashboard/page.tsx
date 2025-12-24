@@ -5,7 +5,12 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
-import { BadgeAlert,SquareArrowOutUpRight,MapPinCheck,Workflow  } from "lucide-react";
+import {
+  BadgeAlert,
+  SquareArrowOutUpRight,
+  MapPinCheck,
+  Workflow,
+} from "lucide-react";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
@@ -51,6 +56,8 @@ interface UserData {
 
 export default function DashboardPage() {
   const router = useRouter();
+  // Prevent multiple toasts
+  let toastShown = false;
 
   // State
   const [user, setUser] = useState<UserData | null>(null);
@@ -74,9 +81,18 @@ export default function DashboardPage() {
         ? window.localStorage.getItem("ciis_user")
         : null;
 
+    // Prevent redirect loop and multiple toasts
     if (!token || !userStr) {
-      toast.error("Please log in to access dashboard");
-      router.push("/login");
+      if (
+        typeof window !== "undefined" &&
+        window.location.pathname !== "/login"
+      ) {
+        if (!toastShown) {
+          toastShown = true;
+          toast.error("Please log in to access dashboard");
+        }
+        router.push("/login");
+      }
       return;
     }
 
@@ -315,7 +331,7 @@ export default function DashboardPage() {
     }
   };
 
-  // --- Render Loading ---
+  // --- Render Loading or block unauthorized ---
   if (isLoading) {
     return (
       <div className="relative min-h-screen bg-[#050814]">
@@ -327,6 +343,11 @@ export default function DashboardPage() {
         </div>
       </div>
     );
+  }
+
+  // If not authenticated, render nothing (prevents cached/unauthorized view)
+  if (!user) {
+    return null;
   }
 
   // Define actions based on role
