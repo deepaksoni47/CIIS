@@ -46,7 +46,9 @@ function setCachedResponse(prompt: string, data: any): void {
   // Limit cache size to 100 entries
   if (requestCache.size > 100) {
     const firstKey = requestCache.keys().next().value;
-    requestCache.delete(firstKey);
+    if (typeof firstKey === "string") {
+      requestCache.delete(firstKey);
+    }
   }
 }
 
