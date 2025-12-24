@@ -29,6 +29,17 @@ export class SSEService {
   private heatmapClients: Map<string, SSEClient> = new Map();
   private issueClients: Map<string, SSEClient> = new Map();
 
+  // Heatmap cache and per-organization update intervals to avoid duplicate reads
+  private heatmapCache: Map<
+    string,
+    {
+      data: any;
+      timestamp: number;
+      interval?: NodeJS.Timeout;
+      updateIntervalMs?: number;
+    }
+  > = new Map();
+
   private constructor() {
     // Cleanup disconnected clients every minute
     setInterval(() => {
@@ -184,6 +195,99 @@ export class SSEService {
   }
 
   /**
+   * Heatmap cache helpers
+   */
+  public getCachedHeatmap(organizationId: string) {
+    const entry = this.heatmapCache.get(organizationId);
+    if (!entry) return null;
+    return entry;
+  }
+
+  public setCachedHeatmap(
+    organizationId: string,
+    data: any,
+    updateIntervalMs: number
+  ) {
+    this.heatmapCache.set(organizationId, {
+      data,
+      timestamp: Date.now(),
+      updateIntervalMs,
+    });
+  }
+
+  public ensureHeatmapUpdater(
+    organizationId: string,
+    updateIntervalMs: number
+  ) {
+    const entry = this.heatmapCache.get(organizationId);
+    if (entry && entry.interval) {
+      // If update interval changed, restart
+      if (entry.updateIntervalMs !== updateIntervalMs) {
+        clearInterval(entry.interval);
+        entry.interval = undefined;
+      } else {
+        return; // already running
+      }
+    }
+
+    // Start a new interval to fetch and broadcast heatmap for this org
+    const interval = setInterval(async () => {
+      try {
+        const filters: HeatmapFilters = { organizationId };
+        const config: HeatmapConfig = {
+          timeDecayFactor: 0.5,
+          severityWeightMultiplier: 2.0,
+          normalizeWeights: true,
+        };
+        const data = await getHeatmapData(filters, config);
+        this.setCachedHeatmap(organizationId, data, updateIntervalMs);
+        this.broadcastHeatmapUpdate(organizationId, data);
+      } catch (err) {
+        console.error("Error in heatmap updater for org", organizationId, err);
+      }
+    }, updateIntervalMs);
+
+    this.heatmapCache.set(organizationId, {
+      data: entry?.data,
+      timestamp: entry?.timestamp || Date.now(),
+      interval,
+      updateIntervalMs,
+    });
+  }
+
+  public stopHeatmapUpdater(organizationId: string) {
+    const entry = this.heatmapCache.get(organizationId);
+    if (entry && entry.interval) {
+      clearInterval(entry.interval);
+    }
+    this.heatmapCache.delete(organizationId);
+  }
+
+  private broadcastHeatmapUpdate(organizationId: string, data: any) {
+    // Broadcast to all org clients
+    this.heatmapClients.forEach((client) => {
+      if (client.organizationId === organizationId) {
+        try {
+          this.sendEvent(
+            client.response,
+            "heatmap:update",
+            data,
+            `${Date.now()}`
+          );
+        } catch (err) {
+          console.error(
+            "Error broadcasting heatmap update to client",
+            client.id,
+            err
+          );
+          this.heatmapClients.delete(client.id);
+        }
+      }
+    });
+    console.log(`📤 Broadcasted heatmap update for org ${organizationId}`);
+  }
+
+  /**
    * Send issue update to subscribed clients
    */
   public sendIssueUpdate(
@@ -334,67 +438,87 @@ export async function streamHeatmapUpdates(
   };
   sseService.addHeatmapClient(client);
 
-  // Send initial heatmap data
+  // Use per-organization cached heatmap and a single updater to prevent duplicate reads
   try {
-    const filters: HeatmapFilters = {
-      organizationId: organizationId as string,
-    };
-    if (campusId) filters.campusId = campusId as string;
-    if (buildingIds) {
-      filters.buildingIds = Array.isArray(buildingIds)
-        ? (buildingIds as string[])
-        : [buildingIds as string];
-    }
-    if (categories) {
-      filters.categories = Array.isArray(categories)
-        ? (categories as string[])
-        : [categories as string];
-    }
+    const orgId = organizationId as string;
 
-    const config: HeatmapConfig = {
-      timeDecayFactor: 0.5,
-      severityWeightMultiplier: 2.0,
-      normalizeWeights: true,
-    };
+    // Clamp requested interval to a safe minimum to avoid very frequent reads
+    const MIN_UPDATE_INTERVAL_MS = parseInt(
+      process.env.HEATMAP_MIN_INTERVAL_MS || "60000",
+      10
+    ); // 60s
+    const requestedInterval = Math.max(
+      MIN_UPDATE_INTERVAL_MS,
+      parseInt(updateInterval as string, 10) || MIN_UPDATE_INTERVAL_MS
+    );
 
-    const heatmapData = await getHeatmapData(filters, config);
-    sseService.sendEvent(res, "heatmap:initial", heatmapData, `${Date.now()}`);
-  } catch (error) {
-    console.error("Error fetching initial heatmap:", error);
-  }
+    // Ensure there is an updater for this organization (single background fetch)
+    sseService.ensureHeatmapUpdater(orgId, requestedInterval);
 
-  // Send periodic updates
-  const interval = setInterval(
-    async () => {
+    // Send cached data immediately if available (avoid a DB read)
+    const cached = sseService.getCachedHeatmap(orgId);
+    if (cached) {
       try {
-        const filters: HeatmapFilters = {
-          organizationId: organizationId as string,
-        };
-        if (campusId) filters.campusId = campusId as string;
-
-        const config: HeatmapConfig = {
-          timeDecayFactor: 0.5,
-          severityWeightMultiplier: 2.0,
-          normalizeWeights: true,
-        };
-
-        const heatmapData = await getHeatmapData(filters, config);
+        console.log(
+          `📥 Serving cached heatmap for org ${orgId} (age=${Date.now() - cached.timestamp}ms)`
+        );
+        // Optionally filter cached data per-campus/building on the client side
         sseService.sendEvent(
           res,
-          "heatmap:update",
+          "heatmap:initial",
+          cached.data,
+          `${Date.now()}`
+        );
+      } catch (err) {
+        console.error("Error sending cached heatmap to client:", err);
+      }
+    } else {
+      // No cache yet - do a single initial fetch and populate cache
+      const filters: HeatmapFilters = {
+        organizationId: organizationId as string,
+      };
+      if (campusId) filters.campusId = campusId as string;
+      if (buildingIds) {
+        filters.buildingIds = Array.isArray(buildingIds)
+          ? (buildingIds as string[])
+          : [buildingIds as string];
+      }
+      if (categories) {
+        filters.categories = Array.isArray(categories)
+          ? (categories as string[])
+          : [categories as string];
+      }
+
+      const config: HeatmapConfig = {
+        timeDecayFactor: 0.5,
+        severityWeightMultiplier: 2.0,
+        normalizeWeights: true,
+      };
+
+      try {
+        const heatmapData = await getHeatmapData(filters, config);
+        sseService.setCachedHeatmap(orgId, heatmapData, requestedInterval);
+        sseService.sendEvent(
+          res,
+          "heatmap:initial",
           heatmapData,
           `${Date.now()}`
         );
       } catch (error) {
-        console.error("Error fetching heatmap update:", error);
+        console.error("Error fetching initial heatmap:", error);
       }
-    },
-    parseInt(updateInterval as string)
-  );
+    }
+  } catch (e) {
+    console.error("Error ensuring heatmap updater:", e);
+  }
 
-  // Cleanup on disconnect
+  // Cleanup on disconnect - stop updater if no clients left for the organization
   req.on("close", () => {
-    clearInterval(interval);
+    if (
+      sseService.getOrganizationClientsCount(organizationId as string) === 0
+    ) {
+      sseService.stopHeatmapUpdater(organizationId as string);
+    }
   });
 }
 

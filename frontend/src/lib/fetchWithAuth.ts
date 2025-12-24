@@ -1,3 +1,5 @@
+import { auth } from "@/lib/firebase";
+
 export const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
 
@@ -6,31 +8,63 @@ function getAuthToken(): string | null {
   return localStorage.getItem("ciis_token");
 }
 
-export async function fetchWithAuth(input: string, init: RequestInit = {}) {
-  const token = getAuthToken();
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-    ...((init.headers as Record<string, string>) || {}),
-  };
-  if (token) headers.Authorization = `Bearer ${token}`;
-
-  const response = await fetch(
-    input.startsWith("http") ? input : `${API_BASE_URL}${input}`,
-    {
-      ...init,
-      headers,
+async function tryRefreshToken(): Promise<string | null> {
+  if (typeof window === "undefined") return null;
+  try {
+    if (auth && auth.currentUser) {
+      const newToken = await auth.currentUser.getIdToken(true);
+      if (newToken) {
+        localStorage.setItem("ciis_token", newToken);
+        // Notify listeners that token refreshed
+        try {
+          window.dispatchEvent(
+            new CustomEvent("ciis:token_refreshed", {
+              detail: { token: newToken },
+            })
+          );
+        } catch (e) {}
+        return newToken;
+      }
     }
-  );
-
-  let data: any = {};
-  try {
-    data = await response.json();
   } catch (e) {
-    data = {};
+    console.warn("Token refresh failed:", e);
   }
+  return null;
+}
 
-  try {
-    if (response.status === 401 || response.status === 403) {
+export async function fetchWithAuth(
+  input: string,
+  init: RequestInit = {},
+  options: { responseType?: "blob" } = {}
+) {
+  const makeRequest = async (token?: string | null) => {
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      ...((init.headers as Record<string, string>) || {}),
+    };
+    const effectiveToken = token ?? getAuthToken();
+    if (effectiveToken) headers.Authorization = `Bearer ${effectiveToken}`;
+
+    const response = await fetch(
+      input.startsWith("http") ? input : `${API_BASE_URL}${input}`,
+      {
+        ...init,
+        headers,
+      }
+    );
+
+    return response;
+  };
+
+  let response = await makeRequest();
+
+  // If unauthorized, try to refresh token and retry once
+  if (response.status === 401 || response.status === 403) {
+    const newToken = await tryRefreshToken();
+    if (newToken) {
+      response = await makeRequest(newToken);
+    } else {
+      // If refresh failed, call global handler if present
       if (
         typeof window !== "undefined" &&
         (window as any).__CIIS_HANDLE_TOKEN_EXPIRED
@@ -40,7 +74,29 @@ export async function fetchWithAuth(input: string, init: RequestInit = {}) {
         } catch (e) {}
       }
     }
-  } catch (e) {}
+  }
+
+  if (options.responseType === "blob") {
+    if (!response.ok) {
+      let text = "";
+      try {
+        text = await response.text();
+      } catch (e) {}
+      throw {
+        response: {
+          data: { message: text || "Request failed" },
+        },
+      };
+    }
+    return { data: await response.blob() };
+  }
+
+  let data: any = {};
+  try {
+    data = await response.json();
+  } catch (e) {
+    data = {};
+  }
 
   if (!response.ok) {
     throw {

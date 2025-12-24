@@ -2,6 +2,8 @@
  * Base API Client
  */
 
+import { fetchWithAuth } from "./fetchWithAuth";
+
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
 
@@ -44,26 +46,17 @@ const api = {
       }
     }
 
-    const response = await fetch(url, { headers });
+    const result = await fetchWithAuth(
+      url,
+      { method: "GET", headers },
+      { responseType: options.responseType }
+    );
 
     if (options.responseType === "blob") {
-      if (!response.ok) {
-        throw new Error("Failed to download file");
-      }
-      return { data: await response.blob() };
+      return { data: result.data };
     }
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw {
-        response: {
-          data: { message: data.message || "Request failed" },
-        },
-      };
-    }
-
-    return { data };
+    return { data: result.data };
   },
 
   async post(endpoint: string, body?: any) {
@@ -76,23 +69,13 @@ const api = {
       headers.Authorization = `Bearer ${token}`;
     }
 
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    const result = await fetchWithAuth(`${API_BASE_URL}${endpoint}`, {
       method: "POST",
       headers,
       body: body ? JSON.stringify(body) : undefined,
     });
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw {
-        response: {
-          data: { message: data.message || "Request failed" },
-        },
-      };
-    }
-
-    return { data };
+    return { data: result.data };
   },
 
   async patch(endpoint: string, body?: any) {
@@ -105,23 +88,13 @@ const api = {
       headers.Authorization = `Bearer ${token}`;
     }
 
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    const result = await fetchWithAuth(`${API_BASE_URL}${endpoint}`, {
       method: "PATCH",
       headers,
       body: body ? JSON.stringify(body) : undefined,
     });
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw {
-        response: {
-          data: { message: data.message || "Request failed" },
-        },
-      };
-    }
-
-    return { data };
+    return { data: result.data };
   },
 
   async put(endpoint: string, body?: any) {
@@ -134,23 +107,13 @@ const api = {
       headers.Authorization = `Bearer ${token}`;
     }
 
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    const result = await fetchWithAuth(`${API_BASE_URL}${endpoint}`, {
       method: "PUT",
       headers,
       body: body ? JSON.stringify(body) : undefined,
     });
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw {
-        response: {
-          data: { message: data.message || "Request failed" },
-        },
-      };
-    }
-
-    return { data };
+    return { data: result.data };
   },
 
   async delete(endpoint: string) {
@@ -163,22 +126,12 @@ const api = {
       headers.Authorization = `Bearer ${token}`;
     }
 
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    const result = await fetchWithAuth(`${API_BASE_URL}${endpoint}`, {
       method: "DELETE",
       headers,
     });
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw {
-        response: {
-          data: { message: data.message || "Request failed" },
-        },
-      };
-    }
-
-    return { data };
+    return { data: result.data };
   },
 };
 

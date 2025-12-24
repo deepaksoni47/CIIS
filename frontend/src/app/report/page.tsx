@@ -78,6 +78,7 @@ export default function ReportPage() {
   const recognitionRef = useRef<any>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
   const analyzingImageRef = useRef<boolean>(false); // Track if analysis is in progress
   const analyzedImageRef = useRef<string | null>(null); // Track last analyzed image name
 
@@ -1236,39 +1237,74 @@ export default function ReportPage() {
                 onChange={handleImageChange}
                 className="hidden"
               />
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isAnalyzingImage}
-                className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-white flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
+              {/* Camera input (single photo capture on mobile) */}
+              <input
+                ref={cameraInputRef as any}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                onChange={handleImageChange}
+                className="hidden"
+              />
+
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isAnalyzingImage}
+                  className="flex-1 px-4 py-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-white flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                  />
-                </svg>
-                {imageFiles.length > 0
-                  ? `${imageFiles.length} image(s) selected`
-                  : "Add Images"}
-              </button>
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
+                  </svg>
+                  {imageFiles.length > 0
+                    ? `${imageFiles.length} image(s) selected`
+                    : "Add Images"}
+                </button>
 
-              {isAnalyzingImage && (
-                <div className="p-3 rounded-lg bg-violet-950/40 border border-violet-500/30 flex items-center gap-3">
-                  <div className="w-5 h-5 border-2 border-violet-400/30 border-t-violet-400 rounded-full animate-spin"></div>
-                  <span className="text-sm text-violet-300">
-                    🤖 AI is analyzing the image...
-                  </span>
-                </div>
-              )}
+                <button
+                  type="button"
+                  onClick={() => cameraInputRef.current?.click()}
+                  disabled={isAnalyzingImage}
+                  className="px-4 py-3 rounded-xl bg-white/6 border border-white/8 hover:bg-white/10 transition-all text-white flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M3 7h2l1-2h10l1 2h2v11a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 11a3 3 0 100 6 3 3 0 000-6z"
+                    />
+                  </svg>
+                  <span className="hidden sm:inline">Camera</span>
+                </button>
+              </div>
 
+              <p className="text-xs text-gray-400 mt-1">
+                You can select images from your device or use the Camera button
+                to take a new photo.
+              </p>
               {aiImageAnalysis && (
                 <div className="p-4 rounded-lg bg-blue-950/40 border border-blue-500/30">
                   <div className="flex items-start gap-2">

@@ -220,25 +220,49 @@ export async function getIssues(filters: {
     );
   }
 
-  // Fetch all matching documents (orderBy removed to avoid index requirement)
-  const snapshot = await query.get();
+  // If client requested a limit, try to apply server-side ordering and limit to reduce reads
+  let firestoreQuery: any = query;
+  const MAX_LIMIT = 500; // safety cap
+  const requestedLimit = Math.min(MAX_LIMIT, filters.limit || 0);
+  if (requestedLimit > 0) {
+    try {
+      firestoreQuery = query
+        .orderBy("createdAt", "desc")
+        .limit(requestedLimit + (filters.offset || 0));
+    } catch (err: any) {
+      console.warn(
+        "Could not apply server-side order/limit, falling back to full scan:",
+        err?.message || err
+      );
+      firestoreQuery = query;
+    }
+  }
 
-  // Sort in memory by creation date (newest first)
+  // Fetch documents
+  const snapshot = await firestoreQuery.get();
+
+  // Map docs to issues
   let issues: Issue[] = snapshot.docs.map((doc: any) => ({
     id: doc.id,
     ...doc.data(),
   }));
 
-  // Sort by createdAt descending
-  issues.sort((a, b) => {
-    const aTime = (a.createdAt as any)?.seconds || 0;
-    const bTime = (b.createdAt as any)?.seconds || 0;
-    return bTime - aTime;
-  });
+  // If we applied server-side orderBy with desc, the results are recent-first already; otherwise, sort in memory.
+  if (!requestedLimit) {
+    // Sort by createdAt descending
+    issues.sort((a, b) => {
+      const aTime = (a.createdAt as any)?.seconds || 0;
+      const bTime = (b.createdAt as any)?.seconds || 0;
+      return bTime - aTime;
+    });
+  } else {
+    // If we used server-side limit, ensure the slice we're returning respects offset/limit
+    // snapshot contains at most offset+limit results; slice accordingly
+  }
 
   const total = issues.length;
 
-  // Apply pagination after sorting
+  // Apply pagination after sorting or server-side limit
   if (filters.offset || filters.limit) {
     const start = filters.offset || 0;
     const end = filters.limit ? start + filters.limit : issues.length;

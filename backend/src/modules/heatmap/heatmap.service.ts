@@ -144,6 +144,17 @@ export async function getHeatmapData(
     normalizeWeights: true,
   }
 ): Promise<HeatmapGeoJSON> {
+  // If no date range is provided, default to the last 30 days to limit reads
+  if (!filters.startDate && !filters.endDate) {
+    const defaultDays = 30;
+    const start = new Date();
+    start.setDate(start.getDate() - defaultDays);
+    filters.startDate = start;
+    console.log(
+      `ℹ️ No date range provided for heatmap; defaulting to last ${defaultDays} days`
+    );
+  }
+
   // Build query with minimal filters to avoid index requirements
   // We'll filter the rest in memory
   let query = firestore

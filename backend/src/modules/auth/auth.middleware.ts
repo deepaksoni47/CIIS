@@ -25,7 +25,12 @@ export async function authenticate(
   next: NextFunction
 ) {
   try {
-    const authHeader = req.headers.authorization;
+    let authHeader = req.headers.authorization as string | undefined;
+
+    // Support token via query param (e.g., SSE EventSource which cannot set headers)
+    if (!authHeader && req.query && (req.query.token as string)) {
+      authHeader = `Bearer ${req.query.token as string}`;
+    }
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return res.status(401).json({

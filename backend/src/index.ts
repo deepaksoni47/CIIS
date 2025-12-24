@@ -54,6 +54,12 @@ try {
 app.use(addRequestId); // Add request ID for tracking
 app.use(enforceHTTPS); // Force HTTPS in production
 
+// Set trust proxy if behind a proxy/load balancer (needed for express-rate-limit to correctly use X-Forwarded-For)
+if (process.env.TRUST_PROXY === "true") {
+  app.set("trust proxy", true);
+  console.log("ℹ️ Express 'trust proxy' enabled (TRUST_PROXY=true)");
+}
+
 // CORS configuration - MUST be before helmet to avoid conflicts
 const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(",").map((origin) => origin.trim())

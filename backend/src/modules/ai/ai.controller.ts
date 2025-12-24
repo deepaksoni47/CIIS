@@ -5,8 +5,20 @@ import { getFirestore } from "../../config/firebase";
 /**
  * Generate AI insights for all issues
  */
+// Simple in-memory cache for AI insights to prevent excessive reads
+let cachedInsights: { data: any; timestamp: number } | null = null;
+const INSIGHTS_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
 export async function generateGeneralInsights(_req: Request, res: Response) {
   try {
+    // Serve cached insights when fresh
+    if (
+      cachedInsights &&
+      Date.now() - cachedInsights.timestamp < INSIGHTS_TTL_MS
+    ) {
+      return res.json({ success: true, data: cachedInsights.data });
+    }
+
     const db = getFirestore();
     const issuesSnapshot = await db
       .collection("issues")
@@ -28,13 +40,18 @@ export async function generateGeneralInsights(_req: Request, res: Response) {
 
     const insights = await geminiService.analyzeIssuePatterns(issues);
 
+    const payload = {
+      insights,
+      analyzedIssues: issues.length,
+      timestamp: new Date().toISOString(),
+    };
+
+    // Cache the result
+    cachedInsights = { data: payload, timestamp: Date.now() };
+
     res.json({
       success: true,
-      data: {
-        insights,
-        analyzedIssues: issues.length,
-        timestamp: new Date().toISOString(),
-      },
+      data: payload,
     });
   } catch (error: any) {
     console.error("Error generating insights:", error);
