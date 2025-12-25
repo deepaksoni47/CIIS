@@ -99,7 +99,7 @@ export default function ProfilePage() {
               <div>
                 <h1 className="text-3xl md:text-5xl font-bold tracking-tight mb-2">
                   My{" "}
-                  <span className="bg-gradient-to-r from-violet-400 to-sky-400 bg-clip-text text-transparent">
+                  <span className="gradient-heading bg-clip-text text-transparent">
                     Profile
                   </span>
                 </h1>
@@ -152,7 +152,7 @@ export default function ProfilePage() {
                 onClick={() => setActiveTab(id as any)}
                 className={`px-4 md:px-6 py-2 md:py-3 rounded-xl font-medium transition-all text-sm md:text-base flex flex-row justify-center ${
                   activeTab === id
-                    ? "bg-gradient-to-r from-violet-600 to-sky-600 text-white shadow-lg"
+                    ? "bg-gradient-to-r from-indigo-500 to-violet-800 text-white shadow-lg"
                     : "bg-white/5 text-white/70 hover:bg-white/10"
                 }`}
               >

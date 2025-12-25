@@ -91,7 +91,7 @@ export default function AdminLayout({
         <div className="h-full px-3 py-4 overflow-y-auto">
           {/* Logo */}
           <div className="flex items-center justify-between mb-8 px-3">
-            <h2 className="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+            <h2 className="text-xl font-bold gradient-heading bg-clip-text text-transparent">
               Admin Panel
             </h2>
             <button

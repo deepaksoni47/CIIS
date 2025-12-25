@@ -1373,7 +1373,7 @@ export default function ReportPage() {
               disabled={
                 isSubmitting || !location.latitude || !location.longitude
               }
-              className="w-full px-6 py-4 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold transition-all shadow-lg shadow-violet-500/25 flex items-center justify-center gap-2"
+              className="w-full px-6 py-4 rounded-xl bg-gradient-to-r from-violet-500  to-indigo-600 hover:from-indigo-600 hover:to-violet-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold transition-all shadow-lg shadow-violet-500/25 flex items-center justify-center gap-2"
             >
               {isSubmitting ? (
                 <>

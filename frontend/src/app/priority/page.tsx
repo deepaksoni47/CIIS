@@ -383,7 +383,7 @@ export default function PriorityPage() {
           >
             <h1 className="text-3xl md:text-5xl font-bold tracking-tight mb-4">
               Priority{" "}
-              <span className="bg-gradient-to-r from-violet-400 to-sky-400 bg-clip-text text-transparent">
+              <span className="gradient-heading bg-clip-text text-transparent">
                 Engine
               </span>
             </h1>
@@ -398,7 +398,7 @@ export default function PriorityPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="flex flex-wrap justify-center gap-2 md:gap-4 mb-8"
+            className="flex flex-wrap justify-center gap-2 md:gap-4 mb-8 "
           >
             {[
               { mode: "calculator", label: "Calculator", icon: <Calculator /> },
@@ -419,7 +419,7 @@ export default function PriorityPage() {
                 onClick={() => setViewMode(mode as ViewMode)}
                 className={`px-4 md:px-6 py-2 md:py-3 rounded-xl font-medium transition-all text-sm md:text-base flex items-center justify-center gap-2 ${
                   viewMode === mode
-                    ? "bg-gradient-to-r from-violet-600 to-sky-600 text-white shadow-lg"
+                    ? "bg-gradient-to-r from-indigo-400 to-violet-800 text-white shadow-lg"
                     : "bg-white/5 text-white/70 hover:bg-white/10"
                 }`}
               >

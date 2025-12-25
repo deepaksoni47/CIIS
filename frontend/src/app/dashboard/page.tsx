@@ -371,7 +371,7 @@ export default function DashboardPage() {
           <div>
             <h1 className="text-4xl md:text-5xl font-bold mb-2">
               Welcome back,
-              <span className="ml-3 bg-gradient-to-r from-violet-400 via-fuchsia-400 to-sky-400 bg-clip-text text-transparent">
+              <span className="ml-3 gradient-heading bg-clip-text text-transparent">
                 {user?.name || "User"}
               </span>
             </h1>
