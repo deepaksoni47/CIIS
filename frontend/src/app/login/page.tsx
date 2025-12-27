@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 import { EmailSignInForm } from "@/components/auth/EmailSignInForm";
+import { isTokenValid } from "@/lib/tokenManager";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -12,8 +13,8 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const existingToken = window.localStorage.getItem("campuscare_token");
-      if (existingToken) {
+      // Use centralized token validation
+      if (isTokenValid()) {
         router.replace("/dashboard");
         return;
       }

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
+import { clearAuthTokens, getValidUser } from "@/lib/tokenManager";
 import {
   BadgeAlert,
   SquareArrowOutUpRight,
@@ -68,68 +69,72 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    checkAuthAndLoadData();
-  }, []);
-
-  const checkAuthAndLoadData = async () => {
-    const token =
-      typeof window !== "undefined"
-        ? window.localStorage.getItem("campuscare_token")
-        : null;
-    const userStr =
-      typeof window !== "undefined"
-        ? window.localStorage.getItem("campuscare_user")
-        : null;
-
-    // Prevent redirect loop and multiple toasts
-    if (!token || !userStr) {
-      if (
-        typeof window !== "undefined" &&
-        window.location.pathname !== "/login"
-      ) {
-        if (!toastShown) {
-          toastShown = true;
-          toast.error("Please log in to access dashboard");
+    const checkAuthAndLoadData = async () => {
+      try {
+        // Use centralized token validation
+        const userDataRaw = getValidUser();
+        // Type guard: ensure userDataRaw is UserData
+        if (
+          !userDataRaw ||
+          typeof userDataRaw !== "object" ||
+          typeof userDataRaw.id !== "string" ||
+          typeof userDataRaw.name !== "string" ||
+          typeof userDataRaw.email !== "string" ||
+          typeof userDataRaw.role !== "string" ||
+          typeof userDataRaw.organizationId !== "string"
+        ) {
+          if (
+            typeof window !== "undefined" &&
+            window.location.pathname !== "/login"
+          ) {
+            if (!toastShown) {
+              toastShown = true;
+              toast.error("Please log in to access dashboard");
+            }
+            router.push("/login");
+          }
+          return;
         }
-        router.push("/login");
-      }
-      return;
-    }
+        const userData: UserData = {
+          id: userDataRaw.id,
+          name: userDataRaw.name,
+          email: userDataRaw.email,
+          role: userDataRaw.role as UserData["role"],
+          organizationId: userDataRaw.organizationId,
+        };
+        setUser(userData);
 
-    try {
-      const userData: UserData = JSON.parse(userStr);
-      setUser(userData);
+        // Debug: show whether a token exists and the user's role (do not print token)
+        if (typeof window !== "undefined") {
+          const t = window.localStorage.getItem("campuscare_token");
+          console.debug(
+            "Dashboard: token present=",
+            !!t,
+            "userRole=",
+            userData.role
+          );
+        }
 
-      // Debug: show whether a token exists and the user's role (do not print token)
-      if (typeof window !== "undefined") {
-        const t = window.localStorage.getItem("campuscare_token");
-        console.debug(
-          "Dashboard: token present=",
-          !!t,
-          "userRole=",
+        const isManagerOrAdmin = ["facility_manager", "admin"].includes(
           userData.role
         );
+
+        await Promise.all([
+          // Only load global stats for Managers/Admins to avoid 403 errors
+          isManagerOrAdmin ? loadStats(userData) : Promise.resolve(),
+          loadRecentIssues(userData),
+          loadHighPriorityIssues(userData),
+          loadAIInsights(userData),
+        ]);
+      } catch (error) {
+        console.error("Error loading dashboard data:", error);
+        toast.error("Failed to load dashboard data");
+      } finally {
+        setIsLoading(false);
       }
-
-      const isManagerOrAdmin = ["facility_manager", "admin"].includes(
-        userData.role
-      );
-
-      await Promise.all([
-        // Only load global stats for Managers/Admins to avoid 403 errors
-        isManagerOrAdmin ? loadStats(userData) : Promise.resolve(),
-
-        loadRecentIssues(userData),
-        loadHighPriorityIssues(userData),
-        loadAIInsights(userData),
-      ]);
-    } catch (error) {
-      console.error("Error loading dashboard data:", error);
-      toast.error("Failed to load dashboard data");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    };
+    checkAuthAndLoadData();
+  }, []);
 
   const loadStats = async (userData: UserData) => {
     try {
@@ -143,6 +148,14 @@ export default function DashboardPage() {
           },
         }
       );
+
+      // Handle invalid/expired token
+      if (response.status === 401) {
+        clearAuthTokens();
+        toast.error("Session expired. Please log in again.");
+        router.push("/login");
+        return;
+      }
 
       if (response.ok) {
         const result = await response.json();
@@ -185,10 +198,7 @@ export default function DashboardPage() {
 
       if (response.status === 401) {
         console.warn("Dashboard: received 401 when fetching recent issues");
-        if (typeof window !== "undefined") {
-          window.localStorage.removeItem("campuscare_token");
-          window.localStorage.removeItem("campuscare_user");
-        }
+        clearAuthTokens();
         toast.error("Session expired — please sign in again");
         router.push("/login");
         return;
@@ -221,10 +231,7 @@ export default function DashboardPage() {
 
       if (response.status === 401) {
         console.warn("Dashboard: received 401 when fetching priority issues");
-        if (typeof window !== "undefined") {
-          window.localStorage.removeItem("campuscare_token");
-          window.localStorage.removeItem("campuscare_user");
-        }
+        clearAuthTokens();
         toast.error("Session expired — please sign in again");
         router.push("/login");
         return;
@@ -250,10 +257,7 @@ export default function DashboardPage() {
 
       if (response.status === 401) {
         console.warn("Dashboard: received 401 when fetching AI insights");
-        if (typeof window !== "undefined") {
-          window.localStorage.removeItem("campuscare_token");
-          window.localStorage.removeItem("campuscare_user");
-        }
+        clearAuthTokens();
         toast.error("Session expired — please sign in again");
         router.push("/login");
         return;

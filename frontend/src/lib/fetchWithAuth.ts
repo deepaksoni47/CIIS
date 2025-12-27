@@ -1,4 +1,5 @@
 import { auth } from "@/lib/firebase";
+import { clearAuthTokens } from "@/lib/tokenManager";
 
 export const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
@@ -64,7 +65,13 @@ export async function fetchWithAuth(
     if (newToken) {
       response = await makeRequest(newToken);
     } else {
-      // If refresh failed, call global handler if present
+      // Token refresh failed - clear stored credentials to prevent redirect loop
+      if (typeof window !== "undefined") {
+        window.localStorage.removeItem("campuscare_token");
+        window.localStorage.removeItem("campuscare_user");
+      }
+
+      // Call global handler if present
       if (
         typeof window !== "undefined" &&
         (window as any).__CAMPUSCARE_HANDLE_TOKEN_EXPIRED
