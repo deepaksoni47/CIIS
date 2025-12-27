@@ -281,12 +281,12 @@ export async function sendWelcomeEmail(user: User): Promise<void> {
         <div class="greeting">Hello ${user.name}! 👋</div>
         
         <p class="intro-text">
-          Thank you for joining the <strong>Campus Infrastructure Intelligence System (CIIS)</strong>. 
+          Thank you for joining the <strong>CampusCare</strong>. 
           We're thrilled to have you as part of our community dedicated to making our campus better!
         </p>
         
         <div class="features">
-          <div class="features-title">🚀 What you can do with CIIS:</div>
+          <div class="features-title">🚀 What you can do with CampusCare:</div>
           <div class="feature-grid">
             <div class="feature-item">
               <div class="feature-icon">🔍</div>
@@ -383,7 +383,7 @@ export async function sendWelcomeEmail(user: User): Promise<void> {
 
   await sendEmail({
     to: user.email,
-    subject: "🎉 Welcome to Campus Infrastructure Intelligence System!",
+    subject: "🎉 Welcome to CampusCare!",
     html,
   });
 }
@@ -816,16 +816,16 @@ export async function sendIssueResolvedEmail(
         
         <div class="signature">
           Best regards,<br>
-          <strong>The CIIS Team</strong> 💚
+          <strong>The CampusCare Team</strong> 💚
         </div>
       </div>
       
       <div class="footer">
         <p class="footer-text">
-          This is an automated message from the Campus Infrastructure Intelligence System
+          This is an automated message from the CampusCare
         </p>
         <p class="footer-text">
-          © ${new Date().getFullYear()} CIIS. All rights reserved.
+          © ${new Date().getFullYear()} CampusCare. All rights reserved.
         </p>
       </div>
     </div>
@@ -1124,16 +1124,16 @@ export async function sendIssueDeletedEmail(
         
         <div class="signature">
           Best regards,<br>
-          <strong>The CIIS Team</strong>
+          <strong>The CampusCare Team</strong>
         </div>
       </div>
       
       <div class="footer">
         <p class="footer-text">
-          This is an automated message from the Campus Infrastructure Intelligence System
+          This is an automated message from the CampusCare
         </p>
         <p class="footer-text">
-          © ${new Date().getFullYear()} CIIS. All rights reserved.
+          © ${new Date().getFullYear()} CampusCare. All rights reserved.
         </p>
       </div>
     </div>

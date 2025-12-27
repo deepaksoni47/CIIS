@@ -42,9 +42,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="border-t border-white/5 py-12 px-6">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-white/40 text-sm">
-            © 2025 Campus Infrastructure Intelligence System
-          </p>
+          <p className="text-white/40 text-sm">© 2025 CampusCare</p>
           <div className="flex gap-6 text-sm text-white/40">
             <a href="#" className="hover:text-white transition-colors">
               Privacy

@@ -8,7 +8,7 @@ import toast from "react-hot-toast";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
-  "https://ciis-production-ebbd.up.railway.app";
+  "https://campuscare-production-ebbd.up.railway.app";
 
 const CATEGORIES = [
   "Structural",
@@ -90,11 +90,11 @@ export default function ReportPage() {
   const checkAuth = () => {
     const token =
       typeof window !== "undefined"
-        ? window.localStorage.getItem("ciis_token")
+        ? window.localStorage.getItem("campuscare_token")
         : null;
     const userStr =
       typeof window !== "undefined"
-        ? window.localStorage.getItem("ciis_user")
+        ? window.localStorage.getItem("campuscare_user")
         : null;
 
     if (!token || !userStr) {
@@ -206,7 +206,7 @@ export default function ReportPage() {
   const analyzeImageWithAI = async (imageFile: File) => {
     setIsAnalyzingImage(true);
     try {
-      const token = window.localStorage.getItem("ciis_token");
+      const token = window.localStorage.getItem("campuscare_token");
 
       // First upload the image to get a URL
       const uploadFormData = new FormData();
@@ -506,7 +506,7 @@ export default function ReportPage() {
   const processTranscriptWithAI = async (transcript: string) => {
     setIsProcessingVoice(true);
     try {
-      const token = window.localStorage.getItem("ciis_token");
+      const token = window.localStorage.getItem("campuscare_token");
 
       // Use the classify-text endpoint instead of process-voice
       const response = await fetch(`${API_BASE_URL}/api/ai/classify-text`, {
@@ -557,7 +557,7 @@ export default function ReportPage() {
   const sendAudioToServer = async (blob: Blob) => {
     setIsProcessingVoice(true);
     try {
-      const token = window.localStorage.getItem("ciis_token");
+      const token = window.localStorage.getItem("campuscare_token");
       // Convert blob to base64
       const base64 = await new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
@@ -632,7 +632,7 @@ export default function ReportPage() {
   const uploadImages = async (): Promise<string[]> => {
     if (imageFiles.length === 0) return [];
 
-    const token = window.localStorage.getItem("ciis_token");
+    const token = window.localStorage.getItem("campuscare_token");
     const uploadedUrls: string[] = [];
 
     try {
@@ -709,14 +709,14 @@ export default function ReportPage() {
     setIsSubmitting(true);
 
     try {
-      let token = window.localStorage.getItem("ciis_token");
+      let token = window.localStorage.getItem("campuscare_token");
 
       // Refresh token if possible
       if (auth.currentUser) {
         try {
           token = await auth.currentUser.getIdToken();
           // Update local storage
-          window.localStorage.setItem("ciis_token", token);
+          window.localStorage.setItem("campuscare_token", token);
         } catch (e) {
           console.error("Token refresh failed", e);
         }

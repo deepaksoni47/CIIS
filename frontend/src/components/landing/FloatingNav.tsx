@@ -9,7 +9,7 @@ import { auth } from "@/lib/firebase";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
-  "https://ciis-production-ebbd.up.railway.app";
+  "https://campuscare-production-ebbd.up.railway.app";
 
 export function FloatingNav() {
   const router = useRouter();
@@ -26,8 +26,8 @@ export function FloatingNav() {
   useEffect(() => {
     const checkAuth = () => {
       if (typeof window !== "undefined") {
-        const token = window.localStorage.getItem("ciis_token");
-        const userStr = window.localStorage.getItem("ciis_user");
+        const token = window.localStorage.getItem("campuscare_token");
+        const userStr = window.localStorage.getItem("campuscare_user");
 
         if (token) {
           setIsLoggedIn(true);
@@ -54,10 +54,10 @@ export function FloatingNav() {
     // Listen for storage changes (e.g., login/logout from another tab)
     window.addEventListener("storage", checkAuth);
     // Listen for custom auth change event dispatched in the same tab
-    window.addEventListener("ciis_auth_changed", checkAuth);
+    window.addEventListener("campuscare_auth_changed", checkAuth);
     return () => {
       window.removeEventListener("storage", checkAuth);
-      window.removeEventListener("ciis_auth_changed", checkAuth);
+      window.removeEventListener("campuscare_auth_changed", checkAuth);
     };
   }, []);
 
@@ -72,7 +72,7 @@ export function FloatingNav() {
   const handleLogout = async () => {
     try {
       // Get token for backend logout call
-      const token = window.localStorage.getItem("ciis_token");
+      const token = window.localStorage.getItem("campuscare_token");
 
       // Call backend logout endpoint (optional, but good practice)
       if (token) {
@@ -103,8 +103,8 @@ export function FloatingNav() {
 
       // Clear local storage
       if (typeof window !== "undefined") {
-        window.localStorage.removeItem("ciis_token");
-        window.localStorage.removeItem("ciis_user");
+        window.localStorage.removeItem("campuscare_token");
+        window.localStorage.removeItem("campuscare_user");
       }
 
       // Update state
@@ -120,8 +120,8 @@ export function FloatingNav() {
       console.error("Logout error:", error);
       // Even if there's an error, clear local storage and redirect
       if (typeof window !== "undefined") {
-        window.localStorage.removeItem("ciis_token");
-        window.localStorage.removeItem("ciis_user");
+        window.localStorage.removeItem("campuscare_token");
+        window.localStorage.removeItem("campuscare_user");
       }
       setIsLoggedIn(false);
       setUserName(null);
@@ -148,7 +148,7 @@ export function FloatingNav() {
           <div className="w-7 h-7 md:w-8 md:h-8 relative rounded-lg overflow-hidden">
             <Image
               src="/logo.png"
-              alt="CIIS"
+              alt="CampusCare"
               fill={false}
               width={32}
               height={32}
@@ -156,8 +156,9 @@ export function FloatingNav() {
             />
           </div>
           <div className="hidden sm:flex items-center gap-2">
-            <span className="font-bold text-white text-sm md:text-base">
-              CIIS
+            <span className="font-bold text-sm md:text-base">
+              <span className="text-blue-400">Campus</span>
+              <span className="text-green-400">Care</span>
             </span>
             <div className="w-px h-6 bg-white/10" />
             <div className="w-px h-6 bg-white/7" />

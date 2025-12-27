@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 
-const LS_KEY = "ciis_curtain_loader_seen";
+const LS_KEY = "campuscare_curtain_loader_seen";
 
 export function CurtainLoader({ logo }: { logo?: React.ReactNode }) {
   const [show, setShow] = useState(false);

@@ -221,20 +221,37 @@ export async function getIssues(filters: {
   }
 
   // If client requested a limit, try to apply server-side ordering and limit to reduce reads
+  // Note: When filtering by reportedBy, we can't use orderBy due to composite index requirements
   let firestoreQuery: any = query;
+  let needsClientSideSorting = false;
   const MAX_LIMIT = 500; // safety cap
   const requestedLimit = Math.min(MAX_LIMIT, filters.limit || 0);
   if (requestedLimit > 0) {
-    try {
-      firestoreQuery = query
-        .orderBy("createdAt", "desc")
-        .limit(requestedLimit + (filters.offset || 0));
-    } catch (err: any) {
-      console.warn(
-        "Could not apply server-side order/limit, falling back to full scan:",
-        err?.message || err
-      );
-      firestoreQuery = query;
+    // Check if we have filters that would require composite indexes for ordering
+    const hasCompositeFilter =
+      filters.reportedBy ||
+      filters.assignedTo ||
+      filters.buildingId ||
+      filters.departmentId ||
+      filters.roomId;
+
+    if (!hasCompositeFilter) {
+      try {
+        firestoreQuery = query
+          .orderBy("createdAt", "desc")
+          .limit(requestedLimit + (filters.offset || 0));
+      } catch (err: any) {
+        console.warn(
+          "Could not apply server-side order/limit, falling back to full scan:",
+          err?.message || err
+        );
+        firestoreQuery = query;
+        needsClientSideSorting = true;
+      }
+    } else {
+      // For composite queries, we'll sort client-side
+      firestoreQuery = query.limit(requestedLimit + (filters.offset || 0));
+      needsClientSideSorting = true;
     }
   }
 
@@ -247,17 +264,13 @@ export async function getIssues(filters: {
     ...doc.data(),
   }));
 
-  // If we applied server-side orderBy with desc, the results are recent-first already; otherwise, sort in memory.
-  if (!requestedLimit) {
-    // Sort by createdAt descending
+  // Sort issues by createdAt descending if not already sorted server-side
+  if (!requestedLimit || needsClientSideSorting) {
     issues.sort((a, b) => {
       const aTime = (a.createdAt as any)?.seconds || 0;
       const bTime = (b.createdAt as any)?.seconds || 0;
       return bTime - aTime;
     });
-  } else {
-    // If we used server-side limit, ensure the slice we're returning respects offset/limit
-    // snapshot contains at most offset+limit results; slice accordingly
   }
 
   const total = issues.length;

@@ -43,8 +43,8 @@ export default function SecurityPage() {
             </span>
           </h1>
           <p className="text-lg text-white/50 max-w-2xl mx-auto leading-relaxed">
-            CIIS implements a multi-layered security architecture designed to
-            protect campus infrastructure data through rigorous validation,
+            CampusCare implements a multi-layered security architecture designed
+            to protect campus infrastructure data through rigorous validation,
             real-time monitoring, and proactive attack prevention.
           </p>
         </motion.div>

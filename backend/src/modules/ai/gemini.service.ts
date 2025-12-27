@@ -493,7 +493,7 @@ export async function classifyIssueFromText(
   urgency: string;
   estimatedResolutionTime: string;
 }> {
-  const prompt = `You are an AI assistant for a Campus Infrastructure Intelligence System. Analyze this issue report and extract structured information.
+  const prompt = `You are an AI assistant for a CampusCare. Analyze this issue report and extract structured information.
 
 User Input: "${textInput}"
 

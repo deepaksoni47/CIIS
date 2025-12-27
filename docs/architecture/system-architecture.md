@@ -1,8 +1,8 @@
-# CIIS System Architecture
+# CampusCare System Architecture
 
 ## Overview
 
-The Campus Infrastructure Intelligence System (CIIS) follows a modern cloud-native architecture designed for scalability, maintainability, and real-time performance.
+The CampusCare follows a modern cloud-native architecture designed for scalability, maintainability, and real-time performance.
 
 ## Architecture Layers
 

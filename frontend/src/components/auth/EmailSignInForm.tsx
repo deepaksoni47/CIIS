@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
-  "https://ciis-production-ebbd.up.railway.app";
+  "https://campuscare-production-ebbd.up.railway.app";
 
 interface EmailSignInFormProps {
   organizationId?: string;
@@ -64,9 +64,9 @@ export function EmailSignInForm({
       // (require them to sign in explicitly).
       if (isLogin) {
         if (typeof window !== "undefined") {
-          window.localStorage.setItem("ciis_token", data.data.token);
+          window.localStorage.setItem("campuscare_token", data.data.token);
           window.localStorage.setItem(
-            "ciis_user",
+            "campuscare_user",
             JSON.stringify(data.data.user)
           );
         }
@@ -74,7 +74,7 @@ export function EmailSignInForm({
         // Redirect to dashboard
         // Notify other components in this tab about auth change
         try {
-          window.dispatchEvent(new Event("ciis_auth_changed"));
+          window.dispatchEvent(new Event("campuscare_auth_changed"));
         } catch (_) {
           /* ignore */
         }

@@ -1,4 +1,4 @@
--- CIIS Database Schema
+-- CampusCare Database Schema
 -- PostgreSQL with PostGIS Extension
 
 -- Enable PostGIS extension

@@ -35,8 +35,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Load user from localStorage
     if (typeof window !== "undefined") {
-      const token = localStorage.getItem("ciis_token");
-      const userStr = localStorage.getItem("ciis_user");
+      const token = localStorage.getItem("campuscare_token");
+      const userStr = localStorage.getItem("campuscare_user");
 
       if (token && userStr) {
         try {
@@ -44,8 +44,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(userData);
         } catch (error) {
           console.error("Failed to parse user data:", error);
-          localStorage.removeItem("ciis_token");
-          localStorage.removeItem("ciis_user");
+          localStorage.removeItem("campuscare_token");
+          localStorage.removeItem("campuscare_user");
         }
       }
       setLoading(false);
@@ -53,8 +53,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const logout = () => {
-    localStorage.removeItem("ciis_token");
-    localStorage.removeItem("ciis_user");
+    localStorage.removeItem("campuscare_token");
+    localStorage.removeItem("campuscare_user");
     setUser(null);
     router.push("/login");
   };

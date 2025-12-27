@@ -1,4 +1,4 @@
-# Railway configuration for CIIS Backend
+# Railway configuration for CampusCare Backend
 # This file tells Railway to build and run the backend folder
 
 [build]

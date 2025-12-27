@@ -26,7 +26,7 @@ import {
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
-  "https://ciis-production-ebbd.up.railway.app";
+  "https://campuscare-production-ebbd.up.railway.app";
 
 // Category configurations from Priority Engine
 const CATEGORIES = [
@@ -152,7 +152,7 @@ export default function PriorityPage() {
   const checkAuth = () => {
     const token =
       typeof window !== "undefined"
-        ? window.localStorage.getItem("ciis_token")
+        ? window.localStorage.getItem("campuscare_token")
         : null;
 
     if (!token) {
@@ -166,7 +166,7 @@ export default function PriorityPage() {
   const handleCalculate = async () => {
     setIsSubmitting(true);
     try {
-      let token = window.localStorage.getItem("ciis_token");
+      let token = window.localStorage.getItem("campuscare_token");
 
       if (auth.currentUser) {
         try {
@@ -230,7 +230,7 @@ export default function PriorityPage() {
 
   const loadScenarios = async () => {
     try {
-      let token = window.localStorage.getItem("ciis_token");
+      let token = window.localStorage.getItem("campuscare_token");
 
       if (auth.currentUser) {
         token = await auth.currentUser.getIdToken();
@@ -270,8 +270,8 @@ export default function PriorityPage() {
   const loadIssues = async () => {
     setIsLoadingIssues(true);
     try {
-      let token = window.localStorage.getItem("ciis_token");
-      const userStr = window.localStorage.getItem("ciis_user");
+      let token = window.localStorage.getItem("campuscare_token");
+      const userStr = window.localStorage.getItem("campuscare_user");
 
       if (!userStr) {
         toast.error("User data not found. Please log in again.");

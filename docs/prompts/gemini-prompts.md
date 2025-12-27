@@ -1,4 +1,4 @@
-# Gemini API Prompts for CIIS
+# Gemini API Prompts for CampusCare
 
 This document contains the prompt templates used for interacting with the Google Gemini API for generating insights, reports, and recommendations.
 

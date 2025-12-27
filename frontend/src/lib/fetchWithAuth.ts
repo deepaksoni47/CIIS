@@ -5,7 +5,7 @@ export const API_BASE_URL =
 
 function getAuthToken(): string | null {
   if (typeof window === "undefined") return null;
-  return localStorage.getItem("ciis_token");
+  return localStorage.getItem("campuscare_token");
 }
 
 async function tryRefreshToken(): Promise<string | null> {
@@ -14,11 +14,11 @@ async function tryRefreshToken(): Promise<string | null> {
     if (auth && auth.currentUser) {
       const newToken = await auth.currentUser.getIdToken(true);
       if (newToken) {
-        localStorage.setItem("ciis_token", newToken);
+        localStorage.setItem("campuscare_token", newToken);
         // Notify listeners that token refreshed
         try {
           window.dispatchEvent(
-            new CustomEvent("ciis:token_refreshed", {
+            new CustomEvent("campuscare:token_refreshed", {
               detail: { token: newToken },
             })
           );
@@ -67,10 +67,10 @@ export async function fetchWithAuth(
       // If refresh failed, call global handler if present
       if (
         typeof window !== "undefined" &&
-        (window as any).__CIIS_HANDLE_TOKEN_EXPIRED
+        (window as any).__CAMPUSCARE_HANDLE_TOKEN_EXPIRED
       ) {
         try {
-          (window as any).__CIIS_HANDLE_TOKEN_EXPIRED();
+          (window as any).__CAMPUSCARE_HANDLE_TOKEN_EXPIRED();
         } catch (e) {}
       }
     }

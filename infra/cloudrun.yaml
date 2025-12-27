@@ -1,9 +1,9 @@
 apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
-  name: ciis-backend
+  name: campuscare-backend
   labels:
-    app: ciis
+    app: campuscare
     component: backend
 spec:
   template:
@@ -16,7 +16,7 @@ spec:
       containerConcurrency: 80
       timeoutSeconds: 300
       containers:
-        - image: gcr.io/PROJECT_ID/ciis-backend:latest
+        - image: gcr.io/PROJECT_ID/campuscare-backend:latest
           ports:
             - name: http1
               containerPort: 3000
@@ -28,17 +28,17 @@ spec:
             - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:
-                  name: ciis-secrets
+                  name: campuscare-secrets
                   key: database-url
             - name: GOOGLE_CLOUD_PROJECT_ID
               valueFrom:
                 secretKeyRef:
-                  name: ciis-secrets
+                  name: campuscare-secrets
                   key: project-id
             - name: GOOGLE_GEMINI_API_KEY
               valueFrom:
                 secretKeyRef:
-                  name: ciis-secrets
+                  name: campuscare-secrets
                   key: gemini-api-key
           resources:
             limits:

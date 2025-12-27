@@ -1,7 +1,7 @@
 {
-  "name": "ciis-backend",
+  "name": "campuscare-backend",
   "version": "1.0.0",
-  "description": "Campus Infrastructure Intelligence System - Backend API",
+  "description": "CampusCare - Backend API",
   "main": "dist/server.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
@@ -27,7 +27,7 @@
     "campus-management",
     "ai-insights"
   ],
-  "author": "CIIS Team",
+  "author": "CampusCare Team",
   "license": "MIT",
   "dependencies": {
     "@getbrevo/brevo": "^3.0.1",

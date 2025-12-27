@@ -1,4 +1,4 @@
-# CIIS Database Architecture - Multi-Tenancy Design
+# CampusCare Database Architecture - Multi-Tenancy Design
 
 ## Overview
 

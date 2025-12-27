@@ -66,7 +66,7 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
   : [
       "http://localhost:3000",
       "http://localhost:3001",
-      "https://ciis-innovex.vercel.app",
+      "https://campuscare-innovex.vercel.app",
     ];
 
 app.use(
@@ -137,7 +137,7 @@ app.get("/health", (_req: Request, res: Response) => {
 // API routes
 app.get("/api", (_req: Request, res: Response) => {
   res.json({
-    message: "Campus Infrastructure Intelligence System API",
+    message: "CampusCare API",
     version: "1.0.0",
     endpoints: {
       health: "/health",
@@ -204,7 +204,7 @@ app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
 // Start server
 httpServer.listen(PORT, () => {
   console.log(`
-🚀 CIIS Backend Server Started
+🚀 CampusCare Backend Server Started
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📍 Server:      http://localhost:${PORT}
 🏥 Health:      http://localhost:${PORT}/health

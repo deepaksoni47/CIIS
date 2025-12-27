@@ -23,7 +23,7 @@ const DynamicHeatmapContainer = dynamic(
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
-  "https://ciis-production-ebbd.up.railway.app";
+  "https://campuscare-production-ebbd.up.railway.app";
 
 interface HeatmapPoint {
   lat: number;
@@ -249,7 +249,7 @@ export default function HeatmapPage() {
       }
 
       // Get user data for organizationId
-      const userDataStr = localStorage.getItem("ciis_user");
+      const userDataStr = localStorage.getItem("campuscare_user");
       if (!userDataStr) {
         throw new Error("No user data found. Please log in again.");
       }
@@ -421,7 +421,7 @@ export default function HeatmapPage() {
       const token = getToken();
       if (!token) return;
 
-      const userDataStr = localStorage.getItem("ciis_user");
+      const userDataStr = localStorage.getItem("campuscare_user");
       if (!userDataStr) return;
       const userData = JSON.parse(userDataStr);
       const organizationId = userData.organizationId;

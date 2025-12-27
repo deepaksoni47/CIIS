@@ -1,6 +1,6 @@
 {
-  "name": "CIIS - Campus Infrastructure Intelligence System",
-  "short_name": "CIIS",
+  "name": "CampusCare",
+  "short_name": "CampusCare",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

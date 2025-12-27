@@ -1,4 +1,4 @@
-# CIIS Project Setup - Getting Started Guide
+# CampusCare Project Setup - Getting Started Guide
 
 ## Quick Start
 
@@ -16,7 +16,7 @@ Ensure you have the following installed:
 ```powershell
 # Clone the repository
 git clone <your-repo-url>
-cd CIIS
+cd campuscare
 
 # Copy environment variables
 cp .env.example .env
@@ -83,7 +83,7 @@ npm run dev
 - **Frontend**: http://localhost:5173
 - **Backend API**: http://localhost:3000
 - **API Health Check**: http://localhost:3000/health
-- **pgAdmin**: http://localhost:5050 (admin@ciis.local / admin)
+- **pgAdmin**: http://localhost:5050 (admin@campuscare.local / admin)
 
 ## Next Steps
 

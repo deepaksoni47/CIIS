@@ -16,7 +16,7 @@ export function useAuth() {
     // Check for stored user data
     const userStr =
       typeof window !== "undefined"
-        ? window.localStorage.getItem("ciis_user")
+        ? window.localStorage.getItem("campuscare_user")
         : null;
 
     if (userStr) {

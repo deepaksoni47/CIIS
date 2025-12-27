@@ -1,7 +1,7 @@
 {
-  "name": "ciis-frontend",
-  "version": "1.0.0",
-  "description": "Campus Infrastructure Intelligence System - Frontend Application",
+  "name": "campuscare-frontend",
+  "version": "0.1.0",
+  "description": "CampusCare - Frontend Application",
   "private": true,
   "npmConfig": {
     "legacy-peer-deps": "true"

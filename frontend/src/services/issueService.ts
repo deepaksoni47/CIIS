@@ -10,7 +10,7 @@ const API_BASE_URL =
  */
 function getAuthToken(): string | null {
   if (typeof window === "undefined") return null;
-  return localStorage.getItem("ciis_token");
+  return localStorage.getItem("campuscare_token");
 }
 
 /**

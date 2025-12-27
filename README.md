@@ -1,8 +1,8 @@
 <div align="center">
 
-<img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=32&duration=2800&pause=2000&color=4285F4&center=true&vCenter=true&width=940&lines=Campus+Infrastructure+Intelligence+System;AI-Powered+Smart+Campus+Management;Real-Time+Heatmaps+%26+Predictive+Analytics" alt="Typing SVG" />
+<img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=32&duration=2800&pause=2000&color=4285F4&center=true&vCenter=true&width=940&lines=CampusCare;AI-Powered+Smart+Campus+Management;Real-Time+Heatmaps+%26+Predictive+Analytics" alt="Typing SVG" />
 
-# 🏛️ CIIS
+# 🏛️ CampusCare
 
 ### _Smart Campus Infrastructure with Real-Time Heatmaps, AI Insights & Community Rewards_
 
@@ -72,7 +72,7 @@ Most campuses rely on scattered complaint emails, phone calls, or paper forms. T
 
 ## 💡 Our Solution
 
-**CIIS transforms scattered complaints into actionable intelligence.**
+**CampusCare transforms scattered complaints into actionable intelligence.**
 
 We combine **real-time geospatial visualization**, **AI-powered insights**, and **community engagement** to help campuses shift from reactive firefighting to data-driven infrastructure planning.
 
@@ -745,7 +745,7 @@ NEXT_PUBLIC_FIREBASE_CONFIG='{"apiKey":"...","authDomain":"...",...}'
 ## 📁 Project Structure
 
 ```
-ciis/
+campuscare/
 ├── 📄 README.md                    # You are here!
 ├── 🐳 docker-compose.yml           # Multi-service orchestration
 ├── 📚 docs/                        # Comprehensive documentation
@@ -826,7 +826,7 @@ npm test
 ```powershell
 # Build and deploy
 cd backend
-gcloud run deploy ciis-backend \
+gcloud run deploy campuscare-backend \
   --source . \
   --platform managed \
   --region us-central1 \
@@ -1102,6 +1102,6 @@ Free, unlimited map tiles with no API key required
 
 ---
 
-**© 2025 CIIS Team | MIT License**
+**© 2025 CampusCare Team | MIT License**
 
 </div>

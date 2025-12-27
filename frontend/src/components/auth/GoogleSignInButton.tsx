@@ -7,7 +7,7 @@ import { auth, googleProvider } from "@/lib/firebase";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
-  "https://ciis-production-ebbd.up.railway.app";
+  "https://campuscare-production-ebbd.up.railway.app";
 
 interface GoogleSignInButtonProps {
   organizationId?: string;
@@ -60,14 +60,14 @@ export function GoogleSignInButton({
 
       // 4. Store user + token (backend echoes the Firebase ID token)
       if (typeof window !== "undefined") {
-        window.localStorage.setItem("ciis_token", data.data.token);
+        window.localStorage.setItem("campuscare_token", data.data.token);
         window.localStorage.setItem(
-          "ciis_user",
+          "campuscare_user",
           JSON.stringify(data.data.user)
         );
         // Notify other components in this tab about auth change
         try {
-          window.dispatchEvent(new Event("ciis_auth_changed"));
+          window.dispatchEvent(new Event("campuscare_auth_changed"));
         } catch (_) {
           /* ignore */
         }

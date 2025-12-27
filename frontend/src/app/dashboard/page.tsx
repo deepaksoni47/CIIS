@@ -14,7 +14,7 @@ import {
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
-  "https://ciis-production-ebbd.up.railway.app";
+  "https://campuscare-production-ebbd.up.railway.app";
 
 // --- Types ---
 interface Issue {
@@ -74,11 +74,11 @@ export default function DashboardPage() {
   const checkAuthAndLoadData = async () => {
     const token =
       typeof window !== "undefined"
-        ? window.localStorage.getItem("ciis_token")
+        ? window.localStorage.getItem("campuscare_token")
         : null;
     const userStr =
       typeof window !== "undefined"
-        ? window.localStorage.getItem("ciis_user")
+        ? window.localStorage.getItem("campuscare_user")
         : null;
 
     // Prevent redirect loop and multiple toasts
@@ -102,7 +102,7 @@ export default function DashboardPage() {
 
       // Debug: show whether a token exists and the user's role (do not print token)
       if (typeof window !== "undefined") {
-        const t = window.localStorage.getItem("ciis_token");
+        const t = window.localStorage.getItem("campuscare_token");
         console.debug(
           "Dashboard: token present=",
           !!t,
@@ -133,7 +133,7 @@ export default function DashboardPage() {
 
   const loadStats = async (userData: UserData) => {
     try {
-      const token = window.localStorage.getItem("ciis_token");
+      const token = window.localStorage.getItem("campuscare_token");
       const response = await fetch(
         `${API_BASE_URL}/api/issues/stats?organizationId=${userData.organizationId || "ggv-bilaspur"}`,
         {
@@ -167,7 +167,7 @@ export default function DashboardPage() {
 
   const loadRecentIssues = async (userData: UserData) => {
     try {
-      const token = window.localStorage.getItem("ciis_token");
+      const token = window.localStorage.getItem("campuscare_token");
 
       // Filter logic: Students see only their issues, Managers see all
       let query = `organizationId=${userData.organizationId || "ggv-bilaspur"}&limit=5`;
@@ -186,8 +186,8 @@ export default function DashboardPage() {
       if (response.status === 401) {
         console.warn("Dashboard: received 401 when fetching recent issues");
         if (typeof window !== "undefined") {
-          window.localStorage.removeItem("ciis_token");
-          window.localStorage.removeItem("ciis_user");
+          window.localStorage.removeItem("campuscare_token");
+          window.localStorage.removeItem("campuscare_user");
         }
         toast.error("Session expired — please sign in again");
         router.push("/login");
@@ -211,7 +211,7 @@ export default function DashboardPage() {
 
   const loadHighPriorityIssues = async (userData: UserData) => {
     try {
-      const token = window.localStorage.getItem("ciis_token");
+      const token = window.localStorage.getItem("campuscare_token");
       const response = await fetch(
         `${API_BASE_URL}/api/issues/priorities?organizationId=${userData.organizationId || "ggv-bilaspur"}`,
         {
@@ -222,8 +222,8 @@ export default function DashboardPage() {
       if (response.status === 401) {
         console.warn("Dashboard: received 401 when fetching priority issues");
         if (typeof window !== "undefined") {
-          window.localStorage.removeItem("ciis_token");
-          window.localStorage.removeItem("ciis_user");
+          window.localStorage.removeItem("campuscare_token");
+          window.localStorage.removeItem("campuscare_user");
         }
         toast.error("Session expired — please sign in again");
         router.push("/login");
@@ -243,7 +243,7 @@ export default function DashboardPage() {
 
   const loadAIInsights = async (userData: UserData) => {
     try {
-      const token = window.localStorage.getItem("ciis_token");
+      const token = window.localStorage.getItem("campuscare_token");
       const response = await fetch(`${API_BASE_URL}/api/ai/insights`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -251,8 +251,8 @@ export default function DashboardPage() {
       if (response.status === 401) {
         console.warn("Dashboard: received 401 when fetching AI insights");
         if (typeof window !== "undefined") {
-          window.localStorage.removeItem("ciis_token");
-          window.localStorage.removeItem("ciis_user");
+          window.localStorage.removeItem("campuscare_token");
+          window.localStorage.removeItem("campuscare_user");
         }
         toast.error("Session expired — please sign in again");
         router.push("/login");

@@ -39,7 +39,7 @@ export default function UserPreferences({
     setSuccess(null);
 
     try {
-      const token = localStorage.getItem("ciis_token");
+      const token = localStorage.getItem("campuscare_token");
       const API_BASE_URL =
         process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
 

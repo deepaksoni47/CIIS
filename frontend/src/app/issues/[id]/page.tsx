@@ -10,7 +10,7 @@ import { VoteButton, VoteCount } from "@/components/voting/VoteButton";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
-  "https://ciis-production-ebbd.up.railway.app";
+  "https://campuscare-production-ebbd.up.railway.app";
 
 interface Issue {
   id: string;
@@ -103,7 +103,7 @@ export default function IssueDetailPage() {
   const checkAuth = () => {
     const userStr =
       typeof window !== "undefined"
-        ? window.localStorage.getItem("ciis_user")
+        ? window.localStorage.getItem("campuscare_user")
         : null;
 
     if (!userStr) {
@@ -124,7 +124,7 @@ export default function IssueDetailPage() {
   const fetchIssueDetails = async () => {
     setIsLoading(true);
     try {
-      let token = window.localStorage.getItem("ciis_token");
+      let token = window.localStorage.getItem("campuscare_token");
 
       if (auth.currentUser) {
         token = await auth.currentUser.getIdToken();
@@ -138,8 +138,8 @@ export default function IssueDetailPage() {
 
       if (response.status === 401) {
         toast.error("Session expired. Please log in again.");
-        localStorage.removeItem("ciis_token");
-        localStorage.removeItem("ciis_user");
+        localStorage.removeItem("campuscare_token");
+        localStorage.removeItem("campuscare_user");
         router.push("/login");
         return;
       }
@@ -163,7 +163,7 @@ export default function IssueDetailPage() {
 
   const fetchIssueHistory = async () => {
     try {
-      let token = window.localStorage.getItem("ciis_token");
+      let token = window.localStorage.getItem("campuscare_token");
 
       if (auth.currentUser) {
         token = await auth.currentUser.getIdToken();
@@ -180,8 +180,8 @@ export default function IssueDetailPage() {
 
       if (response.status === 401) {
         toast.error("Session expired. Please log in again.");
-        localStorage.removeItem("ciis_token");
-        localStorage.removeItem("ciis_user");
+        localStorage.removeItem("campuscare_token");
+        localStorage.removeItem("campuscare_user");
         router.push("/login");
         return;
       }
@@ -203,7 +203,7 @@ export default function IssueDetailPage() {
 
     setIsUpdating(true);
     try {
-      let token = window.localStorage.getItem("ciis_token");
+      let token = window.localStorage.getItem("campuscare_token");
 
       if (auth.currentUser) {
         token = await auth.currentUser.getIdToken();
@@ -229,8 +229,8 @@ export default function IssueDetailPage() {
 
       if (response.status === 401) {
         toast.error("Session expired. Please log in again.");
-        localStorage.removeItem("ciis_token");
-        localStorage.removeItem("ciis_user");
+        localStorage.removeItem("campuscare_token");
+        localStorage.removeItem("campuscare_user");
         router.push("/login");
         return;
       }
@@ -262,7 +262,7 @@ export default function IssueDetailPage() {
 
     setIsUpdating(true);
     try {
-      let token = window.localStorage.getItem("ciis_token");
+      let token = window.localStorage.getItem("campuscare_token");
 
       if (auth.currentUser) {
         token = await auth.currentUser.getIdToken();
@@ -284,8 +284,8 @@ export default function IssueDetailPage() {
 
       if (response.status === 401) {
         toast.error("Session expired. Please log in again.");
-        localStorage.removeItem("ciis_token");
-        localStorage.removeItem("ciis_user");
+        localStorage.removeItem("campuscare_token");
+        localStorage.removeItem("campuscare_user");
         router.push("/login");
         return;
       }
@@ -310,7 +310,7 @@ export default function IssueDetailPage() {
   const handleDelete = async () => {
     setIsUpdating(true);
     try {
-      let token = window.localStorage.getItem("ciis_token");
+      let token = window.localStorage.getItem("campuscare_token");
 
       if (auth.currentUser) {
         token = await auth.currentUser.getIdToken();
@@ -329,8 +329,8 @@ export default function IssueDetailPage() {
 
       if (response.status === 401) {
         toast.error("Session expired. Please log in again.");
-        localStorage.removeItem("ciis_token");
-        localStorage.removeItem("ciis_user");
+        localStorage.removeItem("campuscare_token");
+        localStorage.removeItem("campuscare_user");
         router.push("/login");
         return;
       }

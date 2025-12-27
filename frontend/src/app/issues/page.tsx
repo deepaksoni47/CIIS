@@ -56,7 +56,7 @@ export default function IssuesPage() {
   useEffect(() => {
     const userStr =
       typeof window !== "undefined"
-        ? window.localStorage.getItem("ciis_user")
+        ? window.localStorage.getItem("campuscare_user")
         : null;
     if (userStr) {
       const userData = JSON.parse(userStr);
@@ -77,7 +77,7 @@ export default function IssuesPage() {
 
       try {
         setIsLoading(true);
-        const token = window.localStorage.getItem("ciis_token");
+        const token = window.localStorage.getItem("campuscare_token");
 
         // Build Query String
         const offset = isLoadMore ? issues.length : 0;
@@ -92,9 +92,6 @@ export default function IssuesPage() {
         if (filterPriority !== "all")
           queryParams.append("priority", filterPriority.toUpperCase());
         if (showMyIssuesOnly) queryParams.append("reportedBy", user.id);
-
-        // Note: Backend might need a specific 'search' param implementation or we filter client-side for text
-        // For now, let's assume we filter text client-side or backend has basic support
 
         const response = await fetch(
           `${API_BASE_URL}/api/issues?${queryParams.toString()}`,
@@ -148,7 +145,7 @@ export default function IssuesPage() {
       return;
 
     setIsDeleting(issueId);
-    const token = window.localStorage.getItem("ciis_token");
+    const token = window.localStorage.getItem("campuscare_token");
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/issues/${issueId}`, {

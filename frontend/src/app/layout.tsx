@@ -12,7 +12,7 @@ import "@/styles/noise.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "CIIS - Campus Infrastructure Intelligence System",
+  title: "CampusCare",
   description:
     "Data-driven, geospatial, and AI-assisted platform for proactive campus infrastructure management",
   keywords: ["campus", "infrastructure", "AI", "geospatial", "management"],
@@ -23,17 +23,17 @@ export const metadata: Metadata = {
     apple: "/logo.png",
   },
   openGraph: {
-    title: "CIIS - Campus Infrastructure Intelligence System",
+    title: "CampusCare",
     description:
       "Data-driven, geospatial, and AI-assisted platform for proactive campus infrastructure management",
     url: "https://your-domain.example", // replace with production URL
-    siteName: "CIIS",
+    siteName: "CampusCare",
     images: [
       {
         url: "/logo.png",
         width: 1200,
         height: 630,
-        alt: "CIIS Logo",
+        alt: "CampusCare Logo",
       },
     ],
     locale: "en_US",
@@ -41,7 +41,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "CIIS - Campus Infrastructure Intelligence System",
+    title: "CampusCare",
     description:
       "Data-driven, geospatial, and AI-assisted platform for proactive campus infrastructure management",
     images: ["/logo.png"],
@@ -73,7 +73,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className} suppressHydrationWarning>
         <CurtainLoader
-          logo={<img src="/logo.png" alt="CIIS" className="w-7 h-7" />}
+          logo={<img src="/logo.png" alt="CampusCare" className="w-7 h-7" />}
         />
         <div className="noise-overlay" aria-hidden="true" />
         <AuthProvider>

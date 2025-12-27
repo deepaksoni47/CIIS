@@ -17,7 +17,7 @@ export function useAuth() {
       if (user) {
         const newToken = await user.getIdToken(true);
         if (typeof window !== "undefined") {
-          window.localStorage.setItem("ciis_token", newToken);
+          window.localStorage.setItem("campuscare_token", newToken);
         }
         return newToken;
       }
@@ -34,8 +34,8 @@ export function useAuth() {
     try {
       await auth.signOut();
       if (typeof window !== "undefined") {
-        window.localStorage.removeItem("ciis_token");
-        window.localStorage.removeItem("ciis_user");
+        window.localStorage.removeItem("campuscare_token");
+        window.localStorage.removeItem("campuscare_user");
       }
       router.push("/login");
     } catch (error) {
@@ -48,7 +48,7 @@ export function useAuth() {
    */
   const getUser = useCallback(() => {
     if (typeof window !== "undefined") {
-      const userStr = window.localStorage.getItem("ciis_user");
+      const userStr = window.localStorage.getItem("campuscare_user");
       return userStr ? JSON.parse(userStr) : null;
     }
     return null;
@@ -59,7 +59,7 @@ export function useAuth() {
    */
   const getToken = useCallback(() => {
     if (typeof window !== "undefined") {
-      return window.localStorage.getItem("ciis_token");
+      return window.localStorage.getItem("campuscare_token");
     }
     return null;
   }, []);
@@ -99,13 +99,13 @@ export function useAuth() {
         // User is signed in, ensure we have the latest token
         const token = await user.getIdToken();
         if (typeof window !== "undefined") {
-          window.localStorage.setItem("ciis_token", token);
+          window.localStorage.setItem("campuscare_token", token);
         }
       } else {
         // User is signed out
         if (typeof window !== "undefined") {
-          window.localStorage.removeItem("ciis_token");
-          window.localStorage.removeItem("ciis_user");
+          window.localStorage.removeItem("campuscare_token");
+          window.localStorage.removeItem("campuscare_user");
         }
       }
     });

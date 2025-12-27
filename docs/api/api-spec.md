@@ -1,9 +1,9 @@
-# CIIS API Specification
+# CampusCare API Specification
 
 ## Base URL
 
 - **Development**: `http://localhost:3000/api/v1`
-- **Production**: `https://ciis-backend-[hash].run.app/api/v1`
+- **Production**: `https://campuscare-backend-[hash].run.app/api/v1`
 
 ## Authentication
 

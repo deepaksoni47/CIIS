@@ -12,7 +12,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const existingToken = window.localStorage.getItem("ciis_token");
+      const existingToken = window.localStorage.getItem("campuscare_token");
       if (existingToken) {
         router.replace("/dashboard");
         return;
@@ -42,7 +42,7 @@ export default function LoginPage() {
           <h1 className="text-3xl md:text-4xl font-semibold tracking-tight">
             Access your
             <span className="ml-2 bg-gradient-to-r from-violet-400 via-fuchsia-400 to-sky-400 bg-clip-text text-transparent">
-              CIIS Console
+              CampusCare Console
             </span>
           </h1>
           <p className="mt-3 text-sm text-white/60 max-w-sm mx-auto">
@@ -116,7 +116,7 @@ export default function LoginPage() {
                 </p>
                 <p className="text-sm text-white/70">
                   Use your verified Google identity. We'll automatically create
-                  or link your CIIS profile for{" "}
+                  or link your CampusCare profile for{" "}
                   <span className="font-semibold text-violet-200">
                     GGV Bilaspur
                   </span>
@@ -148,7 +148,8 @@ export default function LoginPage() {
 
           <p className="text-[11px] text-white/40 leading-relaxed">
             Authentication is powered by Firebase and Google OAuth as described
-            in the CIIS authentication guide. We never store your passwords.
+            in the CampusCare authentication guide. We never store your
+            passwords.
           </p>
         </div>
 

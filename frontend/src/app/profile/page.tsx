@@ -38,14 +38,14 @@ export default function ProfilePage() {
 
   useEffect(() => {
     // Check authentication
-    const token = localStorage.getItem("ciis_token");
+    const token = localStorage.getItem("campuscare_token");
     if (!token) {
       router.replace("/login");
       return;
     }
 
     // Load user data from localStorage
-    const userStr = localStorage.getItem("ciis_user");
+    const userStr = localStorage.getItem("campuscare_user");
     if (userStr) {
       try {
         const userData = JSON.parse(userStr);
@@ -62,7 +62,7 @@ export default function ProfilePage() {
     if (user) {
       const newUser = { ...user, ...updatedUser };
       setUser(newUser);
-      localStorage.setItem("ciis_user", JSON.stringify(newUser));
+      localStorage.setItem("campuscare_user", JSON.stringify(newUser));
     }
   };
 
@@ -116,9 +116,9 @@ export default function ProfilePage() {
                     } catch (e) {
                       console.warn("signOut failed:", e);
                     }
-                    localStorage.removeItem("ciis_token");
-                    localStorage.removeItem("ciis_user");
-                    window.dispatchEvent(new Event("ciis_auth_changed"));
+                    localStorage.removeItem("campuscare_token");
+                    localStorage.removeItem("campuscare_user");
+                    window.dispatchEvent(new Event("campuscare_auth_changed"));
                     router.push("/");
                   }}
                   className="px-6 py-3 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-medium shadow-lg transition-all"
