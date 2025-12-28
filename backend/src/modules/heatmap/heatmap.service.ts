@@ -27,6 +27,7 @@ export interface HeatmapFeature {
     highCount: number;
     mediumCount: number;
     lowCount: number;
+    issueIds: string[]; // Array of issue IDs
     cluster?: string; // Cluster ID if clustered
   };
 }
@@ -684,6 +685,7 @@ function formatAsGeoJSON(
         highCount,
         mediumCount,
         lowCount,
+        issueIds: point.issues.map((issue) => issue.id),
       },
     };
   });

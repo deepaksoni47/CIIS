@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { LeaderboardEntry, getLeaderboard } from "@/lib/api/rewards";
-import { Trophy,CalendarDays,ChartColumnIncreasing  } from "lucide-react";
+import { Trophy, CalendarDays, ChartColumnIncreasing } from "lucide-react";
 
 type Period = "all_time" | "monthly" | "weekly";
 
@@ -37,26 +37,36 @@ export function Leaderboard({ organizationId }: { organizationId: string }) {
   return (
     <div className="space-y-6">
       {/* Period Tabs */}
-      <div className="flex gap-2 border-b border-gray-200 ">
+      <div className="flex flex-wrap gap-1 sm:gap-2 border-b border-gray-200 pb-1">
         <TabButton
           active={period === "all_time"}
           onClick={() => setPeriod("all_time")}
         >
-          <span className="flex flex-row justify-center"><Trophy /> All Time</span>
+          <span className="flex flex-row justify-center items-center gap-1 text-sm sm:text-base">
+            <Trophy className="w-4 h-4" />
+            <span className="hidden sm:inline">All Time</span>
+            <span className="sm:hidden">All</span>
+          </span>
         </TabButton>
         <TabButton
           active={period === "monthly"}
           onClick={() => setPeriod("monthly")}
         >
-          <span className="flex flex-row justify-center"><CalendarDays />This Month</span>
-          
+          <span className="flex flex-row justify-center items-center gap-1 text-sm sm:text-base">
+            <CalendarDays className="w-4 h-4" />
+            <span className="hidden sm:inline">This Month</span>
+            <span className="sm:hidden">Month</span>
+          </span>
         </TabButton>
         <TabButton
           active={period === "weekly"}
           onClick={() => setPeriod("weekly")}
         >
-          <span className="flex flex-row justify-center"><ChartColumnIncreasing />This Week</span>
-          
+          <span className="flex flex-row justify-center items-center gap-1 text-sm sm:text-base">
+            <ChartColumnIncreasing className="w-4 h-4" />
+            <span className="hidden sm:inline">This Week</span>
+            <span className="sm:hidden">Week</span>
+          </span>
         </TabButton>
       </div>
 
@@ -66,7 +76,7 @@ export function Leaderboard({ organizationId }: { organizationId: string }) {
           {[...Array(10)].map((_, i) => (
             <div
               key={i}
-              className="h-20 bg-gray-200 animate-pulse rounded-lg"
+              className="h-20 sm:h-24 bg-gray-200 animate-pulse rounded-lg"
             />
           ))}
         </div>
@@ -110,7 +120,7 @@ function TabButton({
     <button
       onClick={onClick}
       className={`
-        px-4 py-2 font-medium transition-colors border-b-2
+        px-2 sm:px-4 py-2 font-medium transition-colors border-b-2 text-xs sm:text-sm
         ${
           active
             ? "border-blue-600 text-blue-600"
@@ -142,50 +152,60 @@ function LeaderboardCard({
   return (
     <div
       className={`
-        flex items-center gap-4 p-4 rounded-lg border transition-all
+        flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-lg border transition-all
         ${isTopThree ? `bg-gradient-to-r ${topThreeColors[position]} shadow-lg` : "bg-white border-gray-200 shadow-sm hover:shadow-md"}
       `}
     >
       {/* Rank */}
-      <div className="flex-shrink-0 w-12 text-center">
+      <div className="flex-shrink-0 w-10 sm:w-12 text-center">
         {isTopThree ? (
-          <span className="text-3xl">{medals[position]}</span>
+          <span className="text-2xl sm:text-3xl">{medals[position]}</span>
         ) : (
-          <span className="text-xl font-bold text-gray-600">#{entry.rank}</span>
+          <span className="text-lg sm:text-xl font-bold text-gray-600">
+            #{entry.rank}
+          </span>
         )}
       </div>
 
       {/* User Info */}
       <div className="flex-1 min-w-0">
-        <h3 className="font-semibold text-gray-900 truncate">
+        <h3 className="font-semibold text-gray-900 truncate text-sm sm:text-base">
           {entry.userName}
         </h3>
-        <p className="text-sm text-gray-600 capitalize">
+        <p className="text-xs sm:text-sm text-gray-600 capitalize">
           {entry.userRole.replace("_", " ")}
         </p>
       </div>
 
       {/* Stats */}
-      <div className="flex items-center gap-6 text-sm">
-        <div className="text-center">
-          <div className="font-bold text-gray-900">Level {entry.level}</div>
+      <div className="flex flex-wrap items-center justify-between sm:justify-end gap-2 sm:gap-6 w-full sm:w-auto">
+        <div className="text-center min-w-0 flex-1 sm:flex-none">
+          <div className="font-bold text-gray-900 text-sm sm:text-base">
+            Level {entry.level}
+          </div>
           <div className="text-xs text-gray-600">
             {entry.rewardPoints.toLocaleString()} pts
           </div>
         </div>
 
-        <div className="text-center">
-          <div className="font-bold text-gray-900">{entry.issuesReported}</div>
+        <div className="text-center min-w-0 flex-1 sm:flex-none">
+          <div className="font-bold text-gray-900 text-sm sm:text-base">
+            {entry.issuesReported}
+          </div>
           <div className="text-xs text-gray-600">Reports</div>
         </div>
 
-        <div className="text-center">
-          <div className="font-bold text-gray-900">{entry.votesReceived}</div>
+        <div className="text-center min-w-0 flex-1 sm:flex-none">
+          <div className="font-bold text-gray-900 text-sm sm:text-base">
+            {entry.votesReceived}
+          </div>
           <div className="text-xs text-gray-600">Votes</div>
         </div>
 
-        <div className="text-center">
-          <div className="font-bold text-gray-900">{entry.badges.length}</div>
+        <div className="text-center min-w-0 flex-1 sm:flex-none">
+          <div className="font-bold text-gray-900 text-sm sm:text-base">
+            {entry.badges.length}
+          </div>
           <div className="text-xs text-gray-600">Badges</div>
         </div>
       </div>

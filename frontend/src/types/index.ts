@@ -1,20 +1,20 @@
 export interface IssueCategory {
-  WATER: 'WATER';
-  ELECTRICITY: 'ELECTRICITY';
-  WIFI: 'WIFI';
-  SANITATION: 'SANITATION';
-  CROWDING: 'CROWDING';
-  TEMPERATURE: 'TEMPERATURE';
-  OTHER: 'OTHER';
+  WATER: "WATER";
+  ELECTRICITY: "ELECTRICITY";
+  WIFI: "WIFI";
+  SANITATION: "SANITATION";
+  CROWDING: "CROWDING";
+  TEMPERATURE: "TEMPERATURE";
+  OTHER: "OTHER";
 }
 
 export type IssueCategoryType = keyof IssueCategory;
 
 export interface IssueStatus {
-  OPEN: 'OPEN';
-  IN_PROGRESS: 'IN_PROGRESS';
-  RESOLVED: 'RESOLVED';
-  CLOSED: 'CLOSED';
+  OPEN: "OPEN";
+  IN_PROGRESS: "IN_PROGRESS";
+  RESOLVED: "RESOLVED";
+  CLOSED: "CLOSED";
 }
 
 export type IssueStatusType = keyof IssueStatus;
@@ -69,9 +69,13 @@ export interface IssueFilters {
 }
 
 export interface HeatmapPoint {
-  latitude: number;
-  longitude: number;
-  weight: number;
+  lat: number;
+  lng: number;
+  intensity: number;
+  issueCount?: number;
+  avgSeverity?: number;
+  categories?: string[];
+  issueIds?: string[];
 }
 
 export interface TrendData {

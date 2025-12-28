@@ -48,6 +48,7 @@ export default function IssuesPage() {
   const [filterPriority, setFilterPriority] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [showMyIssuesOnly, setShowMyIssuesOnly] = useState(false);
+  const [specificIssueIds, setSpecificIssueIds] = useState<string[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const ITEMS_PER_PAGE = 10;
@@ -65,6 +66,14 @@ export default function IssuesPage() {
       if (userData.role === "student") {
         setShowMyIssuesOnly(true);
       }
+
+      // Check for specific issue IDs in URL parameters
+      const urlParams = new URLSearchParams(window.location.search);
+      const issueIdsParam = urlParams.get("issueIds");
+      if (issueIdsParam) {
+        const ids = issueIdsParam.split(",").filter((id) => id.trim());
+        setSpecificIssueIds(ids);
+      }
     } else {
       router.push("/login");
     }
@@ -79,41 +88,70 @@ export default function IssuesPage() {
         setIsLoading(true);
         const token = window.localStorage.getItem("campuscare_token");
 
-        // Build Query String
-        const offset = isLoadMore ? issues.length : 0;
-        const queryParams = new URLSearchParams({
-          organizationId: user.organizationId,
-          limit: ITEMS_PER_PAGE.toString(),
-          offset: offset.toString(),
-        });
+        // If we have specific issue IDs to filter by, fetch all issues and filter client-side
+        if (specificIssueIds.length > 0 && !isLoadMore) {
+          const queryParams = new URLSearchParams({
+            organizationId: user.organizationId,
+            // No limit to fetch all issues for filtering
+            offset: "0",
+          });
 
-        if (filterStatus !== "all")
-          queryParams.append("status", filterStatus.toUpperCase());
-        if (filterPriority !== "all")
-          queryParams.append("priority", filterPriority.toUpperCase());
-        if (showMyIssuesOnly) queryParams.append("reportedBy", user.id);
+          const response = await fetch(
+            `${API_BASE_URL}/api/issues?${queryParams.toString()}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+            }
+          );
 
-        const response = await fetch(
-          `${API_BASE_URL}/api/issues?${queryParams.toString()}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
+          if (response.ok) {
+            const result = await response.json();
+            const allIssues = result.data || [];
+            const filteredIssues = allIssues.filter((issue: Issue) =>
+              specificIssueIds.includes(issue.id)
+            );
+            setIssues(filteredIssues);
+            setHasMore(false); // No pagination for filtered results
           }
-        );
+        } else {
+          // Normal fetch with pagination
+          const offset = isLoadMore ? issues.length : 0;
+          const queryParams = new URLSearchParams({
+            organizationId: user.organizationId,
+            limit: ITEMS_PER_PAGE.toString(),
+            offset: offset.toString(),
+          });
 
-        if (response.ok) {
-          const result = await response.json();
-          const newIssues = result.data || [];
+          if (filterStatus !== "all")
+            queryParams.append("status", filterStatus.toUpperCase());
+          if (filterPriority !== "all")
+            queryParams.append("priority", filterPriority.toUpperCase());
+          if (showMyIssuesOnly) queryParams.append("reportedBy", user.id);
 
-          if (isLoadMore) {
-            setIssues((prev) => [...prev, ...newIssues]);
-          } else {
-            setIssues(newIssues);
+          const response = await fetch(
+            `${API_BASE_URL}/api/issues?${queryParams.toString()}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+            }
+          );
+
+          if (response.ok) {
+            const result = await response.json();
+            const newIssues = result.data || [];
+
+            if (isLoadMore) {
+              setIssues((prev) => [...prev, ...newIssues]);
+            } else {
+              setIssues(newIssues);
+            }
+
+            setHasMore(newIssues.length === ITEMS_PER_PAGE);
           }
-
-          setHasMore(newIssues.length === ITEMS_PER_PAGE);
         }
       } catch (error) {
         console.error("Error fetching issues:", error);
@@ -122,7 +160,14 @@ export default function IssuesPage() {
         setIsLoading(false);
       }
     },
-    [user, filterStatus, filterPriority, showMyIssuesOnly, issues.length]
+    [
+      user,
+      filterStatus,
+      filterPriority,
+      showMyIssuesOnly,
+      specificIssueIds,
+      issues.length,
+    ]
   );
 
   // Initial Fetch & Filter Changes
@@ -168,12 +213,17 @@ export default function IssuesPage() {
   };
 
   // Helper for Search (Client-side filtering for responsiveness)
-  const filteredIssues = issues.filter(
-    (issue) =>
-      issue.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      issue.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      issue.category.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredIssues =
+    specificIssueIds.length > 0
+      ? issues
+      : issues.filter(
+          (issue) =>
+            issue.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            issue.description
+              .toLowerCase()
+              .includes(searchQuery.toLowerCase()) ||
+            issue.category.toLowerCase().includes(searchQuery.toLowerCase())
+        );
 
   return (
     <div className="min-h-screen bg-[#050814] text-white pt-24 pb-12 px-4 md:px-6 lg:px-8">
@@ -191,10 +241,14 @@ export default function IssuesPage() {
             animate={{ opacity: 1, y: 0 }}
           >
             <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-white via-white to-white/70 bg-clip-text text-transparent">
-              Issue Tracker
+              {specificIssueIds.length > 0
+                ? "Filtered Issues"
+                : "Issue Tracker"}
             </h1>
             <p className="text-white/60 mt-1">
-              Manage and track campus infrastructure reports
+              {specificIssueIds.length > 0
+                ? `Showing ${specificIssueIds.length} specific issue${specificIssueIds.length > 1 ? "s" : ""} from heatmap`
+                : "Manage and track campus infrastructure reports"}
             </p>
           </motion.div>
 

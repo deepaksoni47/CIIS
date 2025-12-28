@@ -454,7 +454,7 @@ export default function DashboardPage() {
           className="mb-8"
         >
           <h2 className="text-2xl font-semibold mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Action 1: Report (Everyone) */}
             <QuickActionCard
               title="Heatmap View"
@@ -463,13 +463,6 @@ export default function DashboardPage() {
               href="/heatmap"
               gradient="from-violet-600 to-fuchsia-600"
             />
-            {/* <QuickActionCard
-              title="Priorities"
-              description="View high-priority issues requiring attention"
-              icon="⚡"
-              href="/priority"
-              gradient="from-orange-600 to-red-600"
-            /> */}
             <QuickActionCard
               title="Report Issue"
               description="Report a new infrastructure issue"
@@ -497,14 +490,14 @@ export default function DashboardPage() {
               />
             )}
 
-            {/* Action 3: Heatmap (Everyone) */}
-            {/* <QuickActionCard
-              title="Campus Map"
-              description="Visualize infrastructure health"
-              icon="🗺️"
-              href="/heatmap"
-              gradient="from-violet-600 to-fuchsia-600"
-            /> */}
+            {/* Action 3: Leaderboard (Everyone) */}
+            <QuickActionCard
+              title="Leaderboard"
+              description="View community rankings and achievements"
+              icon="🏆"
+              href="/profile?tab=leaderboard"
+              gradient="from-yellow-600 to-orange-600"
+            />
           </div>
         </motion.div>
 

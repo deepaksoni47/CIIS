@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
 import {
   MapContainer,
   TileLayer,
@@ -94,6 +95,7 @@ interface HeatmapPoint {
   issueCount?: number;
   avgSeverity?: number;
   categories?: string[];
+  issueIds?: string[];
 }
 
 interface HeatmapContainerProps {
@@ -130,6 +132,7 @@ export function HeatmapContainer({
   onGenerateAIInsight,
   onFiltersChange,
 }: HeatmapContainerProps) {
+  const router = useRouter();
   const [layers, setLayers] = useState({
     water: true,
     power: true,
@@ -401,6 +404,38 @@ export function HeatmapContainer({
                           Intensity: {(point.intensity * 100).toFixed(0)}%
                         </span>
                       </div>
+
+                      {/* Action Buttons */}
+                      {point.issueIds && point.issueIds.length > 0 && (
+                        <div className="mt-3 pt-2 border-t border-gray-100">
+                          {point.issueIds.length === 1 ? (
+                            // Single issue - show view button
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                router.push(`/issues/${point.issueIds![0]}`);
+                              }}
+                              className="w-full px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                            >
+                              View Issue
+                            </button>
+                          ) : (
+                            // Multiple issues - show single view button
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const issueIdsParam = point.issueIds!.join(",");
+                                router.push(
+                                  `/issues?issueIds=${issueIdsParam}`
+                                );
+                              }}
+                              className="w-full px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                            >
+                              View {point.issueIds.length} Issues
+                            </button>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </Popup>

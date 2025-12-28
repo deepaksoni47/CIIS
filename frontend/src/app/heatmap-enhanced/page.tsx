@@ -32,6 +32,7 @@ interface HeatmapPoint {
   issueCount?: number;
   avgSeverity?: number;
   categories?: string[];
+  issueIds?: string[];
 }
 
 interface HeatmapStatsData {
@@ -374,6 +375,7 @@ export default function HeatmapPage() {
               issueCount: props.issueCount,
               avgSeverity: props.avgSeverity,
               categories: props.categories || [],
+              issueIds: props.issueIds || [],
             };
           });
 

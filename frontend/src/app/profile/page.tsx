@@ -55,6 +55,25 @@ export default function ProfilePage() {
       }
     }
 
+    // Check for tab parameter in URL or hash
+    const urlParams = new URLSearchParams(window.location.search);
+    const tabParam = urlParams.get("tab");
+    const hash = window.location.hash.replace("#", "");
+
+    if (
+      tabParam &&
+      ["profile", "rewards", "badges", "leaderboard", "password"].includes(
+        tabParam
+      )
+    ) {
+      setActiveTab(tabParam as any);
+    } else if (
+      hash &&
+      ["profile", "rewards", "badges", "leaderboard", "password"].includes(hash)
+    ) {
+      setActiveTab(hash as any);
+    }
+
     setLoading(false);
   }, [router]);
 
