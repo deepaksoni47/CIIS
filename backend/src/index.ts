@@ -169,6 +169,7 @@ import analyticsRoutes from "./modules/analytics/routes";
 import votingRoutes from "./modules/voting/routes";
 import rewardsRoutes from "./modules/rewards/routes";
 import adminRoutes from "./modules/admin/routes";
+import mlModelsRoutes from "./modules/ml-models/routes";
 
 app.use("/api/auth", authRoutes);
 app.use("/api/ai", aiRoutes);
@@ -180,6 +181,7 @@ app.use("/api/realtime", realtimeRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api", rewardsRoutes); // Rewards, badges, leaderboard routes
 app.use("/api/admin", adminRoutes); // Admin dashboard routes
+app.use("/api/ml", mlModelsRoutes); // ML models routes
 
 // 404 handler
 app.use((req: Request, res: Response) => {
