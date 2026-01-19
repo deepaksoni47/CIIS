@@ -2,7 +2,7 @@
 
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation"; // Added usePathname
 import Image from "next/image";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
@@ -13,14 +13,42 @@ const API_BASE_URL =
 
 export function FloatingNav() {
   const router = useRouter();
+  const pathname = usePathname(); // Get current path
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
   const { scrollY } = useScroll();
-  // Always show navbar, just adjust styling based on scroll
+
   const backgroundBlur = useTransform(scrollY, [0, 100], [0.3, 0.5]);
+
+  // --- HELPER FOR ACTIVE STYLES ---
+  // This function returns the class string based on whether the path matches
+  const getNavLinkClass = (path: string) => {
+    const isActive = pathname === path;
+    return `
+    px-5 py-2 rounded-full text-sm font-medium transition-all
+    ${
+      isActive
+        ? "bg-white/15 text-green-400 shadow-[0_0_10px_rgba(74,222,128,0.15)]" // Changed to text-green-400
+        : "text-gray-200 hover:text-[#b7aaff] hover:bg-white/5"
+    }
+  `;
+  };
+
+  // Helper for Mobile menu items (slightly different padding/layout)
+  const getMobileLinkClass = (path: string) => {
+    const isActive = pathname === path;
+    return `
+    px-5 py-3 rounded-xl text-sm font-medium transition-all text-center block w-full
+    ${
+      isActive
+        ? "bg-white/15 text-green-400" // Changed to text-green-400
+        : "text-gray-200 hover:text-[#b7aaff] hover:bg-white/5"
+    }
+  `;
+  };
 
   // Check authentication state
   useEffect(() => {
@@ -51,9 +79,7 @@ export function FloatingNav() {
 
     checkAuth();
 
-    // Listen for storage changes (e.g., login/logout from another tab)
     window.addEventListener("storage", checkAuth);
-    // Listen for custom auth change event dispatched in the same tab
     window.addEventListener("campuscare_auth_changed", checkAuth);
     return () => {
       window.removeEventListener("storage", checkAuth);
@@ -71,10 +97,8 @@ export function FloatingNav() {
 
   const handleLogout = async () => {
     try {
-      // Get token for backend logout call
       const token = window.localStorage.getItem("campuscare_token");
 
-      // Call backend logout endpoint (optional, but good practice)
       if (token) {
         try {
           await fetch(`${API_BASE_URL}/api/auth/logout`, {
@@ -85,40 +109,27 @@ export function FloatingNav() {
             },
           });
         } catch (err) {
-          // Backend logout failed, but continue with client-side cleanup
-          console.warn(
-            "Backend logout failed, continuing with client-side logout:",
-            err
-          );
+          console.warn("Backend logout failed, continuing:", err);
         }
       }
 
-      // Sign out from Firebase Auth
       try {
         await signOut(auth);
       } catch (err) {
-        // Firebase sign out failed, but continue with cleanup
-        console.warn("Firebase sign out failed, continuing with cleanup:", err);
+        console.warn("Firebase sign out failed:", err);
       }
 
-      // Clear local storage
       if (typeof window !== "undefined") {
         window.localStorage.removeItem("campuscare_token");
         window.localStorage.removeItem("campuscare_user");
       }
 
-      // Update state
       setIsLoggedIn(false);
       setUserName(null);
-
-      // Close mobile menu if open
       setIsMobileMenuOpen(false);
-
-      // Redirect to home page
       router.push("/");
     } catch (error) {
       console.error("Logout error:", error);
-      // Even if there's an error, clear local storage and redirect
       if (typeof window !== "undefined") {
         window.localStorage.removeItem("campuscare_token");
         window.localStorage.removeItem("campuscare_user");
@@ -173,7 +184,7 @@ export function FloatingNav() {
               <>
                 <motion.a
                   href="/dashboard"
-                  className="px-5 py-2 rounded-full text-gray-200 hover:text-[#b7aaff] hover:bg-white/5 text-sm font-medium transition-all"
+                  className={getNavLinkClass("/dashboard")}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
@@ -181,7 +192,7 @@ export function FloatingNav() {
                 </motion.a>
                 <motion.a
                   href="/report"
-                  className="px-5 py-2 rounded-full text-gray-200 hover:text-[#b7aaff] hover:bg-white/5 text-sm font-medium transition-all"
+                  className={getNavLinkClass("/report")}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
@@ -190,7 +201,7 @@ export function FloatingNav() {
                 {userRole === "admin" && (
                   <motion.a
                     href="/admin"
-                    className="px-5 py-2 rounded-full text-[#b7aaff] hover:text-[#a18aff] hover:bg-white/5 text-sm font-medium transition-all"
+                    className={getNavLinkClass("/admin")}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
@@ -202,7 +213,7 @@ export function FloatingNav() {
 
             <motion.a
               href="/heatmap"
-              className="px-5 py-2 rounded-full text-gray-200 hover:text-[#b7aaff] hover:bg-white/5 text-sm font-medium transition-all"
+              className={getNavLinkClass("/heatmap")}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
@@ -211,7 +222,7 @@ export function FloatingNav() {
 
             <motion.a
               href="/priority"
-              className="text-sm font-medium text-gray-200 hover:text-[#b7aaff] transition-colors"
+              className={getNavLinkClass("/priority")}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
@@ -228,7 +239,14 @@ export function FloatingNav() {
               <div className="w-px h-6 bg-white/7 mr-4" />
               <motion.a
                 href="/profile"
-                className="px-4 py-2 text-sm font-semibold text-[#b7aaff] hover:text-[#a18aff] transition-colors rounded-full hover:bg-white/5"
+                className={`
+                    px-4 py-2 text-sm font-semibold transition-colors rounded-full 
+                    ${
+                      pathname === "/profile"
+                        ? "text-green-400 bg-white/10" // Changed to text-green-400
+                        : "text-[#b7aaff] hover:text-[#a18aff] hover:bg-white/5"
+                    }
+                  `}
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.98 }}
                 title="View Profile"
@@ -297,7 +315,7 @@ export function FloatingNav() {
             <>
               <motion.a
                 href="/dashboard"
-                className="px-5 py-3 rounded-xl text-gray-200 hover:text-[#b7aaff] hover:bg-white/5 text-sm font-medium transition-all text-center"
+                className={getMobileLinkClass("/dashboard")}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setIsMobileMenuOpen(false)}
               >
@@ -305,7 +323,7 @@ export function FloatingNav() {
               </motion.a>
               <motion.a
                 href="/report"
-                className="px-5 py-3 rounded-xl text-gray-200 hover:text-[#b7aaff] hover:bg-white/5 text-sm font-medium transition-all text-center"
+                className={getMobileLinkClass("/report")}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setIsMobileMenuOpen(false)}
               >
@@ -314,7 +332,7 @@ export function FloatingNav() {
               {userRole === "admin" && (
                 <motion.a
                   href="/admin"
-                  className="px-5 py-3 rounded-xl text-[#b7aaff] hover:text-[#a18aff] hover:bg-white/5 text-sm font-medium transition-all text-center"
+                  className={getMobileLinkClass("/admin")}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
@@ -325,7 +343,7 @@ export function FloatingNav() {
           )}
           <motion.a
             href="/heatmap"
-            className="px-5 py-3 rounded-xl text-gray-200 hover:text-[#b7aaff] hover:bg-white/5 text-sm font-medium transition-all text-center"
+            className={getMobileLinkClass("/heatmap")}
             whileTap={{ scale: 0.95 }}
             onClick={() => setIsMobileMenuOpen(false)}
           >
@@ -333,7 +351,7 @@ export function FloatingNav() {
           </motion.a>
           <motion.a
             href="/priority"
-            className="px-5 py-3 rounded-xl text-gray-200 hover:text-[#b7aaff] hover:bg-white/5 text-sm font-medium transition-all text-center"
+            className={getMobileLinkClass("/priority")}
             whileTap={{ scale: 0.95 }}
             onClick={() => setIsMobileMenuOpen(false)}
           >
@@ -344,7 +362,7 @@ export function FloatingNav() {
               {userName && (
                 <motion.a
                   href="/profile"
-                  className="px-5 py-3 rounded-xl text-gray-100 hover:text-[#b7aaff] hover:bg-white/5 text-sm font-medium transition-all text-center border-b border-white/7"
+                  className={getMobileLinkClass("/profile")}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
