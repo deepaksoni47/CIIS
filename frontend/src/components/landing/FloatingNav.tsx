@@ -20,7 +20,7 @@ export function FloatingNav() {
   const [userName, setUserName] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
   const { scrollY } = useScroll();
-  
+
   const backgroundBlur = useTransform(scrollY, [0, 100], [0.3, 0.5]);
 
   // --- HELPER FOR ACTIVE STYLES ---
@@ -28,26 +28,26 @@ export function FloatingNav() {
   const getNavLinkClass = (path: string) => {
     const isActive = pathname === path;
     return `
-      px-5 py-2 rounded-full text-sm font-medium transition-all
-      ${
-        isActive
-          ? "bg-white/15 text-[#b7aaff] shadow-[0_0_10px_rgba(183,170,255,0.15)]" // Active State
-          : "text-gray-200 hover:text-[#b7aaff] hover:bg-white/5" // Inactive State
-      }
-    `;
+    px-5 py-2 rounded-full text-sm font-medium transition-all
+    ${
+      isActive
+        ? "bg-white/15 text-green-400 shadow-[0_0_10px_rgba(74,222,128,0.15)]" // Changed to text-green-400
+        : "text-gray-200 hover:text-[#b7aaff] hover:bg-white/5"
+    }
+  `;
   };
 
   // Helper for Mobile menu items (slightly different padding/layout)
   const getMobileLinkClass = (path: string) => {
     const isActive = pathname === path;
     return `
-      px-5 py-3 rounded-xl text-sm font-medium transition-all text-center block w-full
-      ${
-        isActive
-          ? "bg-white/15 text-[#b7aaff]" 
-          : "text-gray-200 hover:text-[#b7aaff] hover:bg-white/5"
-      }
-    `;
+    px-5 py-3 rounded-xl text-sm font-medium transition-all text-center block w-full
+    ${
+      isActive
+        ? "bg-white/15 text-green-400" // Changed to text-green-400
+        : "text-gray-200 hover:text-[#b7aaff] hover:bg-white/5"
+    }
+  `;
   };
 
   // Check authentication state
@@ -240,13 +240,13 @@ export function FloatingNav() {
               <motion.a
                 href="/profile"
                 className={`
-                  px-4 py-2 text-sm font-semibold transition-colors rounded-full 
-                  ${
-                    pathname === "/profile"
-                      ? "text-[#b7aaff] bg-white/10"
-                      : "text-[#b7aaff] hover:text-[#a18aff] hover:bg-white/5"
-                  }
-                `}
+                    px-4 py-2 text-sm font-semibold transition-colors rounded-full 
+                    ${
+                      pathname === "/profile"
+                        ? "text-green-400 bg-white/10" // Changed to text-green-400
+                        : "text-[#b7aaff] hover:text-[#a18aff] hover:bg-white/5"
+                    }
+                  `}
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.98 }}
                 title="View Profile"
