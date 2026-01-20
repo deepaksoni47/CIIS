@@ -79,3 +79,18 @@ analytics/**/.ipynb_checkpoints/
 # Analytics
 analytics/**/*.pyc
 analytics/**/__pycache__/
+
+ml-models/.env
+ml-models/__pycache__/
+ml-models/*.pyc
+ml-models/model_output/
+ml-models/data/
+ml-models/logs/
+ml-models/checkpoints/
+ml-models/venv/
+ml-models/.vscode/
+ml-models/models/
+ml-models/*.md
+ml-models/ciis-2882b-firebase-adminsdk-*.json
+ml-models/__pypackages__/
+ml-models/docs/

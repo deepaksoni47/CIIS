@@ -38,7 +38,7 @@ try {
 } catch (error) {
   console.error("Failed to initialize Cloudinary:", error);
   console.warn(
-    "⚠️ Image uploads will not work without Cloudinary configuration"
+    "⚠️ Image uploads will not work without Cloudinary configuration",
   );
 }
 
@@ -90,7 +90,7 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization", "X-Request-ID"],
     exposedHeaders: ["X-Request-ID"],
     maxAge: 86400, // 24 hours
-  })
+  }),
 );
 
 // Helmet security headers (configured to not interfere with CORS)
@@ -98,7 +98,7 @@ app.use(
   helmet({
     crossOriginResourcePolicy: { policy: "cross-origin" },
     crossOriginEmbedderPolicy: false,
-  })
+  }),
 );
 app.use(securityHeaders); // Additional security headers
 app.use(logSuspiciousActivity); // Log suspicious requests
@@ -118,7 +118,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   res.on("finish", () => {
     const duration = Date.now() - start;
     console.log(
-      `${req.method} ${req.path} - ${res.statusCode} (${duration}ms)`
+      `${req.method} ${req.path} - ${res.statusCode} (${duration}ms)`,
     );
   });
   next();
