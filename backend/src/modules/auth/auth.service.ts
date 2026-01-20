@@ -6,7 +6,7 @@ import { User, UserRole } from "../../types";
  * Verify Firebase ID token from client
  */
 export async function verifyIdToken(
-  idToken: string
+  idToken: string,
 ): Promise<admin.auth.DecodedIdToken> {
   try {
     const auth = getAuth();
@@ -29,7 +29,7 @@ export async function verifyIdToken(
 export async function getOrCreateUser(
   firebaseUser: admin.auth.DecodedIdToken,
   organizationId: string,
-  role?: UserRole
+  role?: UserRole,
 ): Promise<{ user: User; isNewUser: boolean }> {
   const db = getFirestore();
   const userRef = db.collection("users").doc(firebaseUser.uid);
@@ -136,7 +136,7 @@ export async function createUserWithEmail(
   password: string,
   name: string,
   organizationId: string,
-  role?: UserRole
+  role?: UserRole,
 ): Promise<{ user: User; token: string }> {
   const auth = getAuth();
   const db = getFirestore();
@@ -178,12 +178,38 @@ export async function createUserWithEmail(
 
     await db.collection("users").doc(userRecord.uid).set(newUser);
 
-    // Create custom token for authentication
-    const token = await auth.createCustomToken(userRecord.uid);
+    // Sign in the newly created user to get an ID token
+    const firebaseApiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
+    if (!firebaseApiKey) {
+      throw new Error("Firebase API key not configured");
+    }
+
+    const authResponse = await fetch(
+      `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${firebaseApiKey}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password,
+          returnSecureToken: true,
+        }),
+      },
+    );
+
+    if (!authResponse.ok) {
+      throw new Error("Failed to authenticate newly created user");
+    }
+
+    const authData = (await authResponse.json()) as {
+      idToken: string;
+    };
 
     return {
       user: { id: userRecord.uid, ...newUser } as User,
-      token,
+      token: authData.idToken,
     };
   } catch (error: unknown) {
     if (error instanceof Error) {
@@ -200,7 +226,7 @@ export async function createUserWithEmail(
  */
 export async function authenticateWithEmail(
   email: string,
-  password: string
+  password: string,
 ): Promise<{ user: User; token: string }> {
   const db = getFirestore();
 
@@ -223,7 +249,7 @@ export async function authenticateWithEmail(
           password,
           returnSecureToken: true,
         }),
-      }
+      },
     );
 
     if (!authResponse.ok) {
@@ -306,7 +332,7 @@ export async function getUserById(userId: string): Promise<User | null> {
  */
 export async function updateUserProfile(
   userId: string,
-  updates: Partial<User>
+  updates: Partial<User>,
 ): Promise<User> {
   const db = getFirestore();
   const userRef = db.collection("users").doc(userId);
@@ -328,7 +354,7 @@ export async function updateUserProfile(
  */
 export async function getUsersByOrganization(
   organizationId: string,
-  role?: UserRole
+  role?: UserRole,
 ): Promise<User[]> {
   const db = getFirestore();
   let query = db
@@ -360,7 +386,7 @@ export async function deactivateUser(userId: string): Promise<void> {
  */
 export async function updateUserRole(
   userId: string,
-  newRole: UserRole
+  newRole: UserRole,
 ): Promise<User> {
   const db = getFirestore();
   const userRef = db.collection("users").doc(userId);
@@ -380,7 +406,7 @@ export async function updateUserRole(
  */
 export async function hasPermission(
   userId: string,
-  permission: keyof User["permissions"]
+  permission: keyof User["permissions"],
 ): Promise<boolean> {
   const user = await getUserById(userId);
   if (!user || !user.isActive) {
@@ -395,7 +421,7 @@ export async function hasPermission(
 export async function changePassword(
   userId: string,
   currentPassword: string,
-  newPassword: string
+  newPassword: string,
 ): Promise<void> {
   const auth = getAuth();
   const db = getFirestore();
@@ -428,7 +454,7 @@ export async function changePassword(
           password: currentPassword,
           returnSecureToken: true,
         }),
-      }
+      },
     );
 
     if (!authResponse.ok) {
