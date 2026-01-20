@@ -143,7 +143,7 @@ export async function getHeatmapData(
     timeDecayFactor: 0.5,
     severityWeightMultiplier: 2.0,
     normalizeWeights: true,
-  }
+  },
 ): Promise<HeatmapGeoJSON> {
   // If no date range is provided, default to the last 30 days to limit reads
   if (!filters.startDate && !filters.endDate) {
@@ -152,7 +152,7 @@ export async function getHeatmapData(
     start.setDate(start.getDate() - defaultDays);
     filters.startDate = start;
     console.log(
-      `ℹ️ No date range provided for heatmap; defaulting to last ${defaultDays} days`
+      `ℹ️ No date range provided for heatmap; defaulting to last ${defaultDays} days`,
     );
   }
 
@@ -170,26 +170,29 @@ export async function getHeatmapData(
       .where(
         "createdAt",
         ">=",
-        adminFirestore.Timestamp.fromDate(filters.startDate)
+        adminFirestore.Timestamp.fromDate(filters.startDate),
       )
       .where(
         "createdAt",
         "<=",
-        adminFirestore.Timestamp.fromDate(filters.endDate)
+        adminFirestore.Timestamp.fromDate(filters.endDate),
       );
   } else if (filters.startDate) {
     query = query.where(
       "createdAt",
       ">=",
-      adminFirestore.Timestamp.fromDate(filters.startDate)
+      adminFirestore.Timestamp.fromDate(filters.startDate),
     );
   } else if (filters.endDate) {
     query = query.where(
       "createdAt",
       "<=",
-      adminFirestore.Timestamp.fromDate(filters.endDate)
+      adminFirestore.Timestamp.fromDate(filters.endDate),
     );
   }
+
+  // Add limit to prevent quota exhaustion
+  query = query.limit(10000);
 
   // Fetch all matching issues
   let snapshot;
@@ -199,7 +202,7 @@ export async function getHeatmapData(
     // Handle Firestore index errors
     if (error?.code === 9 || error?.message?.includes("index")) {
       const indexUrl = error?.message?.match(
-        /https:\/\/console\.firebase\.google\.com[^\s]+/
+        /https:\/\/console\.firebase\.google\.com[^\s]+/,
       )?.[0];
 
       console.warn("⚠️  Firestore index required for optimal performance.");
@@ -208,20 +211,21 @@ export async function getHeatmapData(
         console.warn("   Create index at:", indexUrl);
       } else {
         console.warn(
-          "   Required index: issues collection, fields: organizationId (Ascending), createdAt (Ascending)"
+          "   Required index: issues collection, fields: organizationId (Ascending), createdAt (Ascending)",
         );
         console.warn(
-          "   Create at: https://console.firebase.google.com/project/ciis-2882b/firestore/indexes"
+          "   Create at: https://console.firebase.google.com/project/ciis-2882b/firestore/indexes",
         );
       }
 
-      // Fallback: Query without date range and filter in memory
+      // Fallback: Query without date range and filter in memory with limit
       console.warn(
-        "   Falling back to in-memory date filtering (slower but works without index)"
+        "   Falling back to in-memory date filtering (slower but works without index)",
       );
       const fallbackQuery = firestore
         .collection("issues")
-        .where("organizationId", "==", filters.organizationId);
+        .where("organizationId", "==", filters.organizationId)
+        .limit(10000);
 
       snapshot = await fallbackQuery.get();
     } else {
@@ -263,7 +267,7 @@ export async function getHeatmapData(
   if (filters.buildingIds && filters.buildingIds.length > 0) {
     issues = issues.filter(
       (issue) =>
-        issue.buildingId && filters.buildingIds!.includes(issue.buildingId)
+        issue.buildingId && filters.buildingIds!.includes(issue.buildingId),
     );
     console.log(`   After buildingIds filter: ${issues.length} issues`);
   }
@@ -274,31 +278,31 @@ export async function getHeatmapData(
     issues = issues.filter(
       (issue) =>
         issue.category &&
-        lowerCaseCategories.includes(issue.category.toLowerCase())
+        lowerCaseCategories.includes(issue.category.toLowerCase()),
     );
     console.log(`   After categories filter: ${issues.length} issues`);
   }
 
   if (filters.priorities && filters.priorities.length > 0) {
     const priorityValues = filters.priorities.map((p) =>
-      p.toString().toLowerCase()
+      p.toString().toLowerCase(),
     );
     issues = issues.filter(
       (issue) =>
         issue.priority &&
-        priorityValues.includes(issue.priority.toString().toLowerCase())
+        priorityValues.includes(issue.priority.toString().toLowerCase()),
     );
     console.log(`   After priorities filter: ${issues.length} issues`);
   }
 
   if (filters.statuses && filters.statuses.length > 0) {
     const statusValues = filters.statuses.map((s) =>
-      s.toString().toLowerCase()
+      s.toString().toLowerCase(),
     );
     issues = issues.filter(
       (issue) =>
         issue.status &&
-        statusValues.includes(issue.status.toString().toLowerCase())
+        statusValues.includes(issue.status.toString().toLowerCase()),
     );
     console.log(`   After statuses filter: ${issues.length} issues`);
   }
@@ -330,7 +334,7 @@ export async function getHeatmapData(
   // Apply severity weighting
   const weightedPoints = applySeverityWeighting(
     decayedPoints,
-    config.severityWeightMultiplier
+    config.severityWeightMultiplier,
   );
 
   // Normalize weights if requested
@@ -344,7 +348,7 @@ export async function getHeatmapData(
     finalPoints = applyDBSCANClustering(
       finalPoints,
       config.clusterRadius,
-      config.minClusterSize
+      config.minClusterSize,
     );
   }
 
@@ -357,7 +361,7 @@ export async function getHeatmapData(
  */
 function aggregateByLocation(
   issues: Issue[],
-  gridSize: number = 50 // meters
+  gridSize: number = 50, // meters
 ): HeatmapPoint[] {
   const points: HeatmapPoint[] = [];
   const processed = new Set<string>();
@@ -388,7 +392,7 @@ function aggregateByLocation(
         issue.location.latitude,
         issue.location.longitude,
         otherIssue.location.latitude,
-        otherIssue.location.longitude
+        otherIssue.location.longitude,
       );
 
       if (distance <= gridSize) {
@@ -422,7 +426,7 @@ function aggregateByLocation(
  */
 function applyTimeDecay(
   points: HeatmapPoint[],
-  decayFactor: number
+  decayFactor: number,
 ): HeatmapPoint[] {
   const now = new Date();
   const maxAge = 90 * 24 * 60 * 60 * 1000; // 90 days in ms
@@ -453,7 +457,7 @@ function applyTimeDecay(
  */
 function applySeverityWeighting(
   points: HeatmapPoint[],
-  multiplier: number
+  multiplier: number,
 ): HeatmapPoint[] {
   return points.map((point) => {
     let totalSeverityWeight = 0;
@@ -511,7 +515,7 @@ function normalizeWeights(points: HeatmapPoint[]): HeatmapPoint[] {
 function applyDBSCANClustering(
   points: HeatmapPoint[],
   radius: number,
-  minSize: number
+  minSize: number,
 ): HeatmapPoint[] {
   const clusters: HeatmapCluster[] = [];
   const visited = new Set<number>();
@@ -602,7 +606,7 @@ function applyDBSCANClustering(
 function findNeighbors(
   points: HeatmapPoint[],
   index: number,
-  radius: number
+  radius: number,
 ): number[] {
   const neighbors: number[] = [];
   const point = points[index];
@@ -614,7 +618,7 @@ function findNeighbors(
       point.latitude,
       point.longitude,
       points[i].latitude,
-      points[i].longitude
+      points[i].longitude,
     );
 
     if (distance <= radius) {
@@ -631,7 +635,7 @@ function findNeighbors(
 function formatAsGeoJSON(
   points: HeatmapPoint[],
   _filters: HeatmapFilters,
-  config: HeatmapConfig
+  config: HeatmapConfig,
 ): HeatmapGeoJSON {
   const features: HeatmapFeature[] = points.map((point) => {
     const priorities = point.issues.map((i) => i.priority);
@@ -643,11 +647,11 @@ function formatAsGeoJSON(
 
     // Calculate priority distribution
     const criticalCount = priorities.filter(
-      (p) => p === IssuePriority.CRITICAL
+      (p) => p === IssuePriority.CRITICAL,
     ).length;
     const highCount = priorities.filter((p) => p === IssuePriority.HIGH).length;
     const mediumCount = priorities.filter(
-      (p) => p === IssuePriority.MEDIUM
+      (p) => p === IssuePriority.MEDIUM,
     ).length;
     const lowCount = priorities.filter((p) => p === IssuePriority.LOW).length;
 
@@ -676,10 +680,10 @@ function formatAsGeoJSON(
         avgPriority,
         categories,
         oldestIssue: new Date(
-          Math.min(...reportedDates.map((d) => d.getTime()))
+          Math.min(...reportedDates.map((d) => d.getTime())),
         ),
         newestIssue: new Date(
-          Math.max(...reportedDates.map((d) => d.getTime()))
+          Math.max(...reportedDates.map((d) => d.getTime())),
         ),
         criticalCount,
         highCount,
@@ -714,7 +718,7 @@ function formatAsGeoJSON(
     metadata: {
       totalIssues: features.reduce(
         (sum, f) => sum + f.properties.issueCount,
-        0
+        0,
       ),
       dateRange,
       timeDecayFactor: config.timeDecayFactor,
@@ -730,7 +734,7 @@ function formatAsGeoJSON(
  */
 export async function getHeatmapStats(
   filters: HeatmapFilters,
-  config: HeatmapConfig
+  config: HeatmapConfig,
 ): Promise<HeatmapStats> {
   const heatmapData = await getHeatmapData(filters, config);
   const { features } = heatmapData;
@@ -777,7 +781,7 @@ export async function getHeatmapStats(
   const now = new Date();
   const ages = features.map(
     (f) =>
-      (now.getTime() - f.properties.newestIssue.getTime()) / (1000 * 60 * 60)
+      (now.getTime() - f.properties.newestIssue.getTime()) / (1000 * 60 * 60),
   ); // in hours
 
   return {
@@ -789,7 +793,7 @@ export async function getHeatmapStats(
     weightDistribution: {
       critical: features.reduce(
         (sum, f) => sum + f.properties.criticalCount,
-        0
+        0,
       ),
       high: features.reduce((sum, f) => sum + f.properties.highCount, 0),
       medium: features.reduce((sum, f) => sum + f.properties.mediumCount, 0),
@@ -816,7 +820,7 @@ export async function getHeatmapStats(
 export async function getClusteredHeatmapData(
   filters: HeatmapFilters,
   clusterRadius: number = 100,
-  minClusterSize: number = 2
+  minClusterSize: number = 2,
 ): Promise<HeatmapGeoJSON> {
   return getHeatmapData(filters, {
     timeDecayFactor: 0.5,
@@ -832,7 +836,7 @@ export async function getClusteredHeatmapData(
  */
 export async function getGridHeatmapData(
   filters: HeatmapFilters,
-  gridSize: number = 100
+  gridSize: number = 100,
 ): Promise<HeatmapGeoJSON> {
   return getHeatmapData(filters, {
     timeDecayFactor: 0.5,

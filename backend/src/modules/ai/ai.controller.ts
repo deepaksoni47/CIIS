@@ -90,7 +90,7 @@ export async function generateBuildingRisk(req: Request, res: Response) {
 
     const building = buildingDoc.data();
 
-    // Get recent issues for this building (last 30 days)
+    // Get recent issues for this building (last 30 days) with limit
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
@@ -98,6 +98,7 @@ export async function generateBuildingRisk(req: Request, res: Response) {
       .collection("issues")
       .where("buildingId", "==", buildingId)
       .where("createdAt", ">=", thirtyDaysAgo)
+      .limit(1000)
       .get();
 
     const recentIssues = issuesSnapshot.docs.map((doc) => ({
@@ -107,7 +108,7 @@ export async function generateBuildingRisk(req: Request, res: Response) {
 
     const riskAssessment = await geminiService.generateRiskAssessment(
       building?.name || buildingId,
-      recentIssues
+      recentIssues,
     );
 
     res.json({
@@ -198,7 +199,7 @@ export async function getMaintenanceSuggestions(req: Request, res: Response) {
 
     const suggestions = await geminiService.suggestMaintenanceActions(
       category as string,
-      severityNum
+      severityNum,
     );
 
     res.json({
@@ -316,7 +317,7 @@ export async function processVoice(req: Request, res: Response) {
         buildingName,
         zone,
         reporterName,
-      }
+      },
     );
 
     res.json({
@@ -404,7 +405,7 @@ export async function getDailySummary(req: Request, res: Response) {
 
     const summary = await geminiService.generateDailySummary(
       organizationId as string,
-      summaryDate
+      summaryDate,
     );
 
     res.json({
@@ -492,7 +493,7 @@ export async function getIncidentReport(req: Request, res: Response) {
 
     const report = await geminiService.generateIncidentReport(
       issue,
-      relatedIssues
+      relatedIssues,
     );
 
     res.json({

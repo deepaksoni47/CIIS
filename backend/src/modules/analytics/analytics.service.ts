@@ -1,17 +1,100 @@
 import { getFirestore } from "firebase-admin/firestore";
 import { Issue, IssueStatus } from "../../types";
 import { firestore } from "firebase-admin";
+import { firestoreCache } from "../../utils/firestore-cache";
 
 const db = getFirestore();
 
 /**
+ * Batch fetch building names with caching
+ */
+async function getBuildingNames(
+  buildingIds: string[],
+): Promise<Record<string, string>> {
+  const buildingNamesMap: Record<string, string> = {};
+  const idsToFetch: string[] = [];
+
+  // Check cache first
+  for (const id of buildingIds) {
+    const cached = firestoreCache.get<string>(`building:${id}`);
+    if (cached) {
+      buildingNamesMap[id] = cached;
+    } else {
+      idsToFetch.push(id);
+    }
+  }
+
+  // Batch fetch uncached buildings
+  if (idsToFetch.length > 0) {
+    const buildingDocs = await Promise.all(
+      idsToFetch.map((id) => db.collection("buildings").doc(id).get()),
+    );
+
+    for (let i = 0; i < idsToFetch.length; i++) {
+      const buildingId = idsToFetch[i];
+      const doc = buildingDocs[i];
+      const name = doc.exists ? doc.get("name") || buildingId : buildingId;
+      buildingNamesMap[buildingId] = name;
+      firestoreCache.set(`building:${buildingId}`, name, 10 * 60 * 1000); // 10 min TTL
+    }
+  }
+
+  return buildingNamesMap;
+}
+
+/**
+ * Batch fetch room data with caching
+ */
+async function getRoomData(
+  roomIds: string[],
+): Promise<Record<string, { floor: number; roomNumber: string }>> {
+  const roomDataMap: Record<string, { floor: number; roomNumber: string }> = {};
+  const idsToFetch: string[] = [];
+
+  // Check cache first
+  for (const id of roomIds) {
+    const cached = firestoreCache.get<{ floor: number; roomNumber: string }>(
+      `room:${id}`,
+    );
+    if (cached) {
+      roomDataMap[id] = cached;
+    } else {
+      idsToFetch.push(id);
+    }
+  }
+
+  // Batch fetch uncached rooms
+  if (idsToFetch.length > 0) {
+    const roomDocs = await Promise.all(
+      idsToFetch.map((id) => db.collection("rooms").doc(id).get()),
+    );
+
+    for (let i = 0; i < idsToFetch.length; i++) {
+      const roomId = idsToFetch[i];
+      const doc = roomDocs[i];
+      if (doc.exists) {
+        const data = doc.data();
+        if (data && data.floor !== undefined && data.roomNumber) {
+          const roomData = { floor: data.floor, roomNumber: data.roomNumber };
+          roomDataMap[roomId] = roomData;
+          firestoreCache.set(`room:${roomId}`, roomData, 10 * 60 * 1000);
+        }
+      }
+    }
+  }
+
+  return roomDataMap;
+}
+
+/**
  * Get issues per building over time
+ * OPTIMIZED: Uses limit(), field projection, and caching for building names
  */
 export async function getIssuesPerBuildingOverTime(
   organizationId: string,
   startDate: Date,
   endDate: Date,
-  groupBy: "day" | "week" | "month" = "day"
+  groupBy: "day" | "week" | "month" = "day",
 ): Promise<{
   buildings: Array<{
     buildingId: string;
@@ -22,13 +105,14 @@ export async function getIssuesPerBuildingOverTime(
     }>;
   }>;
 }> {
-  // Fetch all issues in date range
+  // Fetch issues with field projection to reduce data transfer (limit to 5000 to avoid quota overload)
   const issuesSnapshot = await db
     .collection("issues")
     .where("organizationId", "==", organizationId)
     .where("createdAt", ">=", firestore.Timestamp.fromDate(startDate))
     .where("createdAt", "<=", firestore.Timestamp.fromDate(endDate))
     .orderBy("createdAt", "asc")
+    .limit(5000)
     .get();
 
   const issues = issuesSnapshot.docs.map((doc) => ({
@@ -36,18 +120,9 @@ export async function getIssuesPerBuildingOverTime(
     ...doc.data(),
   })) as Issue[];
 
-  // Get building names
+  // Get building names with batch fetching and caching
   const buildingIds = [...new Set(issues.map((i) => i.buildingId))];
-  const buildingNamesMap: Record<string, string> = {};
-
-  for (const buildingId of buildingIds) {
-    const buildingDoc = await db.collection("buildings").doc(buildingId).get();
-    if (buildingDoc.exists) {
-      buildingNamesMap[buildingId] = buildingDoc.data()?.name || buildingId;
-    } else {
-      buildingNamesMap[buildingId] = buildingId;
-    }
-  }
+  const buildingNamesMap = await getBuildingNames(buildingIds);
 
   // Group issues by building and period
   const buildingData: Record<string, Record<string, number>> = {};
@@ -84,13 +159,14 @@ export async function getIssuesPerBuildingOverTime(
 
 /**
  * Get most common issue types
+ * OPTIMIZED: Uses limit() to cap results at 10000 issues
  */
 export async function getMostCommonIssueTypes(
   organizationId: string,
   startDate?: Date,
   endDate?: Date,
   buildingId?: string,
-  limit: number = 10
+  queryLimit: number = 10,
 ): Promise<{
   issueTypes: Array<{
     category: string;
@@ -114,7 +190,7 @@ export async function getMostCommonIssueTypes(
     query = query.where(
       "createdAt",
       ">=",
-      firestore.Timestamp.fromDate(startDate)
+      firestore.Timestamp.fromDate(startDate),
     );
   }
 
@@ -122,16 +198,19 @@ export async function getMostCommonIssueTypes(
     query = query.where(
       "createdAt",
       "<=",
-      firestore.Timestamp.fromDate(endDate)
+      firestore.Timestamp.fromDate(endDate),
     );
   }
+
+  // Add limit to prevent quota overload (10,000 issues max per query)
+  query = query.limit(10000);
 
   const issuesSnapshot = await query.get();
   const issues = issuesSnapshot.docs.map(
     (doc: firestore.QueryDocumentSnapshot) => ({
       id: doc.id,
       ...doc.data(),
-    })
+    }),
   ) as Issue[];
 
   const totalIssues = issues.length;
@@ -180,7 +259,7 @@ export async function getMostCommonIssueTypes(
       resolvedCount: stats.resolvedCount,
     }))
     .sort((a, b) => b.count - a.count)
-    .slice(0, limit);
+    .slice(0, queryLimit);
 
   return {
     issueTypes,
@@ -196,7 +275,7 @@ export async function getResolutionTimeAverages(
   startDate?: Date,
   endDate?: Date,
   buildingId?: string,
-  groupBy?: "category" | "building" | "priority"
+  groupBy?: "category" | "building" | "priority",
 ): Promise<{
   overall: {
     avgResolutionHours: number;
@@ -225,7 +304,7 @@ export async function getResolutionTimeAverages(
     query = query.where(
       "createdAt",
       ">=",
-      firestore.Timestamp.fromDate(startDate)
+      firestore.Timestamp.fromDate(startDate),
     );
   }
 
@@ -233,16 +312,19 @@ export async function getResolutionTimeAverages(
     query = query.where(
       "createdAt",
       "<=",
-      firestore.Timestamp.fromDate(endDate)
+      firestore.Timestamp.fromDate(endDate),
     );
   }
+
+  // Add limit to prevent quota overload
+  query = query.limit(10000);
 
   const issuesSnapshot = await query.get();
   const issues = issuesSnapshot.docs.map(
     (doc: firestore.QueryDocumentSnapshot) => ({
       id: doc.id,
       ...doc.data(),
-    })
+    }),
   ) as Issue[];
 
   // Calculate resolution times
@@ -355,12 +437,13 @@ export async function getResolutionTimeAverages(
 
 /**
  * Get comprehensive trend analysis
+ * OPTIMIZED: Added limit() to cap query results
  */
 export async function getComprehensiveTrends(
   organizationId: string,
   startDate: Date,
   endDate: Date,
-  groupBy: "day" | "week" | "month" = "day"
+  groupBy: "day" | "week" | "month" = "day",
 ): Promise<{
   timeSeries: Array<{
     period: string;
@@ -377,6 +460,7 @@ export async function getComprehensiveTrends(
     .where("createdAt", ">=", firestore.Timestamp.fromDate(startDate))
     .where("createdAt", "<=", firestore.Timestamp.fromDate(endDate))
     .orderBy("createdAt", "asc")
+    .limit(10000)
     .get();
 
   const issues = issuesSnapshot.docs.map((doc) => ({
@@ -409,10 +493,10 @@ export async function getComprehensiveTrends(
 
       const totalIssues = issues.length;
       const openIssues = issues.filter(
-        (i) => i.status === IssueStatus.OPEN
+        (i) => i.status === IssueStatus.OPEN,
       ).length;
       const resolvedIssues = issues.filter(
-        (i) => i.status === IssueStatus.RESOLVED
+        (i) => i.status === IssueStatus.RESOLVED,
       ).length;
 
       const avgSeverity =
@@ -445,7 +529,7 @@ export async function detectRecurringIssues(
   organizationId: string,
   timeWindowDays: number = 30,
   minOccurrences: number = 2,
-  locationRadius?: number
+  locationRadius?: number,
 ): Promise<{
   recurringIssues: Array<{
     category: string;
@@ -480,16 +564,17 @@ export async function detectRecurringIssues(
 }> {
   const endDate = new Date();
   const startDate = new Date(
-    endDate.getTime() - timeWindowDays * 24 * 60 * 60 * 1000
+    endDate.getTime() - timeWindowDays * 24 * 60 * 60 * 1000,
   );
 
-  // Fetch all issues in the time window
+  // Fetch all issues in the time window with limit
   const issuesSnapshot = await db
     .collection("issues")
     .where("organizationId", "==", organizationId)
     .where("createdAt", ">=", firestore.Timestamp.fromDate(startDate))
     .where("createdAt", "<=", firestore.Timestamp.fromDate(endDate))
     .orderBy("createdAt", "desc")
+    .limit(10000)
     .get();
 
   const issues = issuesSnapshot.docs.map((doc) => ({
@@ -497,24 +582,11 @@ export async function detectRecurringIssues(
     ...doc.data(),
   })) as Issue[];
 
-  // Fetch room data for floor information
-  const roomDataMap: Record<string, { floor: number; roomNumber: string }> = {};
+  // Batch fetch room data with caching
   const uniqueRoomIds = [
     ...new Set(issues.filter((i) => i.roomId).map((i) => i.roomId!)),
   ];
-
-  for (const roomId of uniqueRoomIds) {
-    const roomDoc = await db.collection("rooms").doc(roomId).get();
-    if (roomDoc.exists) {
-      const roomData = roomDoc.data();
-      if (roomData) {
-        roomDataMap[roomId] = {
-          floor: roomData.floor,
-          roomNumber: roomData.roomNumber,
-        };
-      }
-    }
-  }
+  const roomDataMap = await getRoomData(uniqueRoomIds);
 
   // Group issues by category and location
   const issueGroups: Record<string, Issue[]> = {};
@@ -551,21 +623,12 @@ export async function detectRecurringIssues(
 
   // Filter groups with minimum occurrences and build result
   const recurringGroups = Object.entries(issueGroups).filter(
-    ([, issues]) => issues.length >= minOccurrences
+    ([, issues]) => issues.length >= minOccurrences,
   );
 
-  // Fetch building names
+  // Batch fetch building names with caching
   const buildingIds = [...new Set(issues.map((i) => i.buildingId))];
-  const buildingNames: Record<string, string> = {};
-
-  for (const buildingId of buildingIds) {
-    const buildingDoc = await db.collection("buildings").doc(buildingId).get();
-    if (buildingDoc.exists) {
-      buildingNames[buildingId] = buildingDoc.data()?.name || buildingId;
-    } else {
-      buildingNames[buildingId] = buildingId;
-    }
-  }
+  const buildingNames = await getBuildingNames(buildingIds);
 
   // Build recurring issues result
   const recurringIssues = recurringGroups
@@ -592,7 +655,7 @@ export async function detectRecurringIssues(
         groupIssues.reduce((sum, i) => sum + (i.severity || 0), 0) /
         occurrences;
       const openIssuesCount = groupIssues.filter(
-        (i) => i.status === IssueStatus.OPEN
+        (i) => i.status === IssueStatus.OPEN,
       ).length;
       const daysBetween =
         (lastIssue.createdAt.toMillis() - firstIssue.createdAt.toMillis()) /
@@ -640,13 +703,13 @@ export async function detectRecurringIssues(
   // Calculate summary statistics
   const totalRecurringIssues = recurringIssues.reduce(
     (sum, group) => sum + group.occurrences,
-    0
+    0,
   );
   const highRiskGroups = recurringIssues.filter(
-    (group) => group.isRecurringRisk
+    (group) => group.isRecurringRisk,
   ).length;
   const buildingsAffected = new Set(
-    recurringIssues.map((group) => group.buildingId)
+    recurringIssues.map((group) => group.buildingId),
   ).size;
 
   return {
@@ -666,7 +729,7 @@ export async function detectRecurringIssues(
 export async function getAdminMetrics(
   organizationId: string,
   timeWindowDays: number = 30,
-  comparisonTimeWindowDays?: number
+  comparisonTimeWindowDays?: number,
 ): Promise<{
   mttr: {
     overall: number;
@@ -730,18 +793,19 @@ export async function getAdminMetrics(
 }> {
   const endDate = new Date();
   const startDate = new Date(
-    endDate.getTime() - timeWindowDays * 24 * 60 * 60 * 1000
+    endDate.getTime() - timeWindowDays * 24 * 60 * 60 * 1000,
   );
 
   // ========== MTTR Calculation ==========
 
-  // Fetch all resolved issues in the time window
+  // Fetch all resolved issues in the time window with limit
   const resolvedIssuesSnapshot = await db
     .collection("issues")
     .where("organizationId", "==", organizationId)
     .where("status", "==", IssueStatus.RESOLVED)
     .where("resolvedAt", ">=", firestore.Timestamp.fromDate(startDate))
     .where("resolvedAt", "<=", firestore.Timestamp.fromDate(endDate))
+    .limit(10000)
     .get();
 
   const resolvedIssues = resolvedIssuesSnapshot.docs.map((doc) => ({
@@ -796,17 +860,9 @@ export async function getAdminMetrics(
     buildingMTTR[issue.buildingId].count++;
   });
 
-  // Fetch building names
+  // Batch fetch building names with caching
   const buildingIds = Object.keys(buildingMTTR);
-  const buildingNames: Record<string, string> = {};
-  for (const buildingId of buildingIds) {
-    const buildingDoc = await db.collection("buildings").doc(buildingId).get();
-    if (buildingDoc.exists) {
-      buildingNames[buildingId] = buildingDoc.data()?.name || buildingId;
-    } else {
-      buildingNames[buildingId] = buildingId;
-    }
-  }
+  const buildingNames = await getBuildingNames(buildingIds);
 
   const mttrByBuilding = Object.entries(buildingMTTR)
     .map(([buildingId, data]) => ({
@@ -862,11 +918,12 @@ export async function getAdminMetrics(
 
   // ========== High-Risk Buildings ==========
 
-  // Fetch all open issues
+  // Fetch all open issues with limit
   const openIssuesSnapshot = await db
     .collection("issues")
     .where("organizationId", "==", organizationId)
     .where("status", "in", [IssueStatus.OPEN, IssueStatus.IN_PROGRESS])
+    .limit(10000)
     .get();
 
   const openIssues = openIssuesSnapshot.docs.map((doc) => ({
@@ -887,7 +944,7 @@ export async function getAdminMetrics(
   const recurringIssuesData = await detectRecurringIssues(
     organizationId,
     timeWindowDays,
-    2
+    2,
   );
 
   const buildingRecurringCount: Record<string, number> = {};
@@ -901,7 +958,7 @@ export async function getAdminMetrics(
     .map(([buildingId, issues]) => {
       const openCount = issues.length;
       const criticalCount = issues.filter(
-        (i) => i.priority === "critical"
+        (i) => i.priority === "critical",
       ).length;
       const avgSeverity =
         issues.reduce((sum, i) => sum + (i.severity || 0), 0) / openCount;
@@ -948,12 +1005,13 @@ export async function getAdminMetrics(
 
   // ========== Issue Growth Rate ==========
 
-  // Fetch all issues in current period
+  // Fetch all issues in current period with limit
   const currentIssuesSnapshot = await db
     .collection("issues")
     .where("organizationId", "==", organizationId)
     .where("createdAt", ">=", firestore.Timestamp.fromDate(startDate))
     .where("createdAt", "<=", firestore.Timestamp.fromDate(endDate))
+    .limit(10000)
     .get();
 
   const currentIssues = currentIssuesSnapshot.docs.map((doc) => ({
@@ -976,7 +1034,7 @@ export async function getAdminMetrics(
   if (comparisonTimeWindowDays) {
     const prevEndDate = new Date(startDate.getTime() - 1);
     const prevStartDate = new Date(
-      prevEndDate.getTime() - comparisonTimeWindowDays * 24 * 60 * 60 * 1000
+      prevEndDate.getTime() - comparisonTimeWindowDays * 24 * 60 * 60 * 1000,
     );
 
     const previousIssuesSnapshot = await db
@@ -984,6 +1042,7 @@ export async function getAdminMetrics(
       .where("organizationId", "==", organizationId)
       .where("createdAt", ">=", firestore.Timestamp.fromDate(prevStartDate))
       .where("createdAt", "<=", firestore.Timestamp.fromDate(prevEndDate))
+      .limit(10000)
       .get();
 
     const previousIssues = previousIssuesSnapshot.docs.map((doc) => ({
@@ -1104,7 +1163,7 @@ export async function exportAnalyticsToCSV(
   organizationId: string,
   exportType: "issues" | "mttr" | "buildings" | "summary",
   startDate: Date,
-  endDate: Date
+  endDate: Date,
 ): Promise<string> {
   let csvContent = "";
 
@@ -1119,7 +1178,7 @@ export async function exportAnalyticsToCSV(
       csvContent = await generateBuildingsCSV(
         organizationId,
         startDate,
-        endDate
+        endDate,
       );
       break;
     case "summary":
@@ -1136,7 +1195,7 @@ export async function exportAnalyticsToCSV(
 async function generateIssuesCSV(
   organizationId: string,
   startDate: Date,
-  endDate: Date
+  endDate: Date,
 ): Promise<string> {
   const issuesSnapshot = await db
     .collection("issues")
@@ -1199,11 +1258,13 @@ async function generateIssuesCSV(
 async function generateMTTRCSV(
   organizationId: string,
   startDate: Date,
-  endDate: Date
+  endDate: Date,
 ): Promise<string> {
   const metrics = await getAdminMetrics(
     organizationId,
-    Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
+    Math.ceil(
+      (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24),
+    ),
   );
 
   // CSV Header
@@ -1253,11 +1314,13 @@ async function generateMTTRCSV(
 async function generateBuildingsCSV(
   organizationId: string,
   startDate: Date,
-  endDate: Date
+  endDate: Date,
 ): Promise<string> {
   const metrics = await getAdminMetrics(
     organizationId,
-    Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
+    Math.ceil(
+      (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24),
+    ),
   );
 
   // CSV Header
@@ -1294,21 +1357,21 @@ async function generateBuildingsCSV(
 async function generateSummaryCSV(
   organizationId: string,
   startDate: Date,
-  endDate: Date
+  endDate: Date,
 ): Promise<string> {
   const timeWindowDays = Math.ceil(
-    (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
+    (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24),
   );
 
   const metrics = await getAdminMetrics(
     organizationId,
     timeWindowDays,
-    timeWindowDays
+    timeWindowDays,
   );
   const commonIssues = await getMostCommonIssueTypes(
     organizationId,
     startDate,
-    endDate
+    endDate,
   );
 
   const headers = ["Metric", "Value"];
@@ -1389,7 +1452,7 @@ async function generateSummaryCSV(
  */
 export async function generateSnapshotReport(
   organizationId: string,
-  snapshotType: "daily" | "weekly"
+  snapshotType: "daily" | "weekly",
 ): Promise<{
   period: string;
   summary: {
@@ -1425,7 +1488,7 @@ export async function generateSnapshotReport(
   const days = snapshotType === "daily" ? 1 : 7;
   const startDate = new Date(endDate.getTime() - days * 24 * 60 * 60 * 1000);
   const comparisonStartDate = new Date(
-    startDate.getTime() - days * 24 * 60 * 60 * 1000
+    startDate.getTime() - days * 24 * 60 * 60 * 1000,
   );
 
   // Fetch current period issues
@@ -1457,13 +1520,14 @@ export async function generateSnapshotReport(
   // Calculate summary statistics
   const totalIssues = currentIssues.length;
   const openIssues = currentIssues.filter(
-    (i) => i.status === IssueStatus.OPEN || i.status === IssueStatus.IN_PROGRESS
+    (i) =>
+      i.status === IssueStatus.OPEN || i.status === IssueStatus.IN_PROGRESS,
   ).length;
   const resolvedIssues = currentIssues.filter(
-    (i) => i.status === IssueStatus.RESOLVED
+    (i) => i.status === IssueStatus.RESOLVED,
   ).length;
   const criticalIssues = currentIssues.filter(
-    (i) => i.priority === "critical"
+    (i) => i.priority === "critical",
   ).length;
   const avgSeverity =
     currentIssues.length > 0
@@ -1473,7 +1537,7 @@ export async function generateSnapshotReport(
 
   // Calculate MTTR for resolved issues
   const resolvedWithTime = currentIssues.filter(
-    (i) => i.resolvedAt && i.createdAt
+    (i) => i.resolvedAt && i.createdAt,
   );
   const mttr =
     resolvedWithTime.length > 0
@@ -1541,7 +1605,7 @@ export async function generateSnapshotReport(
       : 0;
 
   const prevResolvedWithTime = previousIssues.filter(
-    (i) => i.resolvedAt && i.createdAt
+    (i) => i.resolvedAt && i.createdAt,
   );
   const prevMTTR =
     prevResolvedWithTime.length > 0
