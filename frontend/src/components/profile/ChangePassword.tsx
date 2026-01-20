@@ -40,8 +40,7 @@ export default function ChangePassword() {
 
     try {
       const token = localStorage.getItem("campuscare_token");
-      const API_BASE_URL =
-        process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL as string;
 
       const response = await fetch(`${API_BASE_URL}/api/auth/change-password`, {
         method: "POST",
@@ -72,7 +71,7 @@ export default function ChangePassword() {
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Failed to change password"
+        err instanceof Error ? err.message : "Failed to change password",
       );
     } finally {
       setLoading(false);

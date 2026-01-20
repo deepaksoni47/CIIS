@@ -40,8 +40,7 @@ export default function UserPreferences({
 
     try {
       const token = localStorage.getItem("campuscare_token");
-      const API_BASE_URL =
-        process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL as string;
 
       const response = await fetch(`${API_BASE_URL}/api/auth/profile`, {
         method: "PATCH",
@@ -65,7 +64,7 @@ export default function UserPreferences({
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Failed to update preferences"
+        err instanceof Error ? err.message : "Failed to update preferences",
       );
     } finally {
       setLoading(false);

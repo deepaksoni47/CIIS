@@ -13,9 +13,7 @@ import {
   Workflow,
 } from "lucide-react";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ||
-  "https://campuscare-production-ebbd.up.railway.app";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL as string;
 
 // --- Types ---
 interface Issue {
@@ -111,12 +109,12 @@ export default function DashboardPage() {
             "Dashboard: token present=",
             !!t,
             "userRole=",
-            userData.role
+            userData.role,
           );
         }
 
         const isManagerOrAdmin = ["facility_manager", "admin"].includes(
-          userData.role
+          userData.role,
         );
 
         await Promise.all([
@@ -146,7 +144,7 @@ export default function DashboardPage() {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       // Handle invalid/expired token
@@ -226,7 +224,7 @@ export default function DashboardPage() {
         `${API_BASE_URL}/api/issues/priorities?organizationId=${userData.organizationId || "ggv-bilaspur"}`,
         {
           headers: { Authorization: `Bearer ${token}` },
-        }
+        },
       );
 
       if (response.status === 401) {

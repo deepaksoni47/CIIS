@@ -3,8 +3,7 @@
  * Calls backend ML endpoints with auth when required
  */
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL as string;
 
 function getAuthToken(): string | null {
   if (typeof window === "undefined") return null;
@@ -52,7 +51,7 @@ export async function getRiskScores(): Promise<
       });
       return res.json();
     },
-    5 * 60 * 1000
+    5 * 60 * 1000,
   );
 }
 
@@ -67,7 +66,7 @@ export async function getCriticalBuildings() {
       });
       return res.json();
     },
-    5 * 60 * 1000
+    5 * 60 * 1000,
   );
 }
 
@@ -82,7 +81,7 @@ export async function getHighRiskBuildings() {
       });
       return res.json();
     },
-    5 * 60 * 1000
+    5 * 60 * 1000,
   );
 }
 
@@ -97,7 +96,7 @@ export async function getCategoryRisks() {
       });
       return res.json();
     },
-    5 * 60 * 1000
+    5 * 60 * 1000,
   );
 }
 
@@ -112,11 +111,11 @@ export async function getPriorityBuildings(limit = 10) {
         {
           headers: authHeaders(),
           cache: "no-store",
-        }
+        },
       );
       return res.json();
     },
-    5 * 60 * 1000
+    5 * 60 * 1000,
   );
 }
 
@@ -131,7 +130,7 @@ export async function getRiskReport() {
       });
       return res.json();
     },
-    10 * 60 * 1000
+    10 * 60 * 1000,
   );
 }
 
@@ -146,7 +145,7 @@ export async function getFailureRisks() {
       });
       return res.json();
     },
-    5 * 60 * 1000
+    5 * 60 * 1000,
   );
 }
 
@@ -161,7 +160,7 @@ export async function getAnomalyRisks() {
       });
       return res.json();
     },
-    5 * 60 * 1000
+    5 * 60 * 1000,
   );
 }
 
@@ -176,6 +175,6 @@ export async function getRecencyRisks() {
       });
       return res.json();
     },
-    5 * 60 * 1000
+    5 * 60 * 1000,
   );
 }

@@ -8,9 +8,7 @@ import toast from "react-hot-toast";
 import { auth } from "@/lib/firebase";
 import { VoteButton, VoteCount } from "@/components/voting/VoteButton";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ||
-  "https://campuscare-production-ebbd.up.railway.app";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL as string;
 
 interface Issue {
   id: string;
@@ -175,7 +173,7 @@ export default function IssueDetailPage() {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
 
       if (response.status === 401) {
@@ -224,7 +222,7 @@ export default function IssueDetailPage() {
               ? parseInt(actualDuration)
               : undefined,
           }),
-        }
+        },
       );
 
       if (response.status === 401) {
@@ -279,7 +277,7 @@ export default function IssueDetailPage() {
           body: JSON.stringify({
             assignedTo: assigneeId,
           }),
-        }
+        },
       );
 
       if (response.status === 401) {

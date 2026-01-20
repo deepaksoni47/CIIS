@@ -5,11 +5,18 @@ import { useRouter } from "next/navigation";
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 import { EmailSignInForm } from "@/components/auth/EmailSignInForm";
 import { isTokenValid } from "@/lib/tokenManager";
+import {
+  COLLEGE_OPTIONS,
+  DEFAULT_COLLEGE_ID,
+  getCollegeByOrganizationId,
+} from "@/data/colleges";
 
 export default function LoginPage() {
   const router = useRouter();
   const [authMethod, setAuthMethod] = useState<"google" | "email">("google");
   const [registered, setRegistered] = useState<string | null>(null);
+  const [selectedCollegeId, setSelectedCollegeId] =
+    useState(DEFAULT_COLLEGE_ID);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -29,6 +36,11 @@ export default function LoginPage() {
       }
     }
   }, [router]);
+
+  const selectedCollege =
+    getCollegeByOrganizationId(selectedCollegeId) ||
+    getCollegeByOrganizationId(DEFAULT_COLLEGE_ID) ||
+    COLLEGE_OPTIONS[0];
 
   return (
     <main className="relative min-h-screen bg-[#050814] text-white overflow-hidden flex items-center justify-center px-4">
@@ -59,6 +71,37 @@ export default function LoginPage() {
               credentials.
             </div>
           )}
+
+          <div className="space-y-2">
+            <label
+              htmlFor="college"
+              className="block text-[11px] sm:text-xs font-medium text-white/70 uppercase tracking-[0.18em]"
+            >
+              College / University
+            </label>
+            <select
+              id="college"
+              value={selectedCollegeId}
+              onChange={(e) => setSelectedCollegeId(e.target.value)}
+              className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl bg-black/40 border border-white/10 text-white text-sm sm:text-base focus:outline-none focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/50 transition min-w-0"
+            >
+              {COLLEGE_OPTIONS.map((college) => (
+                <option
+                  key={college.organizationId}
+                  value={college.organizationId}
+                >
+                  {college.name}
+                </option>
+              ))}
+            </select>
+            <p className="text-[11px] sm:text-xs text-white/60">
+              We will link your account and center the heatmap around{" "}
+              <span className="font-semibold text-violet-200">
+                {selectedCollege?.name || "your campus"}
+              </span>
+              .
+            </p>
+          </div>
           {/* Authentication Method Tabs */}
           <div className="flex gap-2 p-1 bg-black/40 rounded-xl border border-white/10">
             <button
@@ -119,13 +162,13 @@ export default function LoginPage() {
                   Use your verified Google identity. We'll automatically create
                   or link your CampusCare profile for{" "}
                   <span className="font-semibold text-violet-200">
-                    GGV Bilaspur
+                    {selectedCollege?.name || "your campus"}
                   </span>
                   .
                 </p>
               </div>
 
-              <GoogleSignInButton organizationId="ggv-bilaspur" />
+              <GoogleSignInButton organizationId={selectedCollegeId} />
             </>
           ) : (
             <>
@@ -137,13 +180,13 @@ export default function LoginPage() {
                   Sign in with your email and password, or create a new account
                   for{" "}
                   <span className="font-semibold text-violet-200">
-                    GGV Bilaspur
+                    {selectedCollege?.name || "your campus"}
                   </span>
                   .
                 </p>
               </div>
 
-              <EmailSignInForm organizationId="ggv-bilaspur" />
+              <EmailSignInForm organizationId={selectedCollegeId} />
             </>
           )}
 

@@ -6,9 +6,7 @@ import { motion } from "framer-motion";
 import { auth } from "@/lib/firebase";
 import toast from "react-hot-toast";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ||
-  "https://campuscare-production-ebbd.up.railway.app";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL as string;
 
 const CATEGORIES = [
   "Structural",
@@ -160,14 +158,14 @@ export default function ReportPage() {
         enableHighAccuracy: true,
         timeout: 10000,
         maximumAge: 0,
-      }
+      },
     );
   };
 
   const handleInputChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    >,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -213,7 +211,7 @@ export default function ReportPage() {
       uploadFormData.append("images", imageFile);
       uploadFormData.append(
         "organizationId",
-        user?.organizationId || "ggv-bilaspur"
+        user?.organizationId || "ggv-bilaspur",
       );
 
       const uploadResponse = await fetch(
@@ -224,7 +222,7 @@ export default function ReportPage() {
             Authorization: `Bearer ${token}`,
           },
           body: uploadFormData,
-        }
+        },
       );
 
       if (!uploadResponse.ok) {
@@ -232,7 +230,7 @@ export default function ReportPage() {
         console.error("Image upload failed:", errorData);
         toast.error(
           "Image upload failed. You can still submit the issue without AI analysis.",
-          { duration: 5000 }
+          { duration: 5000 },
         );
         return;
       }
@@ -259,7 +257,7 @@ export default function ReportPage() {
             buildingName: BUILDINGS.find((b) => b.id === formData.buildingId)
               ?.name,
           }),
-        }
+        },
       );
 
       if (!analyzeResponse.ok) {
@@ -270,11 +268,11 @@ export default function ReportPage() {
         if (analyzeResponse.status === 429) {
           toast.error(
             "AI service rate limit reached. Please wait a moment before trying again.",
-            { duration: 6000 }
+            { duration: 6000 },
           );
         } else {
           toast.error(
-            "AI analysis failed. You can still submit the issue without AI suggestions."
+            "AI analysis failed. You can still submit the issue without AI suggestions.",
           );
         }
         return;
@@ -331,7 +329,7 @@ export default function ReportPage() {
       if (!SpeechRecognition) {
         toast.error(
           "Speech recognition is not supported in your browser. Please type your issue instead.",
-          { duration: 5000 }
+          { duration: 5000 },
         );
         return;
       }
@@ -397,7 +395,7 @@ export default function ReportPage() {
           // Suppress network error toast to avoid alarming users; recording will continue.
           console.info(
             "Speech recognition network error (suppressed):",
-            event.error
+            event.error,
           );
         } else if (
           event.error === "not-allowed" ||
@@ -405,7 +403,7 @@ export default function ReportPage() {
         ) {
           toast.error(
             "Microphone permission denied. Please allow microphone access or type your issue.",
-            { duration: 5000 }
+            { duration: 5000 },
           );
         } else if (event.error === "no-speech") {
           // Inform user but keep recording running so they can speak again
@@ -668,13 +666,13 @@ export default function ReportPage() {
         const errorData = await response.json().catch(() => ({}));
         console.error("Failed to upload images:", errorData);
         toast.error(
-          "Failed to upload images. You can still submit without images."
+          "Failed to upload images. You can still submit without images.",
         );
       }
     } catch (error) {
       console.error("Error uploading images:", error);
       toast.error(
-        "Error uploading images. You can still submit without images."
+        "Error uploading images. You can still submit without images.",
       );
     }
 

@@ -1,8 +1,7 @@
 import { auth } from "@/lib/firebase";
 import { clearAuthTokens } from "@/lib/tokenManager";
 
-export const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL as string;
 
 function getAuthToken(): string | null {
   if (typeof window === "undefined") return null;
@@ -21,7 +20,7 @@ async function tryRefreshToken(): Promise<string | null> {
           window.dispatchEvent(
             new CustomEvent("campuscare:token_refreshed", {
               detail: { token: newToken },
-            })
+            }),
           );
         } catch (e) {}
         return newToken;
@@ -36,7 +35,7 @@ async function tryRefreshToken(): Promise<string | null> {
 export async function fetchWithAuth(
   input: string,
   init: RequestInit = {},
-  options: { responseType?: "blob" } = {}
+  options: { responseType?: "blob" } = {},
 ) {
   const makeRequest = async (token?: string | null) => {
     const headers: Record<string, string> = {
@@ -51,7 +50,7 @@ export async function fetchWithAuth(
       {
         ...init,
         headers,
-      }
+      },
     );
 
     return response;

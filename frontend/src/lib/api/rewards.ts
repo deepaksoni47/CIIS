@@ -2,8 +2,7 @@
  * API Service for Voting & Rewards System
  */
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL as string;
 
 /**
  * Get auth token from localStorage
@@ -18,7 +17,7 @@ function getAuthToken(): string | null {
  */
 async function apiRequest<T>(
   endpoint: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
 ): Promise<T> {
   const token = getAuthToken();
   const headers: Record<string, string> = {
@@ -214,7 +213,7 @@ export async function getAllBadges() {
  */
 export async function getBadge(
   badgeId: string,
-  includeAchievers: boolean = false
+  includeAchievers: boolean = false,
 ) {
   return apiRequest<{
     success: boolean;
@@ -238,7 +237,7 @@ export async function getBadge(
 export async function getLeaderboard(
   organizationId: string,
   period: "all_time" | "monthly" | "weekly" = "all_time",
-  limit: number = 100
+  limit: number = 100,
 ) {
   return apiRequest<{
     success: boolean;
@@ -248,7 +247,7 @@ export async function getLeaderboard(
       count: number;
     };
   }>(
-    `/api/leaderboard?organizationId=${organizationId}&period=${period}&limit=${limit}`
+    `/api/leaderboard?organizationId=${organizationId}&period=${period}&limit=${limit}`,
   );
 }
 
@@ -260,7 +259,7 @@ export async function getLeaderboard(
 export async function awardPoints(
   userId: string,
   points: number,
-  description: string
+  description: string,
 ) {
   return apiRequest<{
     success: boolean;

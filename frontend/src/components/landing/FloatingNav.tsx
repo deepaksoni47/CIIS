@@ -7,9 +7,7 @@ import Image from "next/image";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ||
-  "https://campuscare-production-ebbd.up.railway.app";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL as string;
 
 export function FloatingNav() {
   const router = useRouter();
