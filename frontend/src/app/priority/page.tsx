@@ -22,6 +22,8 @@ import {
   RockingChair,
   Dice1,
   Wrench,
+  ChevronLeft, // Added
+  ChevronRight, // Added
 } from "lucide-react";
 
 const API_BASE_URL =
@@ -123,6 +125,11 @@ export default function PriorityPage() {
     "score"
   );
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+
+  // --- PAGINATION STATE ---
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+  // ------------------------
 
   const [formData, setFormData] = useState<PriorityInput>({
     category: "Safety",
@@ -340,6 +347,11 @@ export default function PriorityPage() {
     }
   }, [viewMode]);
 
+  // Reset page when sorting/filtering changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [sortBy, sortOrder, issues.length]);
+
   const getPriorityColor = (priority: string) => {
     switch (priority.toLowerCase()) {
       case "critical":
@@ -361,6 +373,31 @@ export default function PriorityPage() {
     if (score >= 40) return "from-yellow-500 to-amber-500";
     return "from-green-500 to-emerald-600";
   };
+
+  // --- PAGINATION LOGIC ---
+  const sortedIssues = [...issues].sort((a, b) => {
+    if (sortBy === "score") {
+      const scoreA = a.aiRiskScore || 0;
+      const scoreB = b.aiRiskScore || 0;
+      return sortOrder === "asc" ? scoreA - scoreB : scoreB - scoreA;
+    } else if (sortBy === "category") {
+      return sortOrder === "asc"
+        ? a.category.localeCompare(b.category)
+        : b.category.localeCompare(a.category);
+    } else {
+      return sortOrder === "asc"
+        ? a.status.localeCompare(b.status)
+        : b.status.localeCompare(a.status);
+    }
+  });
+
+  const totalPages = Math.ceil(sortedIssues.length / itemsPerPage);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentIssues = sortedIssues.slice(indexOfFirstItem, indexOfLastItem);
+
+  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
+  // ------------------------
 
   if (!isAuthenticated) return null;
 
@@ -741,7 +778,9 @@ export default function PriorityPage() {
                       {/* Score & Priority */}
                       <div className="relative mb-8 p-6 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 border border-white/10 overflow-hidden">
                         <div
-                          className={`absolute inset-0 bg-gradient-to-br ${getScoreGradient(result.score)} opacity-10`}
+                          className={`absolute inset-0 bg-gradient-to-br ${getScoreGradient(
+                            result.score
+                          )} opacity-10`}
                         />
                         <div className="relative flex items-center justify-between">
                           <div>
@@ -749,7 +788,9 @@ export default function PriorityPage() {
                               Priority Level
                             </p>
                             <div
-                              className={`inline-block px-4 py-2 rounded-xl border font-bold text-xl uppercase tracking-wider ${getPriorityColor(result.priority)}`}
+                              className={`inline-block px-4 py-2 rounded-xl border font-bold text-xl uppercase tracking-wider ${getPriorityColor(
+                                result.priority
+                              )}`}
                             >
                               {result.priority}
                             </div>
@@ -757,7 +798,9 @@ export default function PriorityPage() {
                           <div className="text-right">
                             <p className="text-sm text-white/50 mb-2">Score</p>
                             <p
-                              className={`text-5xl font-bold bg-gradient-to-br ${getScoreGradient(result.score)} bg-clip-text text-transparent`}
+                              className={`text-5xl font-bold bg-gradient-to-br ${getScoreGradient(
+                                result.score
+                              )} bg-clip-text text-transparent`}
                             >
                               {Math.round(result.score)}
                               <span className="text-xl text-white/30 font-normal">
@@ -798,7 +841,9 @@ export default function PriorityPage() {
                                     initial={{ width: 0 }}
                                     animate={{ width: `${value}%` }}
                                     transition={{ duration: 0.8, delay: 0.2 }}
-                                    className={`h-2 rounded-full bg-gradient-to-r ${getScoreGradient(value as number)}`}
+                                    className={`h-2 rounded-full bg-gradient-to-r ${getScoreGradient(
+                                      value as number
+                                    )}`}
                                   />
                                 </div>
                               </div>
@@ -951,103 +996,117 @@ export default function PriorityPage() {
                         </tr>
                       </thead>
                       <tbody>
-                        {[...issues]
-                          .sort((a, b) => {
-                            if (sortBy === "score") {
-                              const scoreA = a.aiRiskScore || 0;
-                              const scoreB = b.aiRiskScore || 0;
-                              return sortOrder === "asc"
-                                ? scoreA - scoreB
-                                : scoreB - scoreA;
-                            } else if (sortBy === "category") {
-                              return sortOrder === "asc"
-                                ? a.category.localeCompare(b.category)
-                                : b.category.localeCompare(a.category);
-                            } else {
-                              return sortOrder === "asc"
-                                ? a.status.localeCompare(b.status)
-                                : b.status.localeCompare(a.status);
-                            }
-                          })
-                          .map((issue, index) => {
-                            const score = issue.aiRiskScore || 0;
-                            const priority = issue.priority || "low";
-                            return (
-                              <motion.tr
-                                key={issue.id}
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: index * 0.03 }}
-                                className="border-b border-white/5 hover:bg-white/5 transition group"
-                              >
-                                <td className="py-4">
-                                  <div
-                                    className={`inline-block px-3 py-1 rounded-lg text-xs font-bold uppercase ${getPriorityColor(priority)}`}
-                                  >
-                                    {priority}
-                                  </div>
-                                </td>
-                                <td className="py-4">
-                                  <div className="flex items-center gap-2">
-                                    <span
-                                      className={`text-lg font-bold bg-gradient-to-br ${getScoreGradient(score)} bg-clip-text text-transparent`}
-                                    >
-                                      {Math.round(score)}
-                                    </span>
-                                    <div className="w-16 h-1.5 bg-white/5 rounded-full overflow-hidden hidden sm:block">
-                                      <div
-                                        className={`h-full bg-gradient-to-r ${getScoreGradient(score)}`}
-                                        style={{ width: `${score}%` }}
-                                      />
-                                    </div>
-                                  </div>
-                                </td>
-                                <td className="py-4 hidden md:table-cell">
-                                  <span className="text-sm text-white/70">
-                                    {issue.category}
-                                  </span>
-                                </td>
-                                <td className="py-4">
-                                  <Link
-                                    href={`/issues/${issue.id}`}
-                                    className="block max-w-xs hover:text-violet-400 transition-colors"
-                                  >
-                                    <p className="text-sm font-medium text-white truncate group-hover:text-violet-400 transition-colors">
-                                      {issue.title}
-                                    </p>
-                                    <p className="text-xs text-white/50 truncate">
-                                      {issue.description}
-                                    </p>
-                                  </Link>
-                                </td>
-                                <td className="py-4 hidden lg:table-cell">
+                        {currentIssues.map((issue, index) => {
+                          const score = issue.aiRiskScore || 0;
+                          const priority = issue.priority || "low";
+                          return (
+                            <motion.tr
+                              key={issue.id}
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: index * 0.03 }}
+                              className="border-b border-white/5 hover:bg-white/5 transition group"
+                            >
+                              <td className="py-4">
+                                <div
+                                  className={`inline-block px-3 py-1 rounded-lg text-xs font-bold uppercase ${getPriorityColor(
+                                    priority
+                                  )}`}
+                                >
+                                  {priority}
+                                </div>
+                              </td>
+                              <td className="py-4">
+                                <div className="flex items-center gap-2">
                                   <span
-                                    className={`inline-block px-2 py-1 rounded text-xs ${
-                                      issue.status === "open"
-                                        ? "bg-blue-500/10 text-blue-400"
-                                        : issue.status === "in_progress"
-                                          ? "bg-yellow-500/10 text-yellow-400"
-                                          : issue.status === "resolved"
-                                            ? "bg-green-500/10 text-green-400"
-                                            : "bg-gray-500/10 text-gray-400"
-                                    }`}
+                                    className={`text-lg font-bold bg-gradient-to-br ${getScoreGradient(
+                                      score
+                                    )} bg-clip-text text-transparent`}
                                   >
-                                    {issue.status.replace("_", " ")}
+                                    {Math.round(score)}
                                   </span>
-                                </td>
-                                <td className="py-4">
-                                  <VoteButton
-                                    issueId={issue.id}
-                                    initialVoteCount={issue.voteCount || 0}
-                                    size="sm"
-                                    showCount={true}
-                                  />
-                                </td>
-                              </motion.tr>
-                            );
-                          })}
+                                  <div className="w-16 h-1.5 bg-white/5 rounded-full overflow-hidden hidden sm:block">
+                                    <div
+                                      className={`h-full bg-gradient-to-r ${getScoreGradient(
+                                        score
+                                      )}`}
+                                      style={{ width: `${score}%` }}
+                                    />
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="py-4 hidden md:table-cell">
+                                <span className="text-sm text-white/70">
+                                  {issue.category}
+                                </span>
+                              </td>
+                              <td className="py-4">
+                                <Link
+                                  href={`/issues/${issue.id}`}
+                                  className="block max-w-xs hover:text-violet-400 transition-colors"
+                                >
+                                  <p className="text-sm font-medium text-white truncate group-hover:text-violet-400 transition-colors">
+                                    {issue.title}
+                                  </p>
+                                  <p className="text-xs text-white/50 truncate">
+                                    {issue.description}
+                                  </p>
+                                </Link>
+                              </td>
+                              <td className="py-4 hidden lg:table-cell">
+                                <span
+                                  className={`inline-block px-2 py-1 rounded text-xs ${
+                                    issue.status === "open"
+                                      ? "bg-blue-500/10 text-blue-400"
+                                      : issue.status === "in_progress"
+                                      ? "bg-yellow-500/10 text-yellow-400"
+                                      : issue.status === "resolved"
+                                      ? "bg-green-500/10 text-green-400"
+                                      : "bg-gray-500/10 text-gray-400"
+                                  }`}
+                                >
+                                  {issue.status.replace("_", " ")}
+                                </span>
+                              </td>
+                              <td className="py-4">
+                                <VoteButton
+                                  issueId={issue.id}
+                                  initialVoteCount={issue.voteCount || 0}
+                                  size="sm"
+                                  showCount={true}
+                                />
+                              </td>
+                            </motion.tr>
+                          );
+                        })}
                       </tbody>
                     </table>
+
+                    {/* Pagination Controls */}
+                    {sortedIssues.length > itemsPerPage && (
+                      <div className="flex items-center justify-between mt-6 pt-4 border-t border-white/10">
+                        <button
+                          onClick={() => paginate(currentPage - 1)}
+                          disabled={currentPage === 1}
+                          className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 text-sm transition disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <ChevronLeft className="w-4 h-4" />
+                          Previous
+                        </button>
+                        <span className="text-sm text-white/50">
+                          Page <span className="text-white">{currentPage}</span>{" "}
+                          of {totalPages}
+                        </span>
+                        <button
+                          onClick={() => paginate(currentPage + 1)}
+                          disabled={currentPage === totalPages}
+                          className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 text-sm transition disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          Next
+                          <ChevronRight className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center py-20 text-white/40">
@@ -1102,7 +1161,9 @@ export default function PriorityPage() {
                       {scenario.scenario}
                     </h3>
                     <div
-                      className={`inline-block px-3 py-1 rounded-lg text-sm font-bold uppercase mb-4 ${getPriorityColor(scenario.result.priority)}`}
+                      className={`inline-block px-3 py-1 rounded-lg text-sm font-bold uppercase mb-4 ${getPriorityColor(
+                        scenario.result.priority
+                      )}`}
                     >
                       {scenario.result.priority}
                     </div>
@@ -1115,7 +1176,9 @@ export default function PriorityPage() {
                       </div>
                       <div className="w-full bg-white/5 rounded-full h-2">
                         <div
-                          className={`h-2 rounded-full bg-gradient-to-r ${getScoreGradient(scenario.result.score)}`}
+                          className={`h-2 rounded-full bg-gradient-to-r ${getScoreGradient(
+                            scenario.result.score
+                          )}`}
                           style={{ width: `${scenario.result.score}%` }}
                         />
                       </div>
@@ -1179,7 +1242,9 @@ export default function PriorityPage() {
                       ([key, value]) => (
                         <div
                           key={key}
-                          className={`flex items-center justify-between p-4 rounded-xl border ${getPriorityColor(key)}`}
+                          className={`flex items-center justify-between p-4 rounded-xl border ${getPriorityColor(
+                            key
+                          )}`}
                         >
                           <span className="font-bold uppercase">{key}</span>
                           <span className="text-sm">{String(value)}</span>
