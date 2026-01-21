@@ -111,12 +111,12 @@ export default function DashboardPage() {
             "Dashboard: token present=",
             !!t,
             "userRole=",
-            userData.role
+            userData.role,
           );
         }
 
         const isManagerOrAdmin = ["facility_manager", "admin"].includes(
-          userData.role
+          userData.role,
         );
 
         await Promise.all([
@@ -146,7 +146,7 @@ export default function DashboardPage() {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       // Handle invalid/expired token
@@ -226,7 +226,7 @@ export default function DashboardPage() {
         `${API_BASE_URL}/api/issues/priorities?organizationId=${userData.organizationId || "ggv-bilaspur"}`,
         {
           headers: { Authorization: `Bearer ${token}` },
-        }
+        },
       );
 
       if (response.status === 401) {
@@ -375,20 +375,23 @@ export default function DashboardPage() {
           <div>
             <h1 className="text-4xl md:text-5xl font-bold mb-2">
               Welcome back,
-              <span className="ml-3 gradient-heading bg-clip-text text-transparent">
-                {user?.name || "User"}
-              </span>
             </h1>
             <div className="flex items-center gap-3 mt-2">
-              <span
-                className={`px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider border ${getRoleBadgeColor(user?.role)}`}
-              >
-                {user?.role?.replace("_", " ") || "Student"}
+              <span>
+                <span className="mr-3 gradient-heading bg-clip-text text-transparent text-4xl md:text-5xl font-bold mb-2">
+                  {user?.name || "User"}
+                </span>
+                <span
+                  className={`px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider border ${getRoleBadgeColor(user?.role)}`}
+                >
+                  {user?.role?.replace("_", " ") || "Student"}
+                </span>
               </span>
+              
+            </div>
               <p className="text-white/60 text-lg">
                 Campus Infrastructure Intelligence
               </p>
-            </div>
           </div>
         </motion.div>
 
@@ -398,7 +401,7 @@ export default function DashboardPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"
+            className="grid grid-cols-4 md:grid-cols-4 gap-4 mb-8"
           >
             <StatCard
               label="Total Issues"
@@ -454,7 +457,7 @@ export default function DashboardPage() {
           className="mb-8"
         >
           <h2 className="text-2xl font-semibold mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Action 1: Report (Everyone) */}
             <QuickActionCard
               title="Heatmap View"
@@ -600,11 +603,11 @@ export default function DashboardPage() {
   // Sub-components (kept same as your original code)
   function StatCard({ label, value, icon, gradient }: any) {
     return (
-      <div className="bg-black/40 backdrop-blur-xl border border-white/10 rounded-xl p-4">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-2xl">{icon}</span>
+      <div className="bg-black/40 backdrop-blur-xl border border-white/20 rounded-xl p-4">
+        <div className="flex items-center justify-between mb-2 gap-4">
+          <span className="w-2 h-5 md:text-2xl">{icon}</span>
           <span
-            className={`text-2xl font-bold bg-gradient-to-r ${gradient} bg-clip-text text-transparent`}
+            className={`text-lg md:text-2xl font-bold bg-gradient-to-r ${gradient} bg-clip-text text-transparent`}
           >
             {value}
           </span>
@@ -635,7 +638,7 @@ export default function DashboardPage() {
       <Link href={`/issues/${issue.id}`}>
         <motion.div
           whileHover={{ scale: 1.01 }}
-          className="bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl p-4 transition-all cursor-pointer"
+          className="bg-white/5 hover:bg-white/10 border border-white/20 rounded-xl p-4 transition-all cursor-pointer mb-3"
         >
           <div className="flex items-start justify-between mb-2">
             <h4 className="font-medium text-white text-sm flex-1 line-clamp-1">

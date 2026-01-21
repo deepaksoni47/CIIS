@@ -94,13 +94,13 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div>
+      <div className="mt-20" >
         <h1 className="text-3xl font-bold text-white mb-2">Admin Dashboard</h1>
         <p className="text-gray-400">Overview of system metrics and activity</p>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {statCards.map((card) => (
           <div
             key={card.title}
@@ -114,7 +114,7 @@ export default function AdminDashboard() {
                 </h3>
                 <p className="text-gray-500 text-xs">{card.subtitle}</p>
               </div>
-              <div className={`p-3 rounded-lg bg-gradient-to-br ${card.color}`}>
+              <div className={`p-2 rounded-lg bg-gradient-to-br ${card.color}`}>
                 <card.icon className="w-6 h-6 text-white" />
               </div>
             </div>
