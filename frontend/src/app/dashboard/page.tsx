@@ -13,9 +13,7 @@ import {
   Workflow,
 } from "lucide-react";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ||
-  "https://campuscare-production-ebbd.up.railway.app";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL as string;
 
 // --- Types ---
 interface Issue {

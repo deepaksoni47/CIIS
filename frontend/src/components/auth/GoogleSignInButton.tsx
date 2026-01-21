@@ -5,9 +5,7 @@ import { useRouter } from "next/navigation";
 import { signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "@/lib/firebase";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ||
-  "https://campuscare-production-ebbd.up.railway.app";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL as string;
 
 interface GoogleSignInButtonProps {
   organizationId?: string;
@@ -63,7 +61,7 @@ export function GoogleSignInButton({
         window.localStorage.setItem("campuscare_token", data.data.token);
         window.localStorage.setItem(
           "campuscare_user",
-          JSON.stringify(data.data.user)
+          JSON.stringify(data.data.user),
         );
         // Notify other components in this tab about auth change
         try {

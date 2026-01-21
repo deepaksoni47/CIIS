@@ -4,8 +4,7 @@
 
 import { fetchWithAuth } from "./fetchWithAuth";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL as string;
 
 /**
  * Get auth token from localStorage
@@ -21,7 +20,7 @@ function getAuthToken(): string | null {
 const api = {
   async get(
     endpoint: string,
-    options: { params?: any; responseType?: "blob" } = {}
+    options: { params?: any; responseType?: "blob" } = {},
   ) {
     const token = getAuthToken();
     const headers: Record<string, string> = {
@@ -49,7 +48,7 @@ const api = {
     const result = await fetchWithAuth(
       url,
       { method: "GET", headers },
-      { responseType: options.responseType }
+      { responseType: options.responseType },
     );
 
     if (options.responseType === "blob") {

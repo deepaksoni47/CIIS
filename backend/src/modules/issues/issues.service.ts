@@ -24,7 +24,7 @@ const db = getFirestore();
 export async function createIssue(
   issueData: Partial<Issue>,
   userId: string,
-  userRole: UserRole
+  userRole: UserRole,
 ): Promise<Issue> {
   const issuesRef = db.collection("issues");
 
@@ -110,7 +110,7 @@ export async function createIssue(
       issue.campusId,
       issue.buildingId,
       "issue:created",
-      { issue, timestamp: new Date() }
+      { issue, timestamp: new Date() },
     );
   } catch (error) {
     console.error("Error emitting real-time events:", error);
@@ -127,16 +127,19 @@ export async function createIssue(
         "issue_created",
         "Reported an issue",
         issue.id,
-        "issue"
+        "issue",
       )
       .catch((err) =>
-        console.error("Error awarding points for issue creation:", err)
+        console.error("Error awarding points for issue creation:", err),
       );
 
     rewardsService
       .updateUserStatistics(userId, "issuesReported", 1)
       .catch((err) =>
-        console.error("Error updating user statistics for issue creation:", err)
+        console.error(
+          "Error updating user statistics for issue creation:",
+          err,
+        ),
       );
   } catch (err) {
     console.error("Failed to initiate reward actions for issue creation:", err);
@@ -209,14 +212,14 @@ export async function getIssues(filters: {
     query = query.where(
       "createdAt",
       ">=",
-      firestore.Timestamp.fromDate(filters.startDate)
+      firestore.Timestamp.fromDate(filters.startDate),
     );
   }
   if (filters.endDate) {
     query = query.where(
       "createdAt",
       "<=",
-      firestore.Timestamp.fromDate(filters.endDate)
+      firestore.Timestamp.fromDate(filters.endDate),
     );
   }
 
@@ -243,7 +246,7 @@ export async function getIssues(filters: {
       } catch (err: any) {
         console.warn(
           "Could not apply server-side order/limit, falling back to full scan:",
-          err?.message || err
+          err?.message || err,
         );
         firestoreQuery = query;
         needsClientSideSorting = true;
@@ -291,7 +294,7 @@ export async function getIssues(filters: {
 export async function updateIssue(
   issueId: string,
   updates: Partial<Issue>,
-  userId: string
+  userId: string,
 ): Promise<Issue> {
   const issueRef = db.collection("issues").doc(issueId);
   const issueDoc = await issueRef.get();
@@ -356,7 +359,7 @@ export async function updateIssue(
       updatedIssue.campusId,
       updatedIssue.buildingId,
       "issue:updated",
-      { issue: updatedIssue, timestamp: new Date() }
+      { issue: updatedIssue, timestamp: new Date() },
     );
   } catch (error) {
     console.error("Error emitting update events:", error);
@@ -373,7 +376,7 @@ export async function resolveIssue(
   userId: string,
   resolutionComment?: string,
   actualCost?: number,
-  actualDuration?: number
+  actualDuration?: number,
 ): Promise<Issue> {
   const issueRef = db.collection("issues").doc(issueId);
   const issueDoc = await issueRef.get();
@@ -439,7 +442,7 @@ export async function resolveIssue(
       resolvedIssue.campusId,
       resolvedIssue.buildingId,
       "issue:resolved",
-      { issue: resolvedIssue, timestamp: new Date() }
+      { issue: resolvedIssue, timestamp: new Date() },
     );
   } catch (error) {
     console.error("Error emitting resolution events:", error);
@@ -471,7 +474,7 @@ export async function resolveIssue(
 export async function assignIssue(
   issueId: string,
   assignedToUserId: string,
-  assignedByUserId: string
+  assignedByUserId: string,
 ): Promise<Issue> {
   const issueRef = db.collection("issues").doc(issueId);
   const issueDoc = await issueRef.get();
@@ -530,7 +533,7 @@ export async function assignIssue(
         issue: assignedIssue,
         assignedTo: assignedToUserId,
         timestamp: new Date(),
-      }
+      },
     );
   } catch (error) {
     console.error("Error emitting assignment events:", error);
@@ -544,7 +547,7 @@ export async function assignIssue(
  */
 export async function deleteIssue(
   issueId: string,
-  userId: string
+  userId: string,
 ): Promise<void> {
   const issueRef = db.collection("issues").doc(issueId);
   const issueDoc = await issueRef.get();
@@ -616,7 +619,7 @@ export async function deleteIssue(
       issue.campusId,
       issue.buildingId,
       "issue:deleted",
-      { issueId, timestamp: new Date() }
+      { issueId, timestamp: new Date() },
     );
   } catch (error) {
     console.error("Error emitting deletion events:", error);
@@ -627,7 +630,7 @@ export async function deleteIssue(
  * Get issue history
  */
 export async function getIssueHistory(
-  issueId: string
+  issueId: string,
 ): Promise<IssueHistory[]> {
   const historySnapshot = await db
     .collection("issue_history")
@@ -648,7 +651,7 @@ export async function uploadIssueImage(
   file: Buffer,
   fileName: string,
   organizationId: string,
-  issueId?: string
+  issueId?: string,
 ): Promise<string> {
   try {
     // Create folder path in Cloudinary
@@ -677,7 +680,7 @@ export async function getIssuesByProximity(
   organizationId: string,
   centerLat: number,
   centerLng: number,
-  radiusKm: number
+  radiusKm: number,
 ): Promise<Issue[]> {
   // Firestore doesn't support geospatial queries directly
   // We need to get all issues and filter in memory
@@ -695,7 +698,7 @@ export async function getIssuesByProximity(
       centerLat,
       centerLng,
       issue.location.latitude,
-      issue.location.longitude
+      issue.location.longitude,
     );
 
     if (distance <= radiusKm) {
@@ -711,34 +714,26 @@ export async function getIssuesByProximity(
  */
 export async function getHighPriorityIssues(
   organizationId: string,
-  limit: number = 20
+  limit: number = 20,
 ): Promise<Issue[]> {
-  // Avoid Firestore composite index requirement by using the generic getIssues
-  // path which queries by organizationId only and then applying the
-  // priority/status filters + sorting in-memory. This is slightly less
-  // efficient for very large datasets but prevents FAILED_PRECONDITION
-  // errors during development and when indexes are not present.
-  const { issues } = await getIssues({ organizationId });
+  // Query for high-priority open issues with a limit to prevent quota exhaustion
+  const db = getFirestore();
 
-  const filtered = issues
-    .filter((i) =>
-      [IssueStatus.OPEN, IssueStatus.IN_PROGRESS].includes(
-        i.status as IssueStatus
-      )
-    )
-    .filter((i) =>
-      [IssuePriority.HIGH, IssuePriority.CRITICAL].includes(
-        i.priority as IssuePriority
-      )
-    )
-    .sort((a, b) => {
-      const aScore = (a.aiRiskScore as number) || 0;
-      const bScore = (b.aiRiskScore as number) || 0;
-      return bScore - aScore;
-    })
-    .slice(0, limit);
+  const snapshot = await db
+    .collection("issues")
+    .where("organizationId", "==", organizationId)
+    .where("status", "in", [IssueStatus.OPEN, IssueStatus.IN_PROGRESS])
+    .where("priority", "in", [IssuePriority.HIGH, IssuePriority.CRITICAL])
+    .orderBy("aiRiskScore", "desc")
+    .limit(limit * 2) // Fetch more to ensure we have enough after sorting
+    .get();
 
-  return filtered as Issue[];
+  const issues = snapshot.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data(),
+  })) as Issue[];
+
+  return issues.slice(0, limit);
 }
 
 /**
@@ -753,9 +748,11 @@ export async function getIssueStats(organizationId: string): Promise<{
   byPriority: Record<string, number>;
   avgResolutionTime: number;
 }> {
+  // Add limit to prevent quota exhaustion
   const allIssues = await db
     .collection("issues")
     .where("organizationId", "==", organizationId)
+    .limit(10000)
     .get();
 
   const stats = {
@@ -809,7 +806,7 @@ export async function getIssueStats(organizationId: string): Promise<{
  * Helper: Create issue history entry
  */
 async function createIssueHistory(
-  historyData: Partial<IssueHistory>
+  historyData: Partial<IssueHistory>,
 ): Promise<void> {
   await db.collection("issue_history").add(historyData);
 }
@@ -846,7 +843,7 @@ export function calculateDistance(
   lat1: number,
   lon1: number,
   lat2: number,
-  lon2: number
+  lon2: number,
 ): number {
   const R = 6371; // Radius of Earth in km
   const dLat = ((lat2 - lat1) * Math.PI) / 180;

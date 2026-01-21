@@ -1,7 +1,6 @@
 import { useEffect, useRef } from "react";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL as string;
 
 export function useSSE(path: string, onMessage: (ev: MessageEvent) => void) {
   const esRef = useRef<EventSource | null>(null);
@@ -40,13 +39,13 @@ export function useSSE(path: string, onMessage: (ev: MessageEvent) => void) {
 
     window.addEventListener(
       "campuscare:token_refreshed",
-      onTokenRefreshed as EventListener
+      onTokenRefreshed as EventListener,
     );
 
     return () => {
       window.removeEventListener(
         "campuscare:token_refreshed",
-        onTokenRefreshed as EventListener
+        onTokenRefreshed as EventListener,
       );
       if (esRef.current) {
         esRef.current.close();

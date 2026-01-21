@@ -8,6 +8,7 @@ import {
   TileLayer,
   Marker,
   Popup,
+  useMap,
   useMapEvents,
 } from "react-leaflet";
 import L from "leaflet";
@@ -124,6 +125,16 @@ function ZoomHandler({
   return null;
 }
 
+function RecenterHandler({ center }: { center: [number, number] }) {
+  const map = useMap();
+
+  useEffect(() => {
+    map.setView(center);
+  }, [center, map]);
+
+  return null;
+}
+
 export function HeatmapContainer({
   initialData = [],
   center = [28.5494, 77.1917], // Default: Delhi, India
@@ -180,8 +191,8 @@ export function HeatmapContainer({
 
       return point.categories.some((cat) =>
         activeCategories.some((activeCat) =>
-          cat.toLowerCase().includes(activeCat.toLowerCase())
-        )
+          cat.toLowerCase().includes(activeCat.toLowerCase()),
+        ),
       );
     });
   }, [heatmapData, layers]);
@@ -194,7 +205,7 @@ export function HeatmapContainer({
         lng: point.lng,
         intensity: point.intensity,
       })),
-    [filteredData]
+    [filteredData],
   );
 
   const handleLayerToggle = (layer: "water" | "power" | "wifi") => {
@@ -250,7 +261,7 @@ export function HeatmapContainer({
   return (
     <div className="relative w-full h-full">
       <MapContainer
-        key="heatmap-map"
+        key={`heatmap-map-${center[0]}-${center[1]}`}
         center={center}
         zoom={zoom}
         style={{ height: "100%", width: "100%" }}
@@ -258,7 +269,11 @@ export function HeatmapContainer({
         scrollWheelZoom={true}
         minZoom={5}
         maxZoom={19}
+        maxBounds={bounds}
+        maxBoundsViscosity={bounds ? 0.9 : undefined}
       >
+        <RecenterHandler center={center} />
+
         {/* Dark theme tile layer (CartoDB Dark Matter) */}
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
@@ -426,7 +441,7 @@ export function HeatmapContainer({
                                 e.stopPropagation();
                                 const issueIdsParam = point.issueIds!.join(",");
                                 router.push(
-                                  `/issues?issueIds=${issueIdsParam}`
+                                  `/issues?issueIds=${issueIdsParam}`,
                                 );
                               }}
                               className="w-full px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"

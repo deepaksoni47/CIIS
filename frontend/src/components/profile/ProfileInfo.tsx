@@ -36,8 +36,7 @@ export default function ProfileInfo({ user, onUpdate }: ProfileInfoProps) {
 
     try {
       const token = localStorage.getItem("campuscare_token");
-      const API_BASE_URL =
-        process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL as string;
 
       const response = await fetch(`${API_BASE_URL}/api/auth/profile`, {
         method: "PATCH",

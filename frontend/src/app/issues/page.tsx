@@ -7,8 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 import { VoteButton } from "@/components/voting/VoteButton";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL as string;
 
 // --- Types ---
 interface Issue {
@@ -103,14 +102,14 @@ export default function IssuesPage() {
                 Authorization: `Bearer ${token}`,
                 "Content-Type": "application/json",
               },
-            }
+            },
           );
 
           if (response.ok) {
             const result = await response.json();
             const allIssues = result.data || [];
             const filteredIssues = allIssues.filter((issue: Issue) =>
-              specificIssueIds.includes(issue.id)
+              specificIssueIds.includes(issue.id),
             );
             setIssues(filteredIssues);
             setHasMore(false); // No pagination for filtered results
@@ -137,7 +136,7 @@ export default function IssuesPage() {
                 Authorization: `Bearer ${token}`,
                 "Content-Type": "application/json",
               },
-            }
+            },
           );
 
           if (response.ok) {
@@ -167,7 +166,7 @@ export default function IssuesPage() {
       showMyIssuesOnly,
       specificIssueIds,
       issues.length,
-    ]
+    ],
   );
 
   // Initial Fetch & Filter Changes
@@ -184,7 +183,7 @@ export default function IssuesPage() {
   const handleDelete = async (issueId: string) => {
     if (
       !confirm(
-        "Are you sure you want to delete this issue? This cannot be undone."
+        "Are you sure you want to delete this issue? This cannot be undone.",
       )
     )
       return;
@@ -222,7 +221,7 @@ export default function IssuesPage() {
             issue.description
               .toLowerCase()
               .includes(searchQuery.toLowerCase()) ||
-            issue.category.toLowerCase().includes(searchQuery.toLowerCase())
+            issue.category.toLowerCase().includes(searchQuery.toLowerCase()),
         );
 
   return (
@@ -437,7 +436,7 @@ function IssueListItem({ issue, userId, onDelete, isDeleting }: any) {
             <span className="text-white/40 text-xs">
               •{" "}
               {new Date(
-                issue.createdAt._seconds * 1000 || issue.createdAt
+                issue.createdAt._seconds * 1000 || issue.createdAt,
               ).toLocaleDateString()}
             </span>
           </div>

@@ -26,9 +26,7 @@ import {
   ChevronRight, // Added
 } from "lucide-react";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ||
-  "https://campuscare-production-ebbd.up.railway.app";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL as string;
 
 // Category configurations from Priority Engine
 const CATEGORIES = [
@@ -122,7 +120,7 @@ export default function PriorityPage() {
   const [issues, setIssues] = useState<any[]>([]);
   const [isLoadingIssues, setIsLoadingIssues] = useState(false);
   const [sortBy, setSortBy] = useState<"score" | "category" | "status">(
-    "score"
+    "score",
   );
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
@@ -303,7 +301,7 @@ export default function PriorityPage() {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
 
       const data = await response.json();
@@ -322,7 +320,7 @@ export default function PriorityPage() {
         console.error("API Error:", response.status, data);
         toast.error(
           data.message ||
-            `Failed to load issues (${response.status}: ${response.statusText})`
+            `Failed to load issues (${response.status}: ${response.statusText})`,
         );
         setIssues([]);
       }
@@ -847,7 +845,7 @@ export default function PriorityPage() {
                                   />
                                 </div>
                               </div>
-                            )
+                            ),
                           )}
                         </div>
                       </div>
@@ -1227,7 +1225,7 @@ export default function PriorityPage() {
                             {String(value)}
                           </p>
                         </div>
-                      )
+                      ),
                     )}
                   </div>
                 </div>
@@ -1249,7 +1247,7 @@ export default function PriorityPage() {
                           <span className="font-bold uppercase">{key}</span>
                           <span className="text-sm">{String(value)}</span>
                         </div>
-                      )
+                      ),
                     )}
                   </div>
                 </div>

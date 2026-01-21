@@ -11,19 +11,23 @@ import {
   type PresetMode,
 } from "@/components/heatmap/EnhancedHeatmapSidebar";
 import { HeatmapStats } from "@/components/heatmap/HeatmapStats";
+import {
+  COLLEGE_OPTIONS,
+  DEFAULT_COLLEGE_ID,
+  createBoundsFromCollege,
+  getCollegeByOrganizationId,
+} from "@/data/colleges";
 
 // Dynamic import to avoid SSR issues with Leaflet
 const DynamicHeatmapContainer = dynamic(
   () =>
     import("@/components/heatmap/HeatmapContainer").then(
-      (mod) => mod.HeatmapContainer
+      (mod) => mod.HeatmapContainer,
     ),
-  { ssr: false }
+  { ssr: false },
 );
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ||
-  "https://campuscare-production-ebbd.up.railway.app";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL as string;
 
 interface HeatmapPoint {
   lat: number;
@@ -135,7 +139,7 @@ export default function HeatmapPage() {
   const [error, setError] = useState<string | null>(null);
   const [heatmapData, setHeatmapData] = useState<HeatmapPoint[]>([]);
   const [statsData, setStatsData] = useState<HeatmapStatsData | undefined>(
-    undefined
+    undefined,
   );
   const [isLoadingStats, setIsLoadingStats] = useState(false);
   const [endpointMode, setEndpointMode] = useState<
@@ -157,26 +161,32 @@ export default function HeatmapPage() {
   const [config, setConfig] = useState<HeatmapConfig>({
     timeDecayFactor: 0.5,
     severityWeightMultiplier: 2.0,
-    gridSize: 50,
+    gridSize: 100,
+    clusterRadius: 200,
+    minClusterSize: 5,
     normalizeWeights: true,
   });
 
-  // Filters state
+  // Filters state - Default to "overview" preset settings
   const [filters, setFilters] = useState<HeatmapFilters>({
     categories: [],
     priorities: [],
     statuses: [],
-    timeRange: "7d",
+    timeRange: "30d",
     minSeverity: 1,
   });
-
-  // Campus bounds - GGV Campus Bilaspur coordinates
-  // Center adjusted to match actual building locations (22.13°N, 82.145°E)
-  const campusCenter: [number, number] = [22.132, 82.145];
-  const campusBounds: [[number, number], [number, number]] = [
-    [22.122, 82.135], // Southwest corner (~1.5km radius)
-    [22.142, 82.155], // Northeast corner
-  ];
+  const defaultCollege =
+    getCollegeByOrganizationId(DEFAULT_COLLEGE_ID) || COLLEGE_OPTIONS[0];
+  const [activeOrganizationId, setActiveOrganizationId] = useState<string>(
+    defaultCollege.organizationId,
+  );
+  const [mapCenter, setMapCenter] = useState<[number, number]>([
+    defaultCollege.lat,
+    defaultCollege.lng,
+  ]);
+  const [mapBounds, setMapBounds] = useState<
+    [[number, number], [number, number]]
+  >(createBoundsFromCollege(defaultCollege));
 
   // Map UI layer names to backend category names
   const layerCategoryMap: Record<string, string[]> = {
@@ -220,7 +230,7 @@ export default function HeatmapPage() {
   // Convert time range to maxAge in days
   const getMaxAge = (
     timeRange: string,
-    customMaxAge?: number
+    customMaxAge?: number,
   ): number | undefined => {
     if (customMaxAge) return customMaxAge;
     switch (timeRange) {
@@ -234,6 +244,20 @@ export default function HeatmapPage() {
         return undefined;
     }
   };
+
+  const resolveOrganizationContext = useCallback(() => {
+    const userDataStr = localStorage.getItem("campuscare_user");
+    if (!userDataStr) {
+      throw new Error("No user data found. Please log in again.");
+    }
+
+    const userData = JSON.parse(userDataStr);
+    const organizationId = userData.organizationId || DEFAULT_COLLEGE_ID;
+    const college =
+      getCollegeByOrganizationId(organizationId) || defaultCollege;
+
+    return { organizationId, college } as const;
+  }, [defaultCollege]);
 
   // Fetch heatmap data
   const fetchHeatmapData = useCallback(async () => {
@@ -249,17 +273,10 @@ export default function HeatmapPage() {
         throw new Error("No authentication token found. Please log in.");
       }
 
-      // Get user data for organizationId
-      const userDataStr = localStorage.getItem("campuscare_user");
-      if (!userDataStr) {
-        throw new Error("No user data found. Please log in again.");
-      }
-      const userData = JSON.parse(userDataStr);
-      const organizationId = userData.organizationId;
-
-      if (!organizationId) {
-        throw new Error("No organization ID found in user data.");
-      }
+      const { organizationId, college } = resolveOrganizationContext();
+      setActiveOrganizationId(organizationId);
+      setMapCenter([college.lat, college.lng]);
+      setMapBounds(createBoundsFromCollege(college));
 
       // Build query parameters
       const params = new URLSearchParams({
@@ -302,7 +319,7 @@ export default function HeatmapPage() {
       // Debug: Log the request URL
       console.log(
         "Fetching heatmap from:",
-        `${API_BASE_URL}/api/heatmap/${endpoint}?${params.toString()}`
+        `${API_BASE_URL}/api/heatmap/${endpoint}?${params.toString()}`,
       );
 
       if (filters.minSeverity > 1) {
@@ -328,7 +345,7 @@ export default function HeatmapPage() {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       if (response.status === 401) {
@@ -384,7 +401,7 @@ export default function HeatmapPage() {
           console.log("Sample point:", points[0]);
         } else {
           console.warn(
-            "No heatmap points after conversion. Check filters and data location."
+            "No heatmap points after conversion. Check filters and data location.",
           );
         }
 
@@ -410,6 +427,7 @@ export default function HeatmapPage() {
     endpointMode,
     getToken,
     refreshToken,
+    resolveOrganizationContext,
   ]);
 
   // Fetch statistics
@@ -423,11 +441,7 @@ export default function HeatmapPage() {
       const token = getToken();
       if (!token) return;
 
-      const userDataStr = localStorage.getItem("campuscare_user");
-      if (!userDataStr) return;
-      const userData = JSON.parse(userDataStr);
-      const organizationId = userData.organizationId;
-      if (!organizationId) return;
+      const { organizationId } = resolveOrganizationContext();
 
       // Build same query parameters as data fetch
       const params = new URLSearchParams({
@@ -459,7 +473,7 @@ export default function HeatmapPage() {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
 
       if (!response.ok) return;
@@ -473,7 +487,15 @@ export default function HeatmapPage() {
     } finally {
       setIsLoadingStats(false);
     }
-  }, [config, filters, layers, getActiveCategories, getToken, refreshToken]);
+  }, [
+    config,
+    filters,
+    layers,
+    getActiveCategories,
+    getToken,
+    refreshToken,
+    resolveOrganizationContext,
+  ]);
 
   // Initial fetch
   useEffect(() => {
@@ -538,7 +560,7 @@ export default function HeatmapPage() {
           {
             id: "ai-insight",
             duration: 5000,
-          }
+          },
         );
         return;
       }
@@ -602,7 +624,7 @@ Keep the response concise and actionable.`;
         err instanceof Error
           ? `Failed to generate AI insight: ${err.message}`
           : "Failed to generate AI insight. Please try again.",
-        { id: "ai-insight" }
+        { id: "ai-insight" },
       );
     }
   };
@@ -626,9 +648,9 @@ Keep the response concise and actionable.`;
       <div className="h-screen pt-0 md:pt-0">
         <DynamicHeatmapContainer
           initialData={heatmapData}
-          center={campusCenter}
+          center={mapCenter}
           zoom={15}
-          bounds={campusBounds}
+          bounds={mapBounds}
           onGenerateAIInsight={handleGenerateAIInsight}
           onFiltersChange={() => {}}
         />

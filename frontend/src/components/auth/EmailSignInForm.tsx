@@ -1,11 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "@/lib/firebase";
+import {
+  COLLEGE_OPTIONS,
+  DEFAULT_COLLEGE_ID,
+  getCollegeByOrganizationId,
+} from "@/data/colleges";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ||
-  "https://campuscare-production-ebbd.up.railway.app";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL as string;
 
 interface EmailSignInFormProps {
   organizationId?: string;
@@ -24,6 +29,18 @@ export function EmailSignInForm({
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [role, setRole] = useState<string>("student");
+  const [selectedCollegeId, setSelectedCollegeId] = useState(
+    organizationId || DEFAULT_COLLEGE_ID,
+  );
+
+  useEffect(() => {
+    setSelectedCollegeId(organizationId || DEFAULT_COLLEGE_ID);
+  }, [organizationId]);
+
+  const selectedCollege =
+    getCollegeByOrganizationId(selectedCollegeId) ||
+    getCollegeByOrganizationId(DEFAULT_COLLEGE_ID) ||
+    COLLEGE_OPTIONS[0];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,7 +54,7 @@ export function EmailSignInForm({
 
       const body = isLogin
         ? { email, password }
-        : { email, password, name, organizationId, role };
+        : { email, password, name, organizationId: selectedCollegeId, role };
 
       const response = await fetch(endpoint, {
         method: "POST",
@@ -59,30 +76,27 @@ export function EmailSignInForm({
         throw new Error(message);
       }
 
-      // If logging in, store token and redirect to dashboard.
-      // If registering, redirect user to login page with a success flag
-      // (require them to sign in explicitly).
-      if (isLogin) {
-        if (typeof window !== "undefined") {
-          window.localStorage.setItem("campuscare_token", data.data.token);
-          window.localStorage.setItem(
-            "campuscare_user",
-            JSON.stringify(data.data.user)
-          );
-        }
+      // Sign in to Firebase Auth client-side to maintain auth state
+      await signInWithEmailAndPassword(auth, email, password);
 
-        // Redirect to dashboard
-        // Notify other components in this tab about auth change
-        try {
-          window.dispatchEvent(new Event("campuscare_auth_changed"));
-        } catch (_) {
-          /* ignore */
-        }
-        router.push("/dashboard");
-      } else {
-        // Registration successful — redirect to login and ask user to sign in
-        router.push("/login?registered=1");
+      // Store token and user data for both login and registration
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem("campuscare_token", data.data.token);
+        window.localStorage.setItem(
+          "campuscare_user",
+          JSON.stringify(data.data.user),
+        );
       }
+
+      // Notify other components in this tab about auth change
+      try {
+        window.dispatchEvent(new Event("campuscare_auth_changed"));
+      } catch (_) {
+        /* ignore */
+      }
+
+      // Redirect to dashboard for both login and registration
+      router.push("/dashboard");
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Unexpected error occurred.";
@@ -214,7 +228,8 @@ export function EmailSignInForm({
         {!isLogin && (
           <div className="p-3 rounded-xl bg-violet-500/10 border border-violet-500/20">
             <p className="text-xs text-violet-300">
-              <span className="font-semibold">Campus:</span> GGV Bilaspur
+              <span className="font-semibold">Campus:</span>{" "}
+              {selectedCollege.name}
             </p>
           </div>
         )}
